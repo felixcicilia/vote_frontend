@@ -1,0 +1,469 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div
+      class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+    >
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+          Dashboard General
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Resumen operativo, ventas recientes, inventario y flujo de caja.
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <div>
+          <label
+            class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400"
+          >
+            Fecha inicio
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="filters.startDate"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+          />
+        </div>
+
+        <div>
+          <label
+            class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400"
+          >
+            Fecha fin
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="filters.endDate"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+          />
+        </div>
+
+        <div class="flex items-end">
+          <button
+            type="button"
+            (click)="loadDashboard()"
+            class="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+          >
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div
+    *ngIf="loading"
+    class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+  >
+    Cargando dashboard...
+  </div>
+
+  <!-- Error -->
+  <div
+    *ngIf="!loading && errorMessage"
+    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <ng-container *ngIf="!loading && !errorMessage">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">Órdenes</p>
+        <h3 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white/90">
+          {{ summary?.ordersCount ?? 0 }}
+        </h3>
+      </div>
+
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">Pagos</p>
+        <h3 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white/90">
+          {{ summary?.paymentsCount ?? 0 }}
+        </h3>
+      </div>
+
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">Productos</p>
+        <h3 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white/90">
+          {{ summary?.productsCount ?? 0 }}
+        </h3>
+      </div>
+
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Unidades en inventario
+        </p>
+        <h3 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white/90">
+          {{ summary?.inventoryUnits ?? 0 }}
+        </h3>
+      </div>
+    </div>
+
+    <!-- Money cards -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Ingreso del día USD
+        </p>
+        <h3 class="mt-2 text-xl font-bold text-gray-800 dark:text-white/90">
+          {{ formatMoney(summary?.todayIncomeUsd, "USD") }}
+        </h3>
+      </div>
+
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Ingreso del día Bs
+        </p>
+        <h3 class="mt-2 text-xl font-bold text-gray-800 dark:text-white/90">
+          {{ formatMoney(summary?.todayIncomeBs, "VES") }}
+        </h3>
+      </div>
+
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">Neto USD</p>
+        <h3 class="mt-2 text-xl font-bold text-gray-800 dark:text-white/90">
+          {{ formatMoney(summary?.netUsd, "USD") }}
+        </h3>
+      </div>
+
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-sm text-gray-500 dark:text-gray-400">Neto Bs</p>
+        <h3 class="mt-2 text-xl font-bold text-gray-800 dark:text-white/90">
+          {{ formatMoney(summary?.netBs, "VES") }}
+        </h3>
+      </div>
+    </div>
+
+    <!-- Rate + Cash flow -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+            Tasa de cambio
+          </h3>
+          <span
+            class="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400"
+          >
+            Activa
+          </span>
+        </div>
+
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Par</span>
+            <span class="font-medium text-gray-800 dark:text-white/90">
+              {{ exchangeRate?.baseCurrency }}/{{
+                exchangeRate?.targetCurrency
+              }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Tasa</span>
+            <span class="text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ exchangeRate?.rate ?? "0.00" }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Fecha efectiva</span>
+            <span class="font-medium text-gray-800 dark:text-white/90">
+              {{ exchangeRate?.effectiveDate ?? "-" }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Origen</span>
+            <span class="font-medium text-gray-800 dark:text-white/90">
+              {{ exchangeRate?.source ?? "-" }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="xl:col-span-2 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <h3
+          class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90"
+        >
+          Flujo de caja
+        </h3>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Ingreso USD</p>
+            <h4 class="mt-2 text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ formatMoney(cashFlow?.incomeUsd, "USD") }}
+            </h4>
+          </div>
+
+          <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Ingreso Bs</p>
+            <h4 class="mt-2 text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ formatMoney(cashFlow?.incomeBs, "VES") }}
+            </h4>
+          </div>
+
+          <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Egreso USD</p>
+            <h4 class="mt-2 text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ formatMoney(cashFlow?.outflowUsd, "USD") }}
+            </h4>
+          </div>
+
+          <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Egreso Bs</p>
+            <h4 class="mt-2 text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ formatMoney(cashFlow?.outflowBs, "VES") }}
+            </h4>
+          </div>
+
+          <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Neto USD</p>
+            <h4 class="mt-2 text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ formatMoney(cashFlow?.netUsd, "USD") }}
+            </h4>
+          </div>
+
+          <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Neto Bs</p>
+            <h4 class="mt-2 text-lg font-bold text-gray-800 dark:text-white/90">
+              {{ formatMoney(cashFlow?.netBs, "VES") }}
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent sales -->
+    <div
+      class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+    >
+      <div class="mb-5 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+          Ventas recientes
+        </h3>
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          {{ recentSales.length }} registros
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="border-b border-gray-100 dark:border-gray-800">
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                Código
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                Cliente
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                Pago
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                Método
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                Total
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                Fecha
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              *ngFor="let sale of recentSales; trackBy: trackBySale"
+              class="border-b border-gray-100 dark:border-gray-800"
+            >
+              <td class="px-4 py-4">
+                <div class="font-medium text-gray-800 dark:text-white/90">
+                  {{ sale.codigo }}
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ sale.orderRequest?.codigo }}
+                </div>
+              </td>
+
+              <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">
+                {{ sale.orderRequest?.clienteNombre || "Sin cliente" }}
+              </td>
+
+              <td class="px-4 py-4">
+                <span
+                  class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                >
+                  {{ sale.payment?.status }}
+                </span>
+              </td>
+
+              <td class="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">
+                {{ sale.paymentMethod }}
+              </td>
+
+              <td
+                class="px-4 py-4 text-sm font-medium text-gray-800 dark:text-white/90"
+              >
+                <ng-container [ngSwitch]="sale.paymentCurrency">
+                  <span *ngSwitchCase="'BS'">
+                    {{ formatMoney(sale.total, "VES") }}
+                  </span>
+                  <span *ngSwitchDefault>
+                    {{ formatMoney(sale.total, "USD") }}
+                  </span>
+                </ng-container>
+              </td>
+
+              <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                {{ formatDateTime(sale.createdAt) }}
+              </td>
+            </tr>
+
+            <tr *ngIf="recentSales.length === 0">
+              <td
+                colspan="6"
+                class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+              >
+                No hay ventas recientes en el rango seleccionado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Inventory -->
+    <div
+      class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+    >
+      <div class="mb-5 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+          Inventario del rango
+        </h3>
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          {{ inventory.length }} productos
+        </span>
+      </div>
+
+      <div class="max-h-[760px] overflow-y-auto pr-2">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div
+            *ngFor="let item of inventory; trackBy: trackByInventory"
+            class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.02]"
+          >
+            <div class="h-48 w-full bg-gray-100 dark:bg-gray-900">
+              <img
+                [src]="getProductImage(item.images?.[0]?.url)"
+                [alt]="item.nombre"
+                class="h-full w-full object-cover"
+              />
+            </div>
+
+            <div class="p-4">
+              <div class="mb-2 flex items-start justify-between gap-3">
+                <div>
+                  <h4
+                    class="text-base font-semibold text-gray-800 dark:text-white/90"
+                  >
+                    {{ item.nombre }}
+                  </h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ item.codigo }}
+                  </p>
+                </div>
+
+                <span
+                  class="rounded-full px-2.5 py-1 text-xs font-medium"
+                  [ngClass]="
+                    isLowStock(item.stock, item.stockMinimo)
+                      ? 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+                      : 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+                  "
+                >
+                  {{
+                    isLowStock(item.stock, item.stockMinimo)
+                      ? "Stock bajo"
+                      : "Disponible"
+                  }}
+                </span>
+              </div>
+
+              <div class="space-y-2 text-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-500 dark:text-gray-400"
+                    >Categoría</span
+                  >
+                  <span class="text-gray-800 dark:text-white/90">
+                    {{ item.categoria }}
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">Tipo</span>
+                  <span class="text-gray-800 dark:text-white/90">
+                    {{ item.tipo }}
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">Precio</span>
+                  <span class="font-medium text-gray-800 dark:text-white/90">
+                    {{ formatMoney(item.precioVenta, "USD") }}
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">Stock</span>
+                  <span class="font-medium text-gray-800 dark:text-white/90">
+                    {{ item.stock }}
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">Vendidas</span>
+                  <span class="font-medium text-gray-800 dark:text-white/90">
+                    {{ item.cantidadVendidaEnRango }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            *ngIf="inventory.length === 0"
+            class="col-span-full rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400"
+          >
+            No hay inventario disponible para mostrar en este rango.
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

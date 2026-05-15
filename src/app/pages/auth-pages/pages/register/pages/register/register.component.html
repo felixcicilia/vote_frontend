@@ -1,0 +1,222 @@
+<div class="relative min-h-screen bg-white dark:bg-gray-900">
+  <div class="relative flex min-h-screen flex-col lg:flex-row">
+    <!-- PANEL IZQUIERDO -->
+    <div
+      class="flex w-full flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:px-8"
+    >
+      <div class="w-full max-w-md">
+        <!-- VOLVER -->
+        <div class="mb-8">
+          <a
+            routerLink="/login"
+            class="inline-flex items-center gap-2 text-sm text-gray-500 transition hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path
+                d="M12.5 5L7.5 10L12.5 15"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Volver al login
+          </a>
+        </div>
+
+        <!-- CABECERA -->
+        <div class="mb-8">
+          <h1
+            class="mb-2 text-2xl font-bold text-gray-800 dark:text-white/90 sm:text-3xl"
+          >
+            Crear cuenta
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Regístrate para comenzar a realizar pedidos en triescal.
+          </p>
+        </div>
+
+        <!-- SUCCESS -->
+        @if (successMessage()) {
+          <div
+            class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900/30 dark:bg-green-500/10 dark:text-green-400"
+          >
+            {{ successMessage() }}
+          </div>
+        }
+
+        <!-- ERROR -->
+        @if (errorMessage()) {
+          <div
+            class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400"
+          >
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <!-- FORM -->
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+          <!-- NOMBRE -->
+          <div>
+            <label
+              class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
+              Nombre <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="nombre"
+              placeholder="Felix"
+              class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <!-- APELLIDO -->
+          <div>
+            <label
+              class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
+              Apellido <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="apellido"
+              placeholder="González"
+              class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <!-- EMAIL -->
+          <div>
+            <label
+              class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
+              Correo electrónico <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="correo@gmail.com"
+              class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <!-- TELÉFONO -->
+          <div>
+            <label
+              class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
+              Teléfono <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="telefono"
+              placeholder="+58412..."
+              class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <!-- PASSWORD -->
+          <div>
+            <label
+              class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
+              Contraseña <span class="text-red-500">*</span>
+            </label>
+
+            <div class="relative">
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                class="h-11 w-full rounded-lg border border-gray-300 px-4 pr-10 text-sm focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              />
+
+              <button
+                type="button"
+                (click)="togglePasswordVisibility()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+
+          <!-- CONFIRM PASSWORD -->
+          <div>
+            <label
+              class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
+              Confirmar contraseña <span class="text-red-500">*</span>
+            </label>
+
+            <div class="relative">
+              <input
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                class="h-11 w-full rounded-lg border border-gray-300 px-4 pr-10 text-sm focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              />
+
+              <button
+                type="button"
+                (click)="toggleConfirmPasswordVisibility()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+
+          <!-- BOTÓN -->
+          <button
+            type="submit"
+            [disabled]="loading()"
+            class="w-full rounded-lg bg-brand-500 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60"
+          >
+            @if (!loading()) {
+              Crear cuenta
+            } @else {
+              Registrando...
+            }
+          </button>
+        </form>
+
+        <!-- LINK -->
+        <div class="mt-6 text-center">
+          <a
+            routerLink="/login"
+            class="text-sm text-brand-500 hover:text-brand-600"
+          >
+            ¿Ya tienes cuenta? Inicia sesión
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="relative hidden w-1/2 items-center justify-center lg:flex">
+      <img
+        [src]="registerImage()"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+
+      <div class="absolute inset-0 bg-black/40"></div>
+
+      <div class="relative z-10 text-center text-white px-8">
+        <img src="/images/logo/logo.png" class="mb-6 max-h-24 mx-auto" />
+
+        <h2 class="text-3xl font-bold mb-3">Únete a triescal</h2>
+
+        <p class="text-white/90">
+          Disfruta de una experiencia rápida, moderna y deliciosa al gestionar
+          tus pedidos en línea.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

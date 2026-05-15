@@ -1,0 +1,272 @@
+<div class="space-y-6">
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div
+      class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+    >
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+          Editar usuario
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Actualiza la información del usuario seleccionado.
+        </p>
+      </div>
+
+      <a
+        routerLink="/usuarios"
+        class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.03]"
+      >
+        Volver
+      </a>
+    </div>
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="loadingUser"
+    class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+  >
+    Cargando información del usuario...
+  </div>
+
+  <form
+    *ngIf="!loadingUser"
+    [formGroup]="form"
+    (ngSubmit)="editarUsuario()"
+    class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Nombre
+        </label>
+        <input
+          type="text"
+          formControlName="nombre"
+          placeholder="Ej: Felix"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.nombre.touched && f.nombre.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          El nombre es obligatorio.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Apellido
+        </label>
+        <input
+          type="text"
+          formControlName="apellido"
+          placeholder="Ej: Cicilia"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.apellido.touched && f.apellido.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          El apellido es obligatorio.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Cédula
+        </label>
+        <input
+          type="text"
+          formControlName="cedula"
+          placeholder="Ej: V12345678"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.cedula.touched && f.cedula.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          La cédula es obligatoria.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Teléfono
+        </label>
+        <input
+          type="text"
+          formControlName="telefono"
+          placeholder="Ej: 04141234567"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.telefono.touched && f.telefono.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          El teléfono es obligatorio.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Fecha de nacimiento
+        </label>
+        <input
+          type="date"
+          formControlName="fechaNacimiento"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.fechaNacimiento.touched && f.fechaNacimiento.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          La fecha de nacimiento es obligatoria.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Rol
+        </label>
+        <select
+          formControlName="role"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        >
+          <option *ngFor="let rol of roles" [value]="rol.value">
+            {{ rol.label }}
+          </option>
+        </select>
+        <p
+          *ngIf="f.role.touched && f.role.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          El rol es obligatorio.
+        </p>
+      </div>
+
+      <div class="md:col-span-2">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Correo electrónico
+        </label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="Ej: usuario@triescal.com"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.email.touched && f.email.hasError('required')"
+          class="mt-1 text-xs text-red-500"
+        >
+          El correo es obligatorio.
+        </p>
+        <p
+          *ngIf="f.email.touched && f.email.hasError('email')"
+          class="mt-1 text-xs text-red-500"
+        >
+          El formato del correo no es válido.
+        </p>
+      </div>
+
+      <div class="md:col-span-2">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Dirección
+        </label>
+        <textarea
+          formControlName="direccion"
+          rows="3"
+          placeholder="Ej: Valencia, Carabobo, Venezuela"
+          class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        ></textarea>
+        <p
+          *ngIf="f.direccion.touched && f.direccion.invalid"
+          class="mt-1 text-xs text-red-500"
+        >
+          La dirección es obligatoria.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Nueva contraseña
+        </label>
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="Déjala vacía si no cambiará"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="f.password.touched && f.password.hasError('minlength')"
+          class="mt-1 text-xs text-red-500"
+        >
+          La contraseña debe tener al menos 6 caracteres.
+        </p>
+      </div>
+
+      <div>
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Confirmar nueva contraseña
+        </label>
+        <input
+          type="password"
+          formControlName="confirmPassword"
+          placeholder="Confirma la nueva contraseña"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        />
+        <p
+          *ngIf="form.touched && form.hasError('passwordsMismatch')"
+          class="mt-1 text-xs text-red-500"
+        >
+          Las contraseñas no coinciden.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+      <a
+        routerLink="/usuarios"
+        class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.03]"
+      >
+        Cancelar
+      </a>
+
+      <button
+        type="submit"
+        [disabled]="loading"
+        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {{ loading ? "Actualizando..." : "Actualizar usuario" }}
+      </button>
+    </div>
+  </form>
+</div>
