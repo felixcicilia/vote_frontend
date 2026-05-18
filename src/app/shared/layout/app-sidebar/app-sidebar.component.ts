@@ -36,6 +36,128 @@ type NavItem = {
   templateUrl: "./app-sidebar.component.html",
 })
 export class AppSidebarComponent {
+  // ─── Items visibles para CLIENTE ────────────────────────────────────────────
+  private clienteItems: NavItem[] = [
+    {
+      icon: `<i class="fas fa-dashboard fa-lg"></i>`,
+      name: "Dashboard",
+      path: "/dashboard",
+    },
+    {
+      icon: `<i class="fas fa-taxi fa-lg"></i>`,
+      name: "Lancha Taxi",
+      subItems: [
+        { name: "Solicitar taxi", path: "/viajes-taxi/solicitar" },
+        { name: "Mis viajes", path: "/viajes-taxi" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-ship fa-lg"></i>`,
+      name: "Terminal",
+      subItems: [
+        { name: "Buscar viajes", path: "/viajes" },
+        { name: "Mis tickets", path: "/tickets" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-anchor fa-lg"></i>`,
+      name: "Alquileres",
+      subItems: [
+        { name: "Explorar embarcaciones", path: "/embarcaciones" },
+        { name: "Mis alquileres", path: "/alquileres" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
+      name: "Pagos",
+      subItems: [{ name: "Mis pagos", path: "/pagos" }],
+    },
+    {
+      icon: `<i class="fas fa-star fa-lg"></i>`,
+      name: "Reseñas",
+      subItems: [{ name: "Mis reseñas", path: "/resenas" }],
+    },
+    {
+      icon: `<i class="fas fa-bell fa-lg"></i>`,
+      name: "Notificaciones",
+      path: "/notificaciones",
+    },
+  ];
+
+  // ─── Items visibles para PROVEEDOR ──────────────────────────────────────────
+  private proveedorItems: NavItem[] = [
+    {
+      icon: `<i class="fas fa-dashboard fa-lg"></i>`,
+      name: "Dashboard",
+      path: "/dashboard",
+    },
+    {
+      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
+      name: "Embarcaciones",
+      subItems: [
+        { name: "Mis embarcaciones", path: "/embarcaciones" },
+        { name: "Nueva embarcación", path: "/embarcaciones/crear" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-anchor fa-lg"></i>`,
+      name: "Alquileres",
+      subItems: [
+        { name: "Lista de alquileres", path: "/alquileres" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-star fa-lg"></i>`,
+      name: "Reseñas",
+      subItems: [{ name: "Reseñas recibidas", path: "/resenas" }],
+    },
+    {
+      icon: `<i class="fas fa-bell fa-lg"></i>`,
+      name: "Notificaciones",
+      path: "/notificaciones",
+    },
+  ];
+
+  // ─── Items visibles para EMPLEADO ───────────────────────────────────────────
+  private empleadoItems: NavItem[] = [
+    {
+      icon: `<i class="fas fa-dashboard fa-lg"></i>`,
+      name: "Dashboard",
+      path: "/dashboard",
+    },
+    {
+      icon: `<i class="fas fa-taxi fa-lg"></i>`,
+      name: "Viajes Taxi",
+      subItems: [{ name: "Gestión de viajes", path: "/viajes-taxi" }],
+    },
+    {
+      icon: `<i class="fas fa-ship fa-lg"></i>`,
+      name: "Terminal",
+      subItems: [
+        { name: "Viajes programados", path: "/viajes" },
+        { name: "Tickets emitidos", path: "/tickets" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-anchor fa-lg"></i>`,
+      name: "Alquileres",
+      subItems: [{ name: "Lista de alquileres", path: "/alquileres" }],
+    },
+    {
+      icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
+      name: "Pagos",
+      subItems: [
+        { name: "Verificar pagos", path: "/pagos" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-bell fa-lg"></i>`,
+      name: "Notificaciones",
+      path: "/notificaciones",
+    },
+  ];
+
+  // ─── Items visibles para ADMINISTRADOR y MASTER ─────────────────────────────
   navItems: NavItem[] = [
     {
       icon: `<i class="fas fa-dashboard fa-lg"></i>`,
@@ -43,94 +165,81 @@ export class AppSidebarComponent {
       path: "/dashboard",
     },
     {
-      icon: `<i class="fas fa-newspaper fa-lg"></i>`,
-      name: "Noticias",
+      icon: `<i class="fas fa-taxi fa-lg"></i>`,
+      name: "Viajes Taxi",
+      subItems: [{ name: "Todos los viajes", path: "/viajes-taxi" }],
+    },
+    {
+      icon: `<i class="fas fa-ship fa-lg"></i>`,
+      name: "Terminal",
       subItems: [
-        { name: "Noticias", path: "/noticias" },
-        { name: "Sección Noticias", path: "/noticias/seccion" },
-        { name: "Crear Noticia", path: "/noticias/crear" },
+        { name: "Viajes programados", path: "/viajes" },
+        { name: "Tickets emitidos", path: "/tickets" },
       ],
     },
     {
-      icon: `<i class="fas fa-clipboard-list fa-lg"></i>`,
-      name: "Pedidos",
-      subItems: [
-        { name: "Solicitudes de pedido", path: "/pedidos" },
-        { name: "Crear pedido Cajero", path: "/pedidos/crear" },
-        { name: "Crear pedido Self Service", path: "/pedidos/kiosko" },
-      ],
+      icon: `<i class="fas fa-anchor fa-lg"></i>`,
+      name: "Alquileres",
+      subItems: [{ name: "Todos los alquileres", path: "/alquileres" }],
     },
     {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
       name: "Pagos",
       subItems: [
         { name: "Lista de pagos", path: "/pagos" },
-        { name: "Registrar pago", path: "/pagos/crear" },
       ],
     },
     {
-      icon: `<i class="fas fa-receipt fa-lg"></i>`,
-      name: "Órdenes",
-      subItems: [
-        { name: "Lista de órdenes", path: "/ordenes" },
-        { name: "Órdenes recientes", path: "/ordenes/crear" },
-      ],
+      icon: `<i class="fas fa-star fa-lg"></i>`,
+      name: "Reseñas",
+      subItems: [{ name: "Todas las reseñas", path: "/resenas" }],
     },
     {
-      icon: `<i class="fa-solid fa-people-carry-box"></i>`,
-      name: "Operación",
-      subItems: [{ name: "Lista de productos", path: "/operacion" }],
-    },
-    {
-      icon: `<i class="fas fa-box-open fa-lg"></i>`,
-      name: "Productos",
-      subItems: [
-        { name: "Lista de productos", path: "/productos" },
-        { name: "Crear producto", path: "/productos/crear" },
-      ],
-    },
-    {
-      icon: `<i class="fas fa-users fa-lg"></i>`,
-      name: "Clientes",
-      subItems: [{ name: "Lista de clientes", path: "/clientes" }],
-    },
-    {
-      icon: `<i class="fas fa-user-gear fa-lg"></i>`,
-      name: "Usuarios",
-      subItems: [
-        { name: "Lista de usuarios", path: "/usuarios" },
-        { name: "Nuevo usuario", path: "/usuarios/crear" },
-      ],
+      icon: `<i class="fas fa-bell fa-lg"></i>`,
+      name: "Notificaciones",
+      path: "/notificaciones",
     },
   ];
 
   othersItems: NavItem[] = [
     {
-      icon: `<i class="fas fa-chart-pie fa-lg"></i>`,
-      name: "Reportes",
-      subItems: [{ name: "Administración", path: "/administracion" }],
-    },
-    {
-      icon: `<i class="fas fa-cash-register fa-lg"></i>`,
-      name: "Caja",
-      subItems: [{ name: "flujo de Caja", path: "/caja" }],
-    },
-    {
-      icon: `<i class="fas fa-warehouse fa-lg"></i>`,
-      name: "Inventario",
-      subItems: [{ name: "Resumen de inventario", path: "/inventario" }],
-    },
-    {
-      icon: `<i class="fas fa-comments-dollar fa-lg"></i>`,
-      name: "Tasa de cambio",
-      subItems: [{ name: "Tasas registradas", path: "/tasas" }],
-    },
-    {
-      icon: `<i class="fas fa-lock fa-lg"></i>`,
-      name: "Acceso",
+      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
+      name: "Embarcaciones",
       subItems: [
-        { name: "Perfil", path: "/profile" },
-        { name: "Cerrar Sesión", path: "/signin" },
+        { name: "Lista", path: "/embarcaciones" },
+        { name: "Nueva", path: "/embarcaciones/crear" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-anchor fa-lg"></i>`,
+      name: "Muelles",
+      subItems: [
+        { name: "Lista de muelles", path: "/muelles" },
+        { name: "Nuevo muelle", path: "/muelles/crear" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-route fa-lg"></i>`,
+      name: "Rutas",
+      subItems: [
+        { name: "Lista de rutas", path: "/rutas" },
+        { name: "Nueva ruta", path: "/rutas/crear" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-clock fa-lg"></i>`,
+      name: "Horarios",
+      subItems: [
+        { name: "Lista de horarios", path: "/horarios" },
+        { name: "Nuevo horario", path: "/horarios/crear" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-users fa-lg"></i>`,
+      name: "Usuarios",
+      subItems: [
+        { name: "Lista de usuarios", path: "/usuarios" },
+        { name: "Nuevo usuario", path: "/usuarios/crear" },
       ],
     },
   ];
@@ -232,83 +341,22 @@ export class AppSidebarComponent {
   private filterNavItemsByRole(items: NavItem[]): NavItem[] {
     const role = this.authService.role();
 
-    if (!role) {
-      return [];
+    if (!role) return [];
+
+    if (role === "MASTER" || role === "ADMINISTRADOR") {
+      return items; // navItems (operacional)
     }
 
-    if (role === "MASTER") {
-      return items;
+    if (role === "EMPLEADO") {
+      return this.empleadoItems;
     }
 
-    if (role === "ADMINISTRADOR") {
-      return items.filter((item) => item.name !== "Usuarios");
-    }
-
-    if (role === "USUARIO") {
-      return items
-        .filter(
-          (item) =>
-            ![
-              "Noticias",
-              "Pagos",
-              "Órdenes",
-              "Operación",
-              "Clientes",
-              "Usuarios",
-            ].includes(item.name),
-        )
-        .map((item) => {
-          if (item.name === "Pedidos" && item.subItems) {
-            return {
-              ...item,
-              subItems: item.subItems.filter(
-                (sub) => sub.path !== "/pedidos/kiosko",
-              ),
-            };
-          }
-
-          return item;
-        });
+    if (role === "PROVEEDOR") {
+      return this.proveedorItems;
     }
 
     if (role === "CLIENTE") {
-      const clientItems: NavItem[] = [
-        {
-          icon: `<i class="fas fa-newspaper fa-lg"></i>`,
-          name: "Noticias",
-          subItems: [{ name: "Noticias", path: "/noticias" }],
-        },
-        {
-          icon: `<i class="fas fa-clipboard-list fa-lg"></i>`,
-          name: "Pedidos",
-          subItems: [
-            { name: "Lista de pedidos", path: "/pedidos" },
-            { name: "Pedido Self Service", path: "/pedidos/kiosko" },
-          ],
-        },
-        {
-          icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
-          name: "Pagos",
-          subItems: [{ name: "Lista de pagos", path: "/pagos" }],
-        },
-        {
-          icon: `<i class="fas fa-receipt fa-lg"></i>`,
-          name: "Órdenes",
-          subItems: [{ name: "Lista de órdenes", path: "/ordenes" }],
-        },
-        {
-          icon: `<i class="fa-solid fa-people-carry-box"></i>`,
-          name: "Operación",
-          subItems: [{ name: "Lista de productos", path: "/operacion" }],
-        },
-        {
-          icon: `<i class="fas fa-user fa-lg"></i>`,
-          name: "Perfil",
-          path: "/profile",
-        },
-      ];
-
-      return clientItems;
+      return this.clienteItems;
     }
 
     return [];
@@ -317,20 +365,11 @@ export class AppSidebarComponent {
   private filterOthersItemsByRole(items: NavItem[]): NavItem[] {
     const role = this.authService.role();
 
-    if (!role) {
-      return [];
-    }
+    if (!role) return [];
 
-    if (role === "MASTER") {
+    // Solo MASTER y ADMINISTRADOR ven los ítems de catálogo (othersItems)
+    if (role === "MASTER" || role === "ADMINISTRADOR") {
       return items;
-    }
-
-    if (role === "ADMINISTRADOR") {
-      return items;
-    }
-
-    if (role === "USUARIO" || role === "CLIENTE") {
-      return [];
     }
 
     return [];

@@ -21,7 +21,7 @@ import { environment } from "../../../environments/environment.prod";
 })
 export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
-  private readonly baseUrl = "https://backend.triescal.com";
+  private readonly baseUrl = "https://backend.brisa.com";
 
   loading = false;
   errorMessage = "";

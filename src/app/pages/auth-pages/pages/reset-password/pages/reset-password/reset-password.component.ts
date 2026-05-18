@@ -36,10 +36,10 @@ export class ResetPasswordComponent {
     const hour = new Date().getHours();
 
     if (hour < 17) {
-      return "/images/logo/triescalday.png";
+      return "/images/logo/day.jpg";
     }
 
-    return "/images/logo/triescalnight.png";
+    return "/images/logo/night.jpg";
   }
 
   get f() {

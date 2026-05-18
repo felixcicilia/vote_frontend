@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
-  apiUrl: "https://backend.triescal.com/api",
-  uploadsUrl: "https://backend.triescal.com/uploads",
-  tokenKey: "triescal_token",
-  appName: "TRIESCAL",
+  apiUrl: "https://api.maribrisa/api",
+  uploadsUrl: "https://api.maribrisa/uploads",
+  tokenKey: "brisa_token",
+  appName: "MARITIMO",
   appVersion: "1.0.0",
 };
