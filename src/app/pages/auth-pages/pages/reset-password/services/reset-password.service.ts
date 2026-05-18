@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 
 import { ResetPasswordPayload } from "../models/reset-password.model";
-import { environment } from "../../../../../../environments/environment.prod";
+import { environment } from "../../../../../../environments/environment";
 
 type ResetPasswordResponse = {
   message: string;

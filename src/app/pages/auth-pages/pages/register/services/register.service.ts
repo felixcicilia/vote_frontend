@@ -7,12 +7,12 @@ import { environment } from "../../../../../../environments/environment";
 
 type RegisterResponse = {
   message: string;
-  user: {
+  user?: {
     id: number;
-    nombre: string;
-    apellido: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    telefono: string;
+    phone?: string | null;
     role: string;
     createdAt: string;
   };

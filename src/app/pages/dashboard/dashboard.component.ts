@@ -11,7 +11,7 @@ import {
   DashboardService,
   DashboardSummary,
 } from "./dashboard.service";
-import { environment } from "../../../environments/environment.prod";
+import { environment } from "../../../environments/environment";
 
 @Component({
   selector: "app-dashboard",

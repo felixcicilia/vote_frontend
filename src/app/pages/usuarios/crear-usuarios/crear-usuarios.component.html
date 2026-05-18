@@ -44,12 +44,12 @@
         </label>
         <input
           type="text"
-          formControlName="nombre"
+          formControlName="firstName"
           placeholder="Ej: Felix"
           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
         />
         <p
-          *ngIf="f.nombre.touched && f.nombre.invalid"
+          *ngIf="f.firstName.touched && f.firstName.invalid"
           class="mt-1 text-xs text-red-500"
         >
           El nombre es obligatorio.
@@ -64,35 +64,15 @@
         </label>
         <input
           type="text"
-          formControlName="apellido"
+          formControlName="lastName"
           placeholder="Ej: Cicilia"
           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
         />
         <p
-          *ngIf="f.apellido.touched && f.apellido.invalid"
+          *ngIf="f.lastName.touched && f.lastName.invalid"
           class="mt-1 text-xs text-red-500"
         >
           El apellido es obligatorio.
-        </p>
-      </div>
-
-      <div>
-        <label
-          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Cédula
-        </label>
-        <input
-          type="text"
-          formControlName="cedula"
-          placeholder="Ej: V12345678"
-          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
-        />
-        <p
-          *ngIf="f.cedula.touched && f.cedula.invalid"
-          class="mt-1 text-xs text-red-500"
-        >
-          La cédula es obligatoria.
         </p>
       </div>
 
@@ -104,35 +84,10 @@
         </label>
         <input
           type="text"
-          formControlName="telefono"
+          formControlName="phone"
           placeholder="Ej: 04141234567"
           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
         />
-        <p
-          *ngIf="f.telefono.touched && f.telefono.invalid"
-          class="mt-1 text-xs text-red-500"
-        >
-          El teléfono es obligatorio.
-        </p>
-      </div>
-
-      <div>
-        <label
-          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Fecha de nacimiento
-        </label>
-        <input
-          type="date"
-          formControlName="fechaNacimiento"
-          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
-        />
-        <p
-          *ngIf="f.fechaNacimiento.touched && f.fechaNacimiento.invalid"
-          class="mt-1 text-xs text-red-500"
-        >
-          La fecha de nacimiento es obligatoria.
-        </p>
       </div>
 
       <div>
@@ -166,7 +121,7 @@
         <input
           type="email"
           formControlName="email"
-          placeholder="Ej: usuario@brisa.com"
+          placeholder="Ej: usuario@maritimo.com"
           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
         />
         <p
@@ -180,26 +135,6 @@
           class="mt-1 text-xs text-red-500"
         >
           El formato del correo no es válido.
-        </p>
-      </div>
-
-      <div class="md:col-span-2">
-        <label
-          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Dirección
-        </label>
-        <textarea
-          formControlName="direccion"
-          rows="3"
-          placeholder="Ej: Valencia, Carabobo, Venezuela"
-          class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
-        ></textarea>
-        <p
-          *ngIf="f.direccion.touched && f.direccion.invalid"
-          class="mt-1 text-xs text-red-500"
-        >
-          La dirección es obligatoria.
         </p>
       </div>
 
@@ -242,7 +177,7 @@
           class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
         />
         <p
-          *ngIf="f.confirmPassword.touched && f.confirmPassword.invalid"
+          *ngIf="f.confirmPassword.touched && f.confirmPassword.hasError('required')"
           class="mt-1 text-xs text-red-500"
         >
           Debes confirmar la contraseña.

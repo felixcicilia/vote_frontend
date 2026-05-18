@@ -31,144 +31,94 @@ export class EditarUsuariosComponent implements OnInit {
 
   readonly roles = [
     { label: "Cliente", value: UserRole.CLIENTE },
+    { label: "Proveedor", value: UserRole.PROVEEDOR },
+    { label: "Empleado", value: UserRole.EMPLEADO },
     { label: "Administrador", value: UserRole.ADMINISTRADOR },
     { label: "Master", value: UserRole.MASTER },
-    { label: "Usuario", value: UserRole.USUARIO },
   ];
 
   form = this.fb.group(
     {
-      nombre: ["", [Validators.maxLength(100)]],
-      apellido: ["", [Validators.maxLength(100)]],
-      cedula: ["", [Validators.required, Validators.maxLength(20)]],
-      telefono: ["", [Validators.maxLength(20)]],
-      fechaNacimiento: [""],
-      direccion: [""],
+      firstName: ["", [Validators.required, Validators.maxLength(100)]],
+      lastName: ["", [Validators.required, Validators.maxLength(100)]],
+      phone: ["", [Validators.maxLength(20)]],
       email: ["", [Validators.required, Validators.email]],
       password: ["", [Validators.minLength(6)]],
       confirmPassword: [""],
-      role: [UserRole.USUARIO, [Validators.required]],
+      role: [UserRole.CLIENTE, [Validators.required]],
+      isActive: [true],
     },
-    {
-      validators: this.passwordsMatchValidator,
-    },
+    { validators: this.passwordsMatchValidator },
   );
 
-  get f() {
-    return this.form.controls;
-  }
+  get f() { return this.form.controls; }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get("id"));
-
-    if (!id) {
-      this.errorMessage = "No se recibió un id válido para editar el usuario.";
-      return;
-    }
-
+    if (!id) { this.errorMessage = "ID inválido."; return; }
     this.usuarioId = id;
     this.cargarUsuario();
   }
 
   cargarUsuario(): void {
     this.loadingUser = true;
-    this.errorMessage = "";
-
     this.usuariosService.obtenerUsuarioPorId(this.usuarioId).subscribe({
-      next: (usuario) => {
+      next: (u) => {
         this.form.patchValue({
-          nombre: usuario.nombre ?? "",
-          apellido: usuario.apellido ?? "",
-          cedula: usuario.cedula ?? "",
-          telefono: usuario.telefono ?? "",
-          fechaNacimiento: usuario.fechaNacimiento ?? "",
-          direccion: usuario.direccion ?? "",
-          email: usuario.email ?? "",
-          role: usuario.role ?? UserRole.USUARIO,
+          firstName: u.firstName ?? "",
+          lastName: u.lastName ?? "",
+          phone: u.phone ?? "",
+          email: u.email ?? "",
+          role: u.role ?? UserRole.CLIENTE,
+          isActive: u.isActive ?? true,
           password: "",
           confirmPassword: "",
         });
-
         this.loadingUser = false;
       },
-      error: (error) => {
-        console.error("Error cargando usuario:", error);
-        this.errorMessage = "No se pudo cargar la información del usuario.";
+      error: () => {
+        this.errorMessage = "No se pudo cargar el usuario.";
         this.loadingUser = false;
       },
     });
   }
 
   editarUsuario(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading = true;
     this.errorMessage = "";
 
     const payload: EditarUsuarioPayload = {
-      nombre: this.f.nombre.value?.trim() || null,
-      apellido: this.f.apellido.value?.trim() || null,
-      cedula: this.f.cedula.value?.trim() ?? "",
-      telefono: this.f.telefono.value?.trim() || null,
-      fechaNacimiento: this.f.fechaNacimiento.value || null,
-      direccion: this.f.direccion.value?.trim() || null,
-      email: this.f.email.value?.trim() ?? "",
-      role: this.f.role.value ?? UserRole.USUARIO,
+      firstName: this.f.firstName.value?.trim(),
+      lastName: this.f.lastName.value?.trim(),
+      phone: this.f.phone.value?.trim() || null,
+      email: this.f.email.value?.trim(),
+      role: this.f.role.value ?? UserRole.CLIENTE,
+      isActive: this.f.isActive.value ?? true,
     };
 
     const password = this.f.password.value?.trim() ?? "";
-    const confirmPassword = this.f.confirmPassword.value?.trim() ?? "";
-
     if (password) {
-      payload.password = password;
-      payload.confirmPassword = confirmPassword;
+      (payload as any).password = password;
+      (payload as any).confirmPassword = this.f.confirmPassword.value?.trim();
     }
 
     this.usuariosService.editarUsuario(this.usuarioId, payload).subscribe({
-      next: () => {
-        this.loading = false;
-        this.router.navigate(["/usuarios"]);
-      },
+      next: () => { this.loading = false; this.router.navigate(["/usuarios"]); },
       error: (error) => {
-        console.error("Error editando usuario:", error);
-
-        const backendMessage = error?.error?.message;
-
-        if (Array.isArray(backendMessage)) {
-          this.errorMessage = backendMessage.join(", ");
-        } else if (typeof backendMessage === "string") {
-          this.errorMessage = backendMessage;
-        } else {
-          this.errorMessage =
-            "No se pudo actualizar el usuario. Verifica los datos e inténtalo nuevamente.";
-        }
-
+        const msg = error?.error?.message;
+        this.errorMessage = Array.isArray(msg) ? msg.join(", ")
+          : typeof msg === "string" ? msg
+          : "No se pudo actualizar el usuario.";
         this.loading = false;
       },
     });
   }
 
-  private passwordsMatchValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
+  private passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get("password")?.value?.trim();
     const confirmPassword = control.get("confirmPassword")?.value?.trim();
-
-    if (!password && !confirmPassword) {
-      return null;
-    }
-
-    if (password && !confirmPassword) {
-      return { passwordsMismatch: true };
-    }
-
-    if (!password && confirmPassword) {
-      return { passwordsMismatch: true };
-    }
-
+    if (!password && !confirmPassword) return null;
     return password === confirmPassword ? null : { passwordsMismatch: true };
   }
 }

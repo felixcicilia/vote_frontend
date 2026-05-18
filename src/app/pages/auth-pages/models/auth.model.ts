@@ -7,25 +7,16 @@ export enum UserRole {
   CLIENTE = "CLIENTE",
 }
 
-// 🔥 Modelo REAL del usuario (basado en tu backend)
 export interface AuthUser {
   id: number;
-
-  nombre: string;
-  apellido: string;
-
-  cedula: string;
-  telefono: string;
-
-  fechaNacimiento: string;
-  direccion: string;
-
+  firstName: string;
+  lastName: string;
   email: string;
+  phone?: string | null;
+  photoUrl?: string | null;
+  gender?: string | null;
+  isActive: boolean;
   role: UserRole;
-
-  resetPasswordToken: string | null;
-  resetPasswordExpiresAt: string | null;
-
   createdAt: string;
   updatedAt: string;
 }

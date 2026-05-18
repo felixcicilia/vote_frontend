@@ -40,7 +40,7 @@
             type="text"
             [(ngModel)]="search"
             (ngModelChange)="onSearchChange()"
-            placeholder="Buscar por nombre, apellido, email, cédula, teléfono o rol"
+            placeholder="Buscar por nombre, apellido, email, teléfono o rol"
             class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 pr-10 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
           />
 
@@ -118,9 +118,6 @@
               Usuario
             </th>
             <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
-              Cédula
-            </th>
-            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
               Teléfono
             </th>
             <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
@@ -147,8 +144,8 @@
                 >
                   {{
                     (
-                      usuario.nombre?.charAt(0) ||
-                      usuario.apellido?.charAt(0) ||
+                      usuario.firstName?.charAt(0) ||
+                      usuario.lastName?.charAt(0) ||
                       usuario.email.charAt(0) ||
                       "?"
                     ).toUpperCase()
@@ -167,11 +164,7 @@
             </td>
 
             <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
-              {{ usuario.cedula }}
-            </td>
-
-            <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
-              {{ usuario.telefono }}
+              {{ usuario.phone || "-" }}
             </td>
 
             <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
@@ -209,7 +202,7 @@
 
           <tr *ngIf="usuariosPaginados.length === 0">
             <td
-              colspan="6"
+              colspan="5"
               class="px-5 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
             >
               No se encontraron usuarios.

@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 
 import { ForgotPasswordPayload } from "../models/forgot-password.model";
-import { environment } from "../../../../../../environments/environment.prod";
+import { environment } from "../../../../../../environments/environment";
 
 type ForgotPasswordResponse = {
   message: string;

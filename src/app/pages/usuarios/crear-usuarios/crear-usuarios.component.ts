@@ -26,25 +26,23 @@ export class CrearUsuariosComponent {
   loading = false;
   errorMessage = "";
 
-  roles = [
+  readonly roles = [
     { label: "Cliente", value: UserRole.CLIENTE },
+    { label: "Proveedor", value: UserRole.PROVEEDOR },
+    { label: "Empleado", value: UserRole.EMPLEADO },
     { label: "Administrador", value: UserRole.ADMINISTRADOR },
     { label: "Master", value: UserRole.MASTER },
-    { label: "Usuario", value: UserRole.USUARIO },
   ];
 
   form = this.fb.group(
     {
-      nombre: ["", [Validators.maxLength(100)]],
-      apellido: ["", [Validators.maxLength(100)]],
-      cedula: ["", [Validators.required, Validators.maxLength(20)]],
-      telefono: ["", [Validators.maxLength(20)]],
-      fechaNacimiento: [""],
-      direccion: [""],
+      firstName: ["", [Validators.required, Validators.maxLength(100)]],
+      lastName: ["", [Validators.required, Validators.maxLength(100)]],
+      phone: ["", [Validators.maxLength(20)]],
       email: ["", [Validators.required, Validators.email]],
       password: ["", [Validators.required, Validators.minLength(6)]],
       confirmPassword: ["", [Validators.required]],
-      role: [UserRole.USUARIO],
+      role: [UserRole.CLIENTE, [Validators.required]],
     },
     { validators: this.passwordsMatchValidator },
   );
@@ -63,16 +61,13 @@ export class CrearUsuariosComponent {
     this.errorMessage = "";
 
     const payload: CrearUsuarioPayload = {
-      nombre: this.f.nombre.value?.trim() || undefined,
-      apellido: this.f.apellido.value?.trim() || undefined,
-      cedula: this.f.cedula.value?.trim() ?? "",
-      telefono: this.f.telefono.value?.trim() || undefined,
-      fechaNacimiento: this.f.fechaNacimiento.value || undefined,
-      direccion: this.f.direccion.value?.trim() || undefined,
+      firstName: this.f.firstName.value?.trim() ?? "",
+      lastName: this.f.lastName.value?.trim() ?? "",
+      phone: this.f.phone.value?.trim() || null,
       email: this.f.email.value?.trim() ?? "",
       password: this.f.password.value ?? "",
       confirmPassword: this.f.confirmPassword.value ?? "",
-      role: this.f.role.value ?? UserRole.USUARIO,
+      role: this.f.role.value ?? UserRole.CLIENTE,
     };
 
     this.usuariosService.crearUsuario(payload).subscribe({
@@ -81,25 +76,19 @@ export class CrearUsuariosComponent {
         this.router.navigate(["/usuarios"]);
       },
       error: (error) => {
-        console.error("Error creando usuario:", error);
-        this.errorMessage =
-          error?.error?.message ||
-          "No se pudo crear el usuario. Verifica los datos.";
+        const msg = error?.error?.message;
+        this.errorMessage = Array.isArray(msg) ? msg.join(", ")
+          : typeof msg === "string" ? msg
+          : "No se pudo crear el usuario.";
         this.loading = false;
       },
     });
   }
 
-  private passwordsMatchValidator(
-    control: AbstractControl,
-  ): ValidationErrors | null {
-    const password = control.get("password")?.value;
-    const confirmPassword = control.get("confirmPassword")?.value;
-
-    if (!password || !confirmPassword) {
-      return null;
-    }
-
+  private passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get("password")?.value?.trim();
+    const confirmPassword = control.get("confirmPassword")?.value?.trim();
+    if (!password && !confirmPassword) return null;
     return password === confirmPassword ? null : { passwordsMismatch: true };
   }
 }

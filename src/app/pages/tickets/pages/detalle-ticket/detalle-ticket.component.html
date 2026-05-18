@@ -1,12 +1,48 @@
 <div class="space-y-6">
   <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex items-center gap-4">
-      <a routerLink="/tickets" class="text-gray-500 hover:text-gray-700 dark:text-gray-400"><i class="fas fa-arrow-left"></i></a>
+      <a routerLink="/tickets" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">← Volver</a>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Detalle del ticket</h1>
     </div>
   </div>
-  <div class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-400 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <i class="fas fa-tools text-4xl mb-3"></i>
-    <p class="text-sm">Página en construcción.</p>
+
+  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">Cargando...</div>
+  <div *ngIf="!loading && errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && ticket" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div>
+        <p class="text-xs text-gray-500">ID</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">#{{ ticket.id }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Cliente</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ ticket.client.firstName }} {{ ticket.client.lastName }}</p>
+        <p class="text-xs text-gray-400">{{ ticket.client.email }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Viaje</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
+          {{ ticket.trip?.schedule?.route?.originPier?.name }} → {{ ticket.trip?.schedule?.route?.destinationPier?.name }}
+        </p>
+        <p class="text-xs text-gray-400">{{ ticket.trip?.departureDate }} {{ ticket.trip?.departureTime }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Asientos</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ ticket.seats }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Total</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">$ {{ ticket.totalPrice }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Estado</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ ticket.status }}</p>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-xs text-gray-500">Código QR</p>
+        <p class="mt-1 text-sm font-mono text-gray-700 dark:text-gray-300 break-all">{{ ticket.qrCode }}</p>
+      </div>
+    </div>
   </div>
 </div>

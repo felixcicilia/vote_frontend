@@ -1,12 +1,62 @@
 <div class="space-y-6">
   <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex items-center gap-4">
-      <a routerLink="/pagos" class="text-gray-500 hover:text-gray-700 dark:text-gray-400"><i class="fas fa-arrow-left"></i></a>
+      <a routerLink="/pagos" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">← Volver</a>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Detalle del pago</h1>
     </div>
   </div>
-  <div class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-400 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <i class="fas fa-tools text-4xl mb-3"></i>
-    <p class="text-sm">Página en construcción.</p>
+
+  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">Cargando...</div>
+  <div *ngIf="!loading && errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && pago" class="space-y-5">
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <p class="text-xs text-gray-500">Cliente</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ pago.client.firstName }} {{ pago.client.lastName }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Monto</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ pago.amount }} {{ pago.currency }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Método</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ pago.method }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Tipo de referencia</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ pago.referenceType }} #{{ pago.referenceId }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Referencia transacción</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ pago.transactionRef || '-' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Estado</p>
+          <p class="mt-1 text-sm font-medium" [ngClass]="pago.status === 'VERIFIED' ? 'text-green-600' : pago.status === 'REJECTED' ? 'text-red-600' : 'text-yellow-600'">
+            {{ pago.status === 'VERIFIED' ? 'Verificado' : pago.status === 'REJECTED' ? 'Rechazado' : 'Pendiente' }}
+          </p>
+        </div>
+        <div *ngIf="pago.notes" class="md:col-span-3">
+          <p class="text-xs text-gray-500">Notas</p>
+          <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ pago.notes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="pago.status === 'PENDING'" class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">Acciones</h3>
+      <div class="flex flex-wrap gap-3">
+        <button (click)="verificar(1)" [disabled]="saving"
+          class="inline-flex items-center justify-center rounded-lg bg-green-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-60">
+          {{ saving ? 'Procesando...' : 'Verificar pago' }}
+        </button>
+        <button (click)="rechazar('No cumple los requisitos')" [disabled]="saving"
+          class="inline-flex items-center justify-center rounded-lg border border-red-300 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60">
+          Rechazar pago
+        </button>
+      </div>
+    </div>
   </div>
 </div>

@@ -1,8 +1,8 @@
 export interface RegisterPayload {
-  nombre: string;
-  apellido: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  telefono: string;
+  phone?: string | null;
   password: string;
   confirmPassword: string;
 }

@@ -27,12 +27,8 @@ export class UserDropdownComponent {
 
   readonly nombreCompleto = computed(() => {
     const user = this.authUser();
-
-    if (!user) {
-      return "Usuario";
-    }
-
-    return `${user.nombre} ${user.apellido}`.trim();
+    if (!user) return "Usuario";
+    return `${user.firstName} ${user.lastName}`.trim();
   });
 
   readonly email = computed(() => {
@@ -50,8 +46,8 @@ export class UserDropdownComponent {
       return "U";
     }
 
-    const inicialNombre = user.nombre?.charAt(0)?.toUpperCase() ?? "";
-    const inicialApellido = user.apellido?.charAt(0)?.toUpperCase() ?? "";
+    const inicialNombre = user.firstName?.charAt(0)?.toUpperCase() ?? "";
+    const inicialApellido = user.lastName?.charAt(0)?.toUpperCase() ?? "";
 
     return `${inicialNombre}${inicialApellido}` || "U";
   });

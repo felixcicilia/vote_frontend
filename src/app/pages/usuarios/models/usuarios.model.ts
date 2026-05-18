@@ -1,46 +1,42 @@
 export enum UserRole {
-  CLIENTE = "CLIENTE",
-  ADMINISTRADOR = "ADMINISTRADOR",
   MASTER = "MASTER",
-  USUARIO = "USUARIO",
+  ADMINISTRADOR = "ADMINISTRADOR",
+  EMPLEADO = "EMPLEADO",
+  PROVEEDOR = "PROVEEDOR",
+  CLIENTE = "CLIENTE",
 }
 
 export interface Usuario {
   id: number;
-  nombre: string | null;
-  apellido: string | null;
-  cedula: string;
-  telefono: string | null;
-  fechaNacimiento: string | null;
-  direccion: string | null;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone?: string | null;
+  photoUrl?: string | null;
+  gender?: string | null;
+  isActive: boolean;
   role: UserRole;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CrearUsuarioPayload {
-  nombre?: string;
-  apellido?: string;
-  cedula: string;
-  telefono?: string;
-  fechaNacimiento?: string;
-  direccion?: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
+  phone?: string | null;
+  gender?: string;
   role?: UserRole;
 }
 
 export interface EditarUsuarioPayload {
-  nombre?: string | null;
-  apellido?: string | null;
-  cedula?: string;
-  telefono?: string | null;
-  fechaNacimiento?: string | null;
-  direccion?: string | null;
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  password?: string;
-  confirmPassword?: string;
+  phone?: string | null;
+  gender?: string | null;
+  isActive?: boolean;
   role?: UserRole;
 }

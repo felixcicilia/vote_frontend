@@ -9,7 +9,7 @@ import {
   LoginResponse,
   ProfileResponse,
 } from "../models/auth.model";
-import { environment } from "../../../../environments/environment.prod";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",

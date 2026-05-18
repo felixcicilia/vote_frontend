@@ -23,6 +23,7 @@ export class ListaUsuariosComponent implements OnInit {
   usuariosPaginados: Usuario[] = [];
 
   search = "";
+  filtroRol = "";
 
   page = 1;
   limit = 10;
@@ -43,8 +44,7 @@ export class ListaUsuariosComponent implements OnInit {
         this.aplicarFiltros();
         this.loading = false;
       },
-      error: (error) => {
-        console.error("Error cargando usuarios:", error);
+      error: () => {
         this.errorMessage = "No se pudo cargar la lista de usuarios.";
         this.loading = false;
       },
@@ -54,48 +54,31 @@ export class ListaUsuariosComponent implements OnInit {
   aplicarFiltros(): void {
     const termino = this.search.trim().toLowerCase();
 
-    this.usuariosFiltrados = this.usuarios.filter((usuario) => {
-      const nombre = usuario.nombre ?? "";
-      const apellido = usuario.apellido ?? "";
-      const telefono = usuario.telefono ?? "";
-      const nombreCompleto = `${nombre} ${apellido}`.trim().toLowerCase();
-
-      return (
+    this.usuariosFiltrados = this.usuarios.filter((u) => {
+      const nombreCompleto = `${u.firstName} ${u.lastName}`.toLowerCase();
+      const busqueda =
         nombreCompleto.includes(termino) ||
-        nombre.toLowerCase().includes(termino) ||
-        apellido.toLowerCase().includes(termino) ||
-        usuario.email.toLowerCase().includes(termino) ||
-        usuario.cedula.toLowerCase().includes(termino) ||
-        telefono.toLowerCase().includes(termino) ||
-        usuario.role.toLowerCase().includes(termino)
-      );
+        u.email.toLowerCase().includes(termino) ||
+        (u.phone ?? "").toLowerCase().includes(termino) ||
+        u.role.toLowerCase().includes(termino);
+      const rol = !this.filtroRol || u.role === this.filtroRol;
+      return busqueda && rol;
     });
 
     this.total = this.usuariosFiltrados.length;
     this.totalPages = Math.max(1, Math.ceil(this.total / this.limit));
-
-    if (this.page > this.totalPages) {
-      this.page = this.totalPages;
-    }
-
-    if (this.page < 1) {
-      this.page = 1;
-    }
-
+    if (this.page > this.totalPages) this.page = this.totalPages;
+    if (this.page < 1) this.page = 1;
     this.actualizarPaginacion();
   }
 
   actualizarPaginacion(): void {
     const start = (this.page - 1) * this.limit;
-    const end = start + this.limit;
-
-    this.usuariosPaginados = this.usuariosFiltrados.slice(start, end);
+    this.usuariosPaginados = this.usuariosFiltrados.slice(start, start + this.limit);
   }
 
-  onSearchChange(): void {
-    this.page = 1;
-    this.aplicarFiltros();
-  }
+  onSearchChange(): void { this.page = 1; this.aplicarFiltros(); }
+  onFilterChange(): void { this.page = 1; this.aplicarFiltros(); }
 
   cambiarPagina(page: number): void {
     if (page < 1 || page > this.totalPages) return;
@@ -104,79 +87,59 @@ export class ListaUsuariosComponent implements OnInit {
   }
 
   eliminarUsuario(usuario: Usuario): void {
-    const confirmado = window.confirm(
-      `¿Seguro que deseas eliminar a ${this.getNombreCompleto(usuario)}?`,
-    );
-
-    if (!confirmado) return;
+    if (!confirm(`¿Eliminar a ${this.getNombreCompleto(usuario)}?`)) return;
 
     this.usuariosService.eliminarUsuario(usuario.id).subscribe({
       next: () => {
         this.usuarios = this.usuarios.filter((item) => item.id !== usuario.id);
         this.aplicarFiltros();
       },
-      error: (error) => {
-        console.error("Error eliminando usuario:", error);
-        alert("No se pudo eliminar el usuario.");
-      },
+      error: () => alert("No se pudo eliminar el usuario."),
     });
   }
 
   limpiarBusqueda(): void {
     this.search = "";
+    this.filtroRol = "";
     this.page = 1;
     this.aplicarFiltros();
   }
 
-  getNombreCompleto(usuario: Usuario): string {
-    const nombre = usuario.nombre ?? "";
-    const apellido = usuario.apellido ?? "";
-    const nombreCompleto = `${nombre} ${apellido}`.trim();
-
-    return nombreCompleto || usuario.email || usuario.cedula;
+  getNombreCompleto(u: Usuario): string {
+    return `${u.firstName} ${u.lastName}`.trim() || u.email;
   }
 
   getRoleLabel(role: string): string {
-    switch (role) {
-      case "MASTER":
-        return "Master";
-      case "ADMINISTRADOR":
-        return "Administrador";
-      case "USUARIO":
-        return "Usuario";
-      case "CLIENTE":
-        return "Cliente";
-      default:
-        return role;
-    }
+    const map: Record<string, string> = {
+      MASTER: "Master",
+      ADMINISTRADOR: "Administrador",
+      EMPLEADO: "Empleado",
+      PROVEEDOR: "Proveedor",
+      CLIENTE: "Cliente",
+    };
+    return map[role] ?? role;
   }
 
   getRoleClasses(role: string): string {
-    switch (role) {
-      case "MASTER":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400";
-      case "ADMINISTRADOR":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400";
-      case "USUARIO":
-        return "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400";
-      case "CLIENTE":
-        return "bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400";
-      default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-500/10 dark:text-gray-400";
-    }
+    const map: Record<string, string> = {
+      MASTER: "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400",
+      ADMINISTRADOR: "bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400",
+      EMPLEADO: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
+      PROVEEDOR: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400",
+      CLIENTE: "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400",
+    };
+    return map[role] ?? "bg-gray-100 text-gray-700 dark:bg-gray-500/10 dark:text-gray-400";
   }
 
   get rangoInicio(): number {
-    if (this.total === 0) return 0;
-    return (this.page - 1) * this.limit + 1;
+    return this.total === 0 ? 0 : (this.page - 1) * this.limit + 1;
   }
 
   get rangoFin(): number {
-    const fin = this.page * this.limit;
-    return fin > this.total ? this.total : fin;
+    return Math.min(this.page * this.limit, this.total);
   }
 
-  trackByUsuario(_: number, usuario: Usuario): number {
-    return usuario.id;
+  trackByUsuario(_: number, u: Usuario): number {
+    return u.id;
   }
 }

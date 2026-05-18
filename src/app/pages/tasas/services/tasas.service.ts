@@ -8,7 +8,7 @@ import {
   EditarTasaPayload,
   Tasa,
 } from "../models/tasa.model";
-import { environment } from "../../../../environments/environment.prod";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",

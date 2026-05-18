@@ -25,10 +25,10 @@ export class RegisterComponent {
   readonly showConfirmPassword = signal(false);
 
   readonly form = this.fb.nonNullable.group({
-    nombre: ["", [Validators.required]],
-    apellido: ["", [Validators.required]],
+    firstName: ["", [Validators.required]],
+    lastName: ["", [Validators.required]],
     email: ["", [Validators.required, Validators.email]],
-    telefono: ["", [Validators.required]],
+    phone: [""],
     password: ["", [Validators.required, Validators.minLength(8)]],
     confirmPassword: ["", [Validators.required, Validators.minLength(8)]],
   });
@@ -74,10 +74,10 @@ export class RegisterComponent {
         );
 
         this.form.reset({
-          nombre: "",
-          apellido: "",
+          firstName: "",
+          lastName: "",
           email: "",
-          telefono: "",
+          phone: "",
           password: "",
           confirmPassword: "",
         });
