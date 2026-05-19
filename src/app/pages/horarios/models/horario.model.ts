@@ -6,7 +6,7 @@ export interface Horario {
   route: Ruta;
   vessel: Embarcacion;
   departureTime: string; // HH:mm
-  daysOfWeek: string[];  // ['1','2','3','4','5']
+  daysOfWeek: number[];  // [1,2,3,4,5]
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -16,7 +16,7 @@ export interface CreateHorarioDto {
   routeId: number;
   vesselId: number;
   departureTime: string;
-  daysOfWeek: string[];
+  daysOfWeek: number[];
   isActive?: boolean;
 }
 

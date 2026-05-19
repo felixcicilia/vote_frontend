@@ -1,0 +1,28 @@
+<div class="space-y-2">
+  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ label }}</label>
+
+  <!-- Preview -->
+  <div *ngIf="preview" class="relative inline-block">
+    <img [src]="preview" alt="preview"
+      class="h-32 w-32 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm" />
+    <button type="button" (click)="clear()"
+      class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs hover:bg-red-600">✕</button>
+  </div>
+
+  <!-- Drop zone / file picker -->
+  <label *ngIf="!preview"
+    class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center transition hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:bg-white/[0.02] dark:hover:border-brand-500">
+    <span class="text-2xl text-gray-400" *ngIf="!uploading">📷</span>
+    <svg *ngIf="uploading" class="h-6 w-6 animate-spin text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+    </svg>
+    <span class="text-sm text-gray-500 dark:text-gray-400">
+      {{ uploading ? 'Subiendo...' : 'Haz clic para seleccionar una imagen' }}
+    </span>
+    <span class="text-xs text-gray-400">PNG, JPG, WEBP — máx. 10 MB</span>
+    <input type="file" [accept]="accept" (change)="onFile($event)" class="hidden" [disabled]="uploading" />
+  </label>
+
+  <p *ngIf="error" class="text-xs text-red-500">{{ error }}</p>
+</div>

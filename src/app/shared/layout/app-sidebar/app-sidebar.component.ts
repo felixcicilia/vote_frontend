@@ -39,25 +39,19 @@ export class AppSidebarComponent {
   // ─── Items visibles para CLIENTE ────────────────────────────────────────────
   private clienteItems: NavItem[] = [
     {
-      icon: `<i class="fas fa-dashboard fa-lg"></i>`,
-      name: "Dashboard",
-      path: "/dashboard",
+      icon: `<i class="fas fa-home fa-lg"></i>`,
+      name: "Inicio",
+      path: "/inicio",
     },
     {
-      icon: `<i class="fas fa-taxi fa-lg"></i>`,
-      name: "Lancha Taxi",
-      subItems: [
-        { name: "Solicitar taxi", path: "/viajes-taxi/solicitar" },
-        { name: "Mis viajes", path: "/viajes-taxi" },
-      ],
+      icon: `<i class="fas fa-search fa-lg"></i>`,
+      name: "Buscar viaje",
+      path: "/buscar",
     },
     {
-      icon: `<i class="fas fa-ship fa-lg"></i>`,
-      name: "Terminal",
-      subItems: [
-        { name: "Buscar viajes", path: "/viajes" },
-        { name: "Mis tickets", path: "/tickets" },
-      ],
+      icon: `<i class="fas fa-ticket fa-lg"></i>`,
+      name: "Mis reservas",
+      path: "/mis-reservas",
     },
     {
       icon: `<i class="fas fa-anchor fa-lg"></i>`,
@@ -68,14 +62,27 @@ export class AppSidebarComponent {
       ],
     },
     {
+      icon: `<i class="fas fa-taxi fa-lg"></i>`,
+      name: "Taxi acuático",
+      subItems: [
+        { name: "Solicitar taxi", path: "/viajes-taxi/solicitar" },
+        { name: "Mis viajes", path: "/viajes-taxi" },
+      ],
+    },
+    {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
-      name: "Pagos",
-      subItems: [{ name: "Mis pagos", path: "/pagos" }],
+      name: "Mis pagos",
+      path: "/pagos",
     },
     {
       icon: `<i class="fas fa-star fa-lg"></i>`,
-      name: "Reseñas",
-      subItems: [{ name: "Mis reseñas", path: "/resenas" }],
+      name: "Mis reseñas",
+      path: "/resenas",
+    },
+    {
+      icon: `<i class="fas fa-coins fa-lg"></i>`,
+      name: "Tasa del día",
+      path: "/tasas",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
@@ -87,9 +94,14 @@ export class AppSidebarComponent {
   // ─── Items visibles para PROVEEDOR ──────────────────────────────────────────
   private proveedorItems: NavItem[] = [
     {
-      icon: `<i class="fas fa-dashboard fa-lg"></i>`,
-      name: "Dashboard",
-      path: "/dashboard",
+      icon: `<i class="fas fa-home fa-lg"></i>`,
+      name: "Inicio",
+      path: "/inicio",
+    },
+    {
+      icon: `<i class="fas fa-store fa-lg"></i>`,
+      name: "Mi Negocio",
+      path: "/mi-negocio",
     },
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
@@ -109,7 +121,12 @@ export class AppSidebarComponent {
     {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Reseñas",
-      subItems: [{ name: "Reseñas recibidas", path: "/resenas" }],
+      path: "/resenas",
+    },
+    {
+      icon: `<i class="fas fa-coins fa-lg"></i>`,
+      name: "Tasa del día",
+      path: "/tasas",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
@@ -151,6 +168,11 @@ export class AppSidebarComponent {
       ],
     },
     {
+      icon: `<i class="fas fa-coins fa-lg"></i>`,
+      name: "Tasa del día",
+      path: "/tasas",
+    },
+    {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
       name: "Notificaciones",
       path: "/notificaciones",
@@ -159,6 +181,11 @@ export class AppSidebarComponent {
 
   // ─── Items visibles para ADMINISTRADOR y MASTER ─────────────────────────────
   navItems: NavItem[] = [
+    {
+      icon: `<i class="fas fa-home fa-lg"></i>`,
+      name: "Inicio",
+      path: "/inicio",
+    },
     {
       icon: `<i class="fas fa-dashboard fa-lg"></i>`,
       name: "Dashboard",

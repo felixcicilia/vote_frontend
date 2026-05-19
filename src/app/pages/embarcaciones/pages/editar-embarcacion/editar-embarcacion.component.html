@@ -75,6 +75,29 @@
           class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"></textarea>
       </div>
 
+      <!-- Fotos -->
+      <div class="border-t border-gray-100 pt-5 dark:border-gray-800">
+        <div class="mb-3 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Fotos de la embarcación</h3>
+          <button type="button" (click)="addPhotoSlot()"
+            class="rounded-lg border border-brand-300 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-400">
+            + Agregar foto
+          </button>
+        </div>
+        <div *ngIf="photos.length === 0" class="text-sm text-gray-400">Sin fotos registradas.</div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div *ngFor="let p of photos; let i = index">
+            <app-image-upload
+              [label]="'Foto ' + (i + 1)"
+              [currentUrl]="p"
+              (uploaded)="onPhotoUploaded($event, i)">
+            </app-image-upload>
+            <button type="button" (click)="removePhoto(i)"
+              class="mt-1 text-xs text-red-500 hover:underline">Eliminar foto {{ i + 1 }}</button>
+          </div>
+        </div>
+      </div>
+
       <div class="flex justify-end gap-3 pt-2">
         <a routerLink="/embarcaciones"
           class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">

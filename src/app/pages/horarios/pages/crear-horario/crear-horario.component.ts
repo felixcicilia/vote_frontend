@@ -63,7 +63,7 @@ export class CrearHorarioComponent implements OnInit {
       routeId: Number(this.f.routeId.value),
       vesselId: Number(this.f.vesselId.value),
       departureTime: this.f.departureTime.value!,
-      daysOfWeek: Array.from(this.selectedDays).sort(),
+      daysOfWeek: Array.from(this.selectedDays).map(Number).sort((a, b) => a - b),
       isActive: this.f.isActive.value ?? true,
     }).subscribe({
       next: () => { this.loading = false; this.router.navigate(['/horarios']); },

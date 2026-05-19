@@ -62,6 +62,13 @@
         <input type="checkbox" formControlName="isActive" id="isActive" class="h-4 w-4 rounded border-gray-300 text-brand-500" />
         <label for="isActive" class="text-sm font-medium text-gray-700 dark:text-gray-300">Muelle activo</label>
       </div>
+
+      <div class="md:col-span-2">
+        <app-image-upload
+          label="Foto del muelle"
+          (uploaded)="onPhotoUploaded($event)">
+        </app-image-upload>
+      </div>
     </div>
 
     <div class="mt-6 flex gap-3 sm:justify-end">

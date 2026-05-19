@@ -1,0 +1,404 @@
+<div class="mx-auto max-w-5xl space-y-6 pb-12">
+
+  <!-- Loading -->
+  <div *ngIf="loadingData" class="flex flex-col items-center justify-center py-24 gap-4">
+    <div class="text-5xl animate-bounce">⚓</div>
+    <p class="text-gray-500 dark:text-gray-400">Cargando información del viaje...</p>
+  </div>
+
+  <!-- Error sin viaje -->
+  <div *ngIf="!loadingData && !viaje && errorMsg"
+    class="rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900/30 dark:bg-red-500/10">
+    <p class="text-red-600 dark:text-red-400">{{ errorMsg }}</p>
+    <a routerLink="/buscar" class="mt-3 inline-block text-sm font-semibold text-brand-500 hover:underline">← Volver a buscar</a>
+  </div>
+
+  <ng-container *ngIf="!loadingData && viaje">
+
+    <!-- Stepper -->
+    <div class="flex items-center rounded-2xl border border-gray-200 bg-white px-6 py-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <ng-container *ngFor="let s of [1,2,3]; let i = index">
+        <div class="flex flex-1 items-center gap-2.5 min-w-0">
+          <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all"
+            [ngClass]="{
+              'bg-brand-500 text-white shadow-sm shadow-brand-200': step === s,
+              'bg-green-500 text-white': step > s,
+              'border-2 border-gray-200 text-gray-400 dark:border-gray-700': step < s
+            }">
+            <span *ngIf="step > s">✓</span>
+            <span *ngIf="step <= s">{{ s }}</span>
+          </div>
+          <div class="min-w-0 hidden sm:block">
+            <p class="text-sm font-semibold truncate" [ngClass]="step === s ? 'text-gray-900 dark:text-white' : 'text-gray-400'">
+              {{ s === 1 ? 'Tu reserva' : s === 2 ? 'Pagar' : 'Confirmación' }}
+            </p>
+          </div>
+        </div>
+        <div *ngIf="i < 2" class="mx-3 h-px w-10 flex-shrink-0"
+          [ngClass]="step > s ? 'bg-green-400' : 'bg-gray-200 dark:bg-gray-700'"></div>
+      </ng-container>
+    </div>
+
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+
+      <!-- ══════════════════ IZQUIERDA: Trip summary (sticky) ══════════════ -->
+      <div class="w-full flex-shrink-0 lg:sticky lg:top-6 lg:w-80">
+        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <!-- Vessel photo -->
+          <div class="relative h-44 overflow-hidden bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
+            <img *ngIf="viaje.schedule?.vessel?.photos?.[0]"
+              [src]="imageUrl(viaje.schedule.vessel.photos[0])"
+              [alt]="viaje.schedule.vessel.name"
+              class="h-full w-full object-cover" />
+            <div *ngIf="!viaje.schedule?.vessel?.photos?.[0]"
+              class="flex h-full items-center justify-center text-7xl opacity-20">🚤</div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            <div class="absolute bottom-3 left-4">
+              <p class="text-lg font-bold text-white">{{ viaje.schedule?.vessel?.name }}</p>
+              <p class="text-xs text-white/70">{{ viaje.schedule?.vessel?.type }}</p>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-3">
+            <!-- Ruta -->
+            <div class="flex items-center gap-2 text-sm">
+              <div class="flex flex-col items-center gap-1">
+                <div class="h-2.5 w-2.5 rounded-full bg-brand-500"></div>
+                <div class="h-6 w-px bg-gray-200"></div>
+                <div class="h-2.5 w-2.5 rounded-full bg-green-500"></div>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <span class="font-semibold text-gray-800 dark:text-white/90">{{ viaje.schedule?.route?.originPier?.name }}</span>
+                <span class="font-semibold text-gray-800 dark:text-white/90">{{ viaje.schedule?.route?.destinationPier?.name }}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 rounded-xl bg-gray-50 p-3 dark:bg-white/[0.03]">
+              <div>
+                <p class="text-xs text-gray-400">Fecha</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-white/90">{{ viaje.departureDate | date:'dd MMM' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400">Salida</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-white/90">{{ viaje.departureTime }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400">Disponibles</p>
+                <p class="text-sm font-bold" [ngClass]="viaje.availableSeats > 5 ? 'text-green-600' : 'text-red-500'">
+                  {{ viaje.availableSeats }} puestos
+                </p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400">Precio/puesto</p>
+                <p class="text-sm font-bold text-brand-600">${{ pricePerSeat | number:'1.2-2' }}</p>
+              </div>
+            </div>
+
+            <!-- Total dinámico en Bs -->
+            <div *ngIf="step < 3" class="rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 p-4 text-center">
+              <p class="text-xs font-medium text-brand-100">Total a pagar</p>
+              <p class="text-2xl font-extrabold text-white">{{ tasaService.formatBs(totalPrice) }}</p>
+              <p class="text-xs text-brand-100 mt-0.5">${{ totalPrice | number:'1.2-2' }} USD · {{ of.seats.value || 1 }} {{ (of.seats.value || 1) === 1 ? 'pasajero' : 'pasajeros' }}</p>
+            </div>
+
+            <div *ngIf="step < 3" class="text-center">
+              <a routerLink="/buscar" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                ← Cambiar viaje
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════ DERECHA: Pasos del checkout ══════════════════ -->
+      <div class="flex-1 min-w-0 space-y-4">
+
+        <!-- Error -->
+        <div *ngIf="errorMsg && step < 3"
+          class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+          ⚠️ {{ errorMsg }}
+        </div>
+
+        <!-- ───────────────── PASO 1: Tu reserva ───────────────── -->
+        <div class="overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-white/[0.03] transition-all"
+          [ngClass]="step === 1 ? 'border-brand-400 dark:border-brand-600' : 'border-gray-200 dark:border-gray-800'">
+
+          <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+              <div class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
+                [ngClass]="step > 1 ? 'bg-green-500 text-white' : 'bg-brand-500 text-white'">
+                <span *ngIf="step > 1">✓</span><span *ngIf="step <= 1">1</span>
+              </div>
+              <h2 class="font-bold text-gray-800 dark:text-white/90">Tu reserva</h2>
+            </div>
+            <button *ngIf="step > 1" type="button" (click)="step = 1; errorMsg = ''"
+              class="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 hover:border-brand-300 hover:text-brand-500 dark:border-gray-700 dark:text-gray-400">
+              Editar
+            </button>
+          </div>
+
+          <!-- Resumen cuando está colapsado -->
+          <div *ngIf="step > 1" class="flex items-center justify-between px-5 py-3">
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              {{ of.seats.value }} {{ (of.seats.value || 1) === 1 ? 'pasajero' : 'pasajeros' }}
+            </p>
+            <p class="font-bold text-gray-800 dark:text-white">${{ totalPrice | number:'1.2-2' }}</p>
+          </div>
+
+          <!-- Form paso 1 -->
+          <ng-container *ngIf="step === 1">
+            <div class="p-5 space-y-5">
+
+              <!-- Cliente (solo visible para admin/empleado) -->
+              <div *ngIf="!isCliente">
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Pasajero principal <span class="text-red-500">*</span>
+                </label>
+                <select [formControl]="of.clientId"
+                  class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white">
+                  <option [ngValue]="null">Selecciona un cliente</option>
+                  <option *ngFor="let c of clientes" [ngValue]="c.id">{{ c.firstName }} {{ c.lastName }} — {{ c.email }}</option>
+                </select>
+                <p *ngIf="of.clientId.touched && of.clientId.invalid" class="mt-1 text-xs text-red-500">Selecciona un cliente.</p>
+              </div>
+
+              <!-- Cliente (si es cliente, mostrar su nombre) -->
+              <div *ngIf="isCliente" class="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 dark:border-brand-500/20 dark:bg-brand-500/10">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">
+                  {{ currentUser?.firstName?.charAt(0) }}{{ currentUser?.lastName?.charAt(0) }}
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-gray-800 dark:text-white">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+                  <p class="text-xs text-gray-500">{{ currentUser?.email }}</p>
+                </div>
+              </div>
+
+              <!-- Selector de pasajeros con +/- -->
+              <div>
+                <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Número de pasajeros
+                </label>
+                <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-slate-800">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-700 dark:text-white">Pasajeros</p>
+                    <p class="text-xs text-gray-400">Máx. {{ viaje.availableSeats }} disponibles</p>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <button type="button" (click)="removeSeat()"
+                      class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-lg font-bold text-gray-600 hover:border-brand-400 hover:text-brand-600 disabled:opacity-30 transition dark:border-gray-600 dark:text-gray-300"
+                      [disabled]="(of.seats.value ?? 1) <= 1">
+                      −
+                    </button>
+                    <span class="w-8 text-center text-2xl font-extrabold text-gray-800 dark:text-white">
+                      {{ of.seats.value ?? 1 }}
+                    </span>
+                    <button type="button" (click)="addSeat()"
+                      class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-lg font-bold text-gray-600 hover:border-brand-400 hover:text-brand-600 disabled:opacity-30 transition dark:border-gray-600 dark:text-gray-300"
+                      [disabled]="(of.seats.value ?? 1) >= viaje.availableSeats">
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Precio total en Bs -->
+              <div class="rounded-xl bg-brand-50 px-5 py-4 dark:bg-brand-500/10">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm text-gray-600 dark:text-gray-300">
+                    {{ of.seats.value ?? 1 }} × {{ tasaService.formatBs(pricePerSeat) }}
+                  </p>
+                  <p class="text-xl font-extrabold text-brand-700 dark:text-brand-300">{{ tasaService.formatBs(totalPrice) }}</p>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">= ${{ totalPrice | number:'1.2-2' }} USD · Tasa: Bs {{ tasaService.rate() | number:'1.2-2' }}/$</p>
+              </div>
+
+              <button type="button" (click)="confirmarOrden()" [disabled]="loadingAction"
+                class="w-full rounded-xl bg-brand-500 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-brand-600 disabled:opacity-50 transition-colors">
+                {{ loadingAction ? 'Procesando...' : 'Continuar al pago →' }}
+              </button>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- ───────────────── PASO 2: Pagar ───────────────── -->
+        <div class="overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-white/[0.03] transition-all"
+          [ngClass]="{
+            'border-brand-400 dark:border-brand-600': step === 2,
+            'border-gray-200 dark:border-gray-800': step !== 2,
+            'opacity-40 pointer-events-none': step < 2
+          }">
+
+          <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+              <div class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
+                [ngClass]="step > 2 ? 'bg-green-500 text-white' : step === 2 ? 'bg-brand-500 text-white' : 'border-2 border-gray-200 text-gray-400'">
+                <span *ngIf="step > 2">✓</span><span *ngIf="step <= 2">2</span>
+              </div>
+              <h2 class="font-bold text-gray-800 dark:text-white/90">Método de pago</h2>
+            </div>
+            <button *ngIf="step > 2" type="button" (click)="step = 2; errorMsg = ''"
+              class="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 hover:border-brand-300 hover:text-brand-500 dark:border-gray-700 dark:text-gray-400">
+              Editar
+            </button>
+          </div>
+
+          <!-- Resumen colapsado -->
+          <div *ngIf="step > 2" class="flex items-center justify-between px-5 py-3">
+            <p class="text-sm text-gray-600 dark:text-gray-300">{{ pf.method.value }} · {{ pf.currency.value }}</p>
+            <p class="font-bold text-gray-800 dark:text-white">${{ pf.amount.value | number:'1.2-2' }}</p>
+          </div>
+
+          <!-- Form paso 2 -->
+          <ng-container *ngIf="step === 2">
+            <div class="p-5 space-y-5">
+
+              <!-- Método de pago: tarjetas visuales -->
+              <div>
+                <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">Método de pago</label>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <ng-container *ngFor="let m of [
+                    {value: 'PAGO_MOVIL', icon: '📱', label: 'Pago Móvil'},
+                    {value: 'TRANSFERENCIA', icon: '🏦', label: 'Transferencia'},
+                    {value: 'EFECTIVO', icon: '💵', label: 'Efectivo'},
+                    {value: 'ZELLE', icon: '💚', label: 'Zelle'}
+                  ]">
+                    <button type="button" (click)="pf.method.setValue(m.value)"
+                      class="flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all"
+                      [ngClass]="pf.method.value === m.value
+                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
+                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+                      <span class="text-2xl">{{ m.icon }}</span>
+                      <span class="text-xs font-semibold" [ngClass]="pf.method.value === m.value ? 'text-brand-700 dark:text-brand-300' : 'text-gray-600 dark:text-gray-400'">
+                        {{ m.label }}
+                      </span>
+                    </button>
+                  </ng-container>
+                </div>
+              </div>
+
+              <!-- Moneda y monto -->
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Moneda</label>
+                  <select [formControl]="pf.currency"
+                    class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 transition dark:border-gray-700 dark:bg-slate-800 dark:text-white">
+                    <option value="BS">🇻🇪 Bs — Bolívar (REF)</option>
+                    <option value="USD">🇺🇸 USD — Dólar</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Monto</label>
+                  <input type="number" step="0.01" [formControl]="pf.amount"
+                    class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+                </div>
+              </div>
+
+              <!-- Referencia -->
+              <div>
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Número de referencia / confirmación</label>
+                <input type="text" [formControl]="pf.transactionRef" placeholder="Ej: 123456789"
+                  class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+
+              <!-- Comprobante -->
+              <div>
+                <app-image-upload
+                  label="Foto del comprobante de pago"
+                  [currentUrl]="pf.proofImageUrl.value"
+                  (uploaded)="onProofUploaded($event)">
+                </app-image-upload>
+              </div>
+
+              <!-- Notas -->
+              <div>
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Notas adicionales (opcional)</label>
+                <textarea [formControl]="pf.notes" rows="2" placeholder="Información adicional..."
+                  class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white"></textarea>
+              </div>
+
+              <button type="button" (click)="registrarPago()" [disabled]="loadingAction"
+                class="w-full rounded-xl bg-brand-500 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-brand-600 disabled:opacity-50 transition-colors">
+                {{ loadingAction ? 'Registrando pago...' : '✓ Confirmar pago →' }}
+              </button>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- ───────────────── PASO 3: Confirmación ───────────────── -->
+        <ng-container *ngIf="step === 3 && createdTicket">
+          <div class="overflow-hidden rounded-2xl border-2 border-green-400 bg-white shadow-lg dark:bg-white/[0.03]">
+
+            <!-- Éxito banner -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-center">
+              <div class="text-5xl mb-2">🎉</div>
+              <h2 class="text-2xl font-extrabold text-white">¡Reserva confirmada!</h2>
+              <p class="mt-1 text-green-100 text-sm">Tu pago ha sido registrado y está pendiente de verificación.</p>
+            </div>
+
+            <div class="p-6 space-y-5">
+
+              <!-- Ticket card -->
+              <div class="rounded-2xl border border-green-100 bg-green-50 p-5 dark:border-green-500/20 dark:bg-green-500/5">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <p class="text-xs text-gray-400 font-mono">TICKET #{{ createdTicket.id }}</p>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mt-1">
+                      {{ createdTicket.trip?.schedule?.route?.originPier?.name }}
+                      <span class="text-gray-400 mx-1">→</span>
+                      {{ createdTicket.trip?.schedule?.route?.destinationPier?.name }}
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ createdTicket.trip?.schedule?.vessel?.name }}</p>
+                  </div>
+                  <span class="rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400">
+                    {{ statusLabel(createdTicket.status) }}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                  <div class="rounded-xl bg-white p-3 shadow-sm dark:bg-white/[0.05]">
+                    <p class="text-xs text-gray-400">📅 Fecha</p>
+                    <p class="font-bold text-gray-800 dark:text-white mt-0.5">{{ createdTicket.trip?.departureDate | date:'dd MMM yyyy' }}</p>
+                  </div>
+                  <div class="rounded-xl bg-white p-3 shadow-sm dark:bg-white/[0.05]">
+                    <p class="text-xs text-gray-400">🕐 Salida</p>
+                    <p class="font-bold text-gray-800 dark:text-white mt-0.5">{{ createdTicket.trip?.departureTime }}</p>
+                  </div>
+                  <div class="rounded-xl bg-white p-3 shadow-sm dark:bg-white/[0.05]">
+                    <p class="text-xs text-gray-400">👥 Puestos</p>
+                    <p class="font-bold text-gray-800 dark:text-white mt-0.5">{{ createdTicket.seats }}</p>
+                  </div>
+                  <div class="rounded-xl bg-white p-3 shadow-sm col-span-2 sm:col-span-3 dark:bg-white/[0.05]">
+                    <p class="text-xs text-gray-400 mb-1">🔑 Código QR</p>
+                    <p class="font-mono text-xs text-gray-700 dark:text-gray-300 break-all">{{ createdTicket.qrCode }}</p>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between rounded-xl bg-white p-4 shadow-sm dark:bg-white/[0.05]">
+                  <p class="text-sm text-gray-500">Total pagado</p>
+                  <p class="text-2xl font-extrabold text-gray-800 dark:text-white">${{ createdTicket.totalPrice | number:'1.2-2' }}</p>
+                </div>
+              </div>
+
+              <!-- Acciones -->
+              <div class="flex flex-col gap-3 sm:flex-row">
+                <a [routerLink]="['/tickets', createdTicket.id]"
+                  class="flex-1 rounded-xl border-2 border-brand-500 py-3 text-center text-sm font-bold text-brand-600 hover:bg-brand-50 transition-colors dark:text-brand-400 dark:hover:bg-brand-500/10">
+                  Ver mi ticket completo
+                </a>
+                <a routerLink="/mis-reservas"
+                  class="flex-1 rounded-xl bg-brand-500 py-3 text-center text-sm font-bold text-white hover:bg-brand-600 shadow-sm transition-colors">
+                  Mis reservas
+                </a>
+                <a routerLink="/buscar"
+                  class="flex-1 rounded-xl border border-gray-200 py-3 text-center text-sm font-semibold text-gray-600 hover:border-gray-300 transition-colors dark:border-gray-700 dark:text-gray-400">
+                  Reservar otro
+                </a>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </ng-container>
+</div>

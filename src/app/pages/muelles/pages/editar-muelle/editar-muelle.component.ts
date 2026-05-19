@@ -4,11 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { MuellesService } from '../../services/muelles.service';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-editar-muelle',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, ImageUploadComponent],
   templateUrl: './editar-muelle.component.html',
 })
 export class EditarMuelleComponent implements OnInit {
@@ -21,6 +22,9 @@ export class EditarMuelleComponent implements OnInit {
   loadingMuelle = false;
   errorMessage = '';
   muelleId = 0;
+  photoUrl = '';
+
+  onPhotoUploaded(url: string): void { this.photoUrl = url; }
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -52,6 +56,7 @@ export class EditarMuelleComponent implements OnInit {
           state: m.state ?? '',
           isActive: m.isActive,
         });
+        this.photoUrl = m.photoUrl ?? '';
         this.loadingMuelle = false;
       },
       error: () => { this.errorMessage = 'No se pudo cargar el muelle.'; this.loadingMuelle = false; },
@@ -66,6 +71,7 @@ export class EditarMuelleComponent implements OnInit {
     this.service.update(this.muelleId, {
       name: this.f.name.value!.trim(),
       description: this.f.description.value?.trim() || undefined,
+      photoUrl: this.photoUrl || undefined,
       latitude: Number(this.f.latitude.value),
       longitude: Number(this.f.longitude.value),
       address: this.f.address.value?.trim() || undefined,

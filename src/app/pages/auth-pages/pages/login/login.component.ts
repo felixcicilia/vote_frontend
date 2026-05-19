@@ -53,7 +53,7 @@ export class LoginComponent {
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigate(["/noticias"]);
+        this.router.navigate(["/inicio"]);
       },
       error: (error) => {
         this.loading.set(false);

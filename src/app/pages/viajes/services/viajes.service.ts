@@ -17,9 +17,10 @@ export class ViajesService {
     return r?.data !== undefined ? r.data : r;
   }
 
-  getAll(status?: TripStatus): Observable<Viaje[]> {
+  getAll(status?: TripStatus, date?: string): Observable<Viaje[]> {
     const params: Record<string, string> = {};
     if (status) params['status'] = status;
+    if (date) params['date'] = date;
     return this.http.get<any>(this.base, { params }).pipe(map(r => this.extractArray(r)));
   }
 

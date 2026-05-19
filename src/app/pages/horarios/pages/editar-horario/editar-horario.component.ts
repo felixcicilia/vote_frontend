@@ -62,7 +62,7 @@ export class EditarHorarioComponent implements OnInit {
           departureTime: h.departureTime,
           isActive: h.isActive,
         });
-        this.selectedDays = new Set(h.daysOfWeek);
+        this.selectedDays = new Set((h.daysOfWeek as unknown as number[]).map(String));
         this.loadingHorario = false;
       },
       error: () => { this.errorMessage = 'No se pudo cargar el horario.'; this.loadingHorario = false; },
@@ -83,7 +83,7 @@ export class EditarHorarioComponent implements OnInit {
       routeId: Number(this.f.routeId.value),
       vesselId: Number(this.f.vesselId.value),
       departureTime: this.f.departureTime.value!,
-      daysOfWeek: Array.from(this.selectedDays).sort(),
+      daysOfWeek: Array.from(this.selectedDays).map(Number).sort((a, b) => a - b),
       isActive: this.f.isActive.value ?? true,
     }).subscribe({
       next: () => { this.loading = false; this.router.navigate(['/horarios']); },

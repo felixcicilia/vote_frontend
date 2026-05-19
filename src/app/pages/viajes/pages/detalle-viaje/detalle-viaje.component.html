@@ -1,46 +1,92 @@
 <div class="space-y-6">
+  <!-- Header -->
   <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="flex items-center gap-4">
-      <a routerLink="/viajes" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">← Volver</a>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Detalle del viaje</h1>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4">
+        <a routerLink="/viajes" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">← Volver</a>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Detalle del viaje</h1>
+      </div>
+      <button *ngIf="viaje?.status === 'SCHEDULED' && viaje!.availableSeats > 0"
+        (click)="comprar()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-600">
+        🎫 Comprar ticket
+      </button>
     </div>
   </div>
 
-  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">Cargando...</div>
-  <div *ngIf="!loading && errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">{{ errorMessage }}</div>
+  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">
+    Cargando...
+  </div>
+  <div *ngIf="!loading && errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+    {{ errorMessage }}
+  </div>
 
-  <div *ngIf="!loading && viaje" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-      <div>
-        <p class="text-xs text-gray-500">Ruta</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
-          {{ viaje.schedule?.route?.originPier?.name }} → {{ viaje.schedule?.route?.destinationPier?.name }}
-        </p>
+  <div *ngIf="!loading && viaje" class="space-y-4">
+    <!-- Info principal -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <p class="text-xs text-gray-500">Ruta</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ viaje.schedule?.route?.originPier?.name }} → {{ viaje.schedule?.route?.destinationPier?.name }}
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Embarcación</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.schedule?.vessel?.name }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Fecha de salida</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.departureDate }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Hora de salida</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.departureTime }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Precio por asiento</p>
+          <p class="mt-1 text-sm font-semibold text-brand-600 dark:text-brand-400">
+            ${{ viaje.schedule?.route?.pricePerSeat | number:'1.2-2' }}
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Asientos disponibles</p>
+          <p class="mt-1 text-sm font-semibold"
+            [ngClass]="viaje.availableSeats > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'">
+            {{ viaje.availableSeats }} / {{ viaje.totalSeats }}
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Estado</p>
+          <span class="mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium" [ngClass]="statusClass(viaje.status)">
+            {{ statusLabel(viaje.status) }}
+          </span>
+        </div>
+        <div *ngIf="viaje.cancellationReason">
+          <p class="text-xs text-gray-500">Motivo de cancelación</p>
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ viaje.cancellationReason }}</p>
+        </div>
       </div>
-      <div>
-        <p class="text-xs text-gray-500">Embarcación</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.schedule?.vessel?.name }}</p>
-      </div>
-      <div>
-        <p class="text-xs text-gray-500">Fecha de salida</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.departureDate }}</p>
-      </div>
-      <div>
-        <p class="text-xs text-gray-500">Hora de salida</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.departureTime }}</p>
-      </div>
-      <div>
-        <p class="text-xs text-gray-500">Asientos disponibles</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.availableSeats }} / {{ viaje.totalSeats }}</p>
-      </div>
-      <div>
-        <p class="text-xs text-gray-500">Estado</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.status }}</p>
-      </div>
-      <div *ngIf="viaje.cancellationReason">
-        <p class="text-xs text-gray-500">Motivo de cancelación</p>
-        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">{{ viaje.cancellationReason }}</p>
-      </div>
+    </div>
+
+    <!-- Aviso sin asientos -->
+    <div *ngIf="viaje.availableSeats === 0 && viaje.status === 'SCHEDULED'"
+      class="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/10 dark:text-yellow-300">
+      No hay asientos disponibles en este viaje.
+    </div>
+
+    <!-- CTA -->
+    <div *ngIf="viaje.status === 'SCHEDULED' && viaje.availableSeats > 0"
+      class="rounded-2xl border border-brand-200 bg-brand-50 p-6 text-center dark:border-brand-800 dark:bg-brand-900/10">
+      <p class="text-base font-semibold text-brand-700 dark:text-brand-300 mb-2">¿Listo para reservar?</p>
+      <p class="text-sm text-brand-600 dark:text-brand-400 mb-4">
+        Quedan <strong>{{ viaje.availableSeats }}</strong> asientos a
+        <strong>${{ viaje.schedule?.route?.pricePerSeat | number:'1.2-2' }}</strong> c/u.
+      </p>
+      <button (click)="comprar()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-8 py-3 text-sm font-semibold text-white hover:bg-brand-600">
+        🎫 Comprar ticket ahora
+      </button>
     </div>
   </div>
 </div>

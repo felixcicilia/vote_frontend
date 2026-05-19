@@ -1,12 +1,72 @@
 <div class="space-y-6">
   <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="flex items-center gap-4">
-      <a routerLink="/viajes-taxi" class="text-gray-500 hover:text-gray-700 dark:text-gray-400"><i class="fas fa-arrow-left"></i></a>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Solicitar taxi</h1>
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Solicitar viaje taxi</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Crea una nueva solicitud de taxi acuático.</p>
+      </div>
+      <a routerLink="/viajes-taxi" class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Volver</a>
     </div>
   </div>
-  <div class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-400 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <i class="fas fa-tools text-4xl mb-3"></i>
-    <p class="text-sm">Página en construcción.</p>
-  </div>
+
+  <div *ngIf="errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">{{ errorMessage }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="solicitar()" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div class="md:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Cliente <span class="text-red-500">*</span></label>
+        <select formControlName="clientId" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+          <option [ngValue]="null">Selecciona un cliente</option>
+          <option *ngFor="let c of clientes" [ngValue]="c.id">{{ c.firstName }} {{ c.lastName }}</option>
+        </select>
+        <p *ngIf="f.clientId.touched && f.clientId.invalid" class="mt-1 text-xs text-red-500">Selecciona un cliente.</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Origen <span class="text-red-500">*</span></label>
+        <input type="text" formControlName="originName" placeholder="Nombre del lugar de origen"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.originName.touched && f.originName.invalid" class="mt-1 text-xs text-red-500">Ingresa el nombre de origen.</p>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Latitud origen <span class="text-red-500">*</span></label>
+        <input type="number" formControlName="originLat" step="any" placeholder="Ej: 10.6346"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.originLat.touched && f.originLat.invalid" class="mt-1 text-xs text-red-500">Ingresa la latitud.</p>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Longitud origen <span class="text-red-500">*</span></label>
+        <input type="number" formControlName="originLng" step="any" placeholder="Ej: -71.6401"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.originLng.touched && f.originLng.invalid" class="mt-1 text-xs text-red-500">Ingresa la longitud.</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Destino <span class="text-red-500">*</span></label>
+        <input type="text" formControlName="destinationName" placeholder="Nombre del lugar de destino"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.destinationName.touched && f.destinationName.invalid" class="mt-1 text-xs text-red-500">Ingresa el nombre de destino.</p>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pasajeros <span class="text-red-500">*</span></label>
+        <input type="number" formControlName="passengers" min="1"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Precio estimado</label>
+        <input type="number" formControlName="estimatedPrice" min="0" step="0.01" placeholder="Opcional"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+      </div>
+    </div>
+    <div class="mt-6 flex gap-3 sm:justify-end">
+      <a routerLink="/viajes-taxi" class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Cancelar</a>
+      <button type="submit" [disabled]="loading" class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
+        {{ loading ? 'Solicitando...' : 'Solicitar viaje' }}
+      </button>
+    </div>
+  </form>
 </div>

@@ -4,11 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
 import { MuellesService } from '../../services/muelles.service';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-crear-muelle',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, ImageUploadComponent],
   templateUrl: './crear-muelle.component.html',
 })
 export class CrearMuelleComponent {
@@ -18,6 +19,9 @@ export class CrearMuelleComponent {
 
   loading = false;
   errorMessage = '';
+  photoUrl = '';
+
+  onPhotoUploaded(url: string): void { this.photoUrl = url; }
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -40,6 +44,7 @@ export class CrearMuelleComponent {
     this.service.create({
       name: this.f.name.value!.trim(),
       description: this.f.description.value?.trim() || undefined,
+      photoUrl: this.photoUrl || undefined,
       latitude: Number(this.f.latitude.value),
       longitude: Number(this.f.longitude.value),
       address: this.f.address.value?.trim() || undefined,

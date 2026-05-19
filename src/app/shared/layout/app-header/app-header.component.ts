@@ -1,13 +1,15 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { SidebarService } from '../../services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeToggleButtonComponent } from '../../components/common/theme-toggle/theme-toggle-button.component';
 import { NotificationDropdownComponent } from '../../components/header/notification-dropdown/notification-dropdown.component';
 import { UserDropdownComponent } from '../../components/header/user-dropdown/user-dropdown.component';
+import { TasaService } from '../../services/tasa.service';
 
 @Component({
   selector: 'app-header',
+  standalone: true,
   imports: [
     CommonModule,
     RouterModule,
@@ -17,14 +19,19 @@ import { UserDropdownComponent } from '../../components/header/user-dropdown/use
   ],
   templateUrl: './app-header.component.html',
 })
-export class AppHeaderComponent {
+export class AppHeaderComponent implements OnInit {
   isApplicationMenuOpen = false;
   readonly isMobileOpen$;
+  readonly tasaService = inject(TasaService);
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   constructor(public sidebarService: SidebarService) {
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
+  }
+
+  ngOnInit(): void {
+    this.tasaService.load();
   }
 
   handleToggle() {

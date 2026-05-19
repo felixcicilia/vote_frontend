@@ -17,8 +17,12 @@ export class TicketsService {
     return r?.data !== undefined ? r.data : r;
   }
 
-  getAll(): Observable<Ticket[]> {
-    return this.http.get<any>(this.base).pipe(map(r => this.extractArray(r)));
+  getAll(params?: { clientId?: number; vesselId?: number; status?: string }): Observable<Ticket[]> {
+    const p: Record<string, string> = {};
+    if (params?.clientId) p['clientId'] = String(params.clientId);
+    if (params?.vesselId) p['vesselId'] = String(params.vesselId);
+    if (params?.status) p['status'] = params.status;
+    return this.http.get<any>(this.base, { params: p }).pipe(map(r => this.extractArray(r)));
   }
 
   getById(id: number): Observable<Ticket> {

@@ -47,7 +47,39 @@ export const routes: Routes = [
     component: AppLayoutComponent,
     canActivate: [authGuard],
     children: [
-      // Dashboard
+      // ── Inicio (role-based home) ──────────────────────────────────────────────
+      {
+        path: 'inicio',
+        loadComponent: () =>
+          import('./pages/inicio/inicio.component').then((m) => m.InicioComponent),
+        title: 'Inicio | MARITIMO',
+      },
+
+      // ── Buscar viajes ─────────────────────────────────────────────────────────
+      {
+        path: 'buscar',
+        loadComponent: () =>
+          import('./pages/buscar/buscar.component').then((m) => m.BuscarComponent),
+        title: 'Buscar viajes | MARITIMO',
+      },
+
+      // ── Mis Reservas (cliente) ────────────────────────────────────────────────
+      {
+        path: 'mis-reservas',
+        loadComponent: () =>
+          import('./pages/mis-reservas/mis-reservas.component').then((m) => m.MisReservasComponent),
+        title: 'Mis Reservas | MARITIMO',
+      },
+
+      // ── Mi Negocio (proveedor) ────────────────────────────────────────────────
+      {
+        path: 'mi-negocio',
+        loadComponent: () =>
+          import('./pages/mi-negocio/mi-negocio.component').then((m) => m.MiNegocioComponent),
+        title: 'Mi Negocio | MARITIMO',
+      },
+
+      // Dashboard (legacy / admin)
       {
         path: "dashboard",
         component: DashboardComponent,
@@ -182,6 +214,16 @@ export const routes: Routes = [
         title: "Editar horario | MARITIMO",
       },
 
+      // ── Checkout ─────────────────────────────────────────────────────────────
+      {
+        path: 'checkout',
+        loadComponent: () =>
+          import('./pages/checkout/checkout.component').then(
+            (m) => m.CheckoutComponent
+          ),
+        title: 'Checkout | MARITIMO',
+      },
+
       // ── Viajes (Terminal) ─────────────────────────────────────────────────────
       {
         path: "viajes",
@@ -298,6 +340,32 @@ export const routes: Routes = [
         title: "Reseñas | MARITIMO",
       },
 
+      // ── Tasas de cambio ───────────────────────────────────────────────────────
+      {
+        path: "tasas",
+        loadComponent: () =>
+          import("./pages/tasas/pages/lista-tasas/lista-tasas.component").then(
+            (m) => m.ListaTasasComponent
+          ),
+        title: "Tasas | MARITIMO",
+      },
+      {
+        path: "tasas/crear",
+        loadComponent: () =>
+          import("./pages/tasas/pages/crear-tasas/crear-tasas.component").then(
+            (m) => m.CrearTasasComponent
+          ),
+        title: "Nueva tasa | MARITIMO",
+      },
+      {
+        path: "tasas/editar/:id",
+        loadComponent: () =>
+          import("./pages/tasas/pages/editar-tasas/editar-tasas.component").then(
+            (m) => m.EditarTasasComponent
+          ),
+        title: "Editar tasa | MARITIMO",
+      },
+
       // ── Notificaciones ────────────────────────────────────────────────────────
       {
         path: "notificaciones",
@@ -312,5 +380,5 @@ export const routes: Routes = [
 
   // ─── Redirects ───────────────────────────────────────────────────────────────
   { path: "", redirectTo: "login", pathMatch: "full" },
-  { path: "**", redirectTo: "login" },
+  { path: "**", redirectTo: "inicio" },
 ];
