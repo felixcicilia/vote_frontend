@@ -19,6 +19,14 @@ export class EmbarcacionesService {
     return response;
   }
 
+  getCharterable(): Observable<Embarcacion[]> {
+    return this.http.get<any>(`${this.base}/charterable`).pipe(map(r => this.extractArray(r)));
+  }
+
+  toggleAvailability(id: number): Observable<Embarcacion> {
+    return this.http.patch<any>(`${this.base}/${id}/availability`, {}).pipe(map(r => this.extractItem(r)));
+  }
+
   getAll(type?: VesselType, status?: VesselStatus): Observable<Embarcacion[]> {
     const params: Record<string, string> = {};
     if (type) params['type'] = type;

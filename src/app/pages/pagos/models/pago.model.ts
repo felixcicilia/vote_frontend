@@ -1,6 +1,6 @@
 export type PaymentMethod = 'PAGO_MOVIL' | 'ZELLE' | 'BINANCE' | 'CARD' | 'CASH';
 export type PaymentStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
-export type PaymentCurrency = 'USD' | 'VES' | 'USDT';
+export type PaymentCurrency = 'USD' | 'VES' | 'BS' | 'USDT';
 export type PaymentReferenceType = 'TAXI_TRIP' | 'TICKET' | 'RENTAL';
 
 export interface Pago {

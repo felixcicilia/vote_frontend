@@ -1,169 +1,203 @@
 <div class="space-y-6">
-  <!-- Barra de búsqueda sticky -->
-  <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm dark:border-gray-800 dark:bg-slate-900">
-    <div class="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
-      <div class="flex-1">
-        <label class="block text-xs font-semibold text-gray-500 mb-1">🚢 Desde</label>
-        <select [(ngModel)]="searchOrigen"
-          class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white">
-          <option value="">Todos los muelles</option>
-          <option *ngFor="let m of muelles" [value]="m.id">{{ m.name }}</option>
-        </select>
+
+  <!-- Hero buscador -->
+  <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900 via-slate-800 to-slate-900 shadow-xl">
+    <div class="relative px-8 py-10">
+      <div class="pointer-events-none absolute inset-0 overflow-hidden opacity-10">
+        <div class="absolute -right-8 -top-8 text-[200px]">🚤</div>
       </div>
-      <div class="flex-1">
-        <label class="block text-xs font-semibold text-gray-500 mb-1">🏖️ Hasta</label>
-        <select [(ngModel)]="searchDestino"
-          class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white">
-          <option value="">Todos los destinos</option>
-          <option *ngFor="let m of muelles" [value]="m.id">{{ m.name }}</option>
-        </select>
+      <div class="relative mb-6">
+        <p class="mb-1 text-sm font-semibold uppercase tracking-widest text-blue-300">Excursiones acuáticas</p>
+        <h1 class="text-3xl font-extrabold text-white md:text-4xl">¿A qué cayo vas hoy?</h1>
+        <p class="mt-2 text-slate-300">Selecciona tu destino, el puerto de salida y encuentra tu lancha.</p>
       </div>
-      <div class="w-full md:w-44">
-        <label class="block text-xs font-semibold text-gray-500 mb-1">📅 Fecha <span class="text-gray-400 font-normal">(opcional)</span></label>
-        <input type="date" [(ngModel)]="searchFecha"
-          class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
-      </div>
-      <button (click)="buscar()" [disabled]="loading"
-        class="h-11 rounded-xl bg-brand-500 px-8 text-sm font-bold text-white shadow hover:bg-brand-600 disabled:opacity-50 transition whitespace-nowrap">
-        {{ loading ? '...' : 'Buscar' }}
-      </button>
-    </div>
-  </div>
 
-  <!-- Estado loading -->
-  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 gap-4">
-    <div class="text-5xl animate-bounce">🚤</div>
-    <p class="text-gray-500 dark:text-gray-400">Buscando viajes disponibles...</p>
-  </div>
+      <!-- Formulario de búsqueda -->
+      <div class="overflow-hidden rounded-2xl bg-white shadow-lg dark:bg-slate-800">
+        <div class="grid grid-cols-1 divide-y divide-gray-100 dark:divide-gray-700 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
 
-  <!-- Sin resultados -->
-  <div *ngIf="!loading && buscado && resultados.length === 0"
-    class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
-    <div class="text-6xl mb-4">🔍</div>
-    <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">Sin viajes disponibles</h3>
-    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-      No encontramos lanchas para esa ruta en la fecha seleccionada.<br/>
-      Intenta con otra fecha o cambia el origen/destino.
-    </p>
-  </div>
+          <!-- Destino -->
+          <div class="p-4">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400">🏝️ Destino</label>
+            <select [(ngModel)]="destinoId"
+              class="mt-1 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white">
+              <option [ngValue]="null">¿A dónde vas?</option>
+              <option *ngFor="let d of destinos" [ngValue]="d.id">{{ d.icon }} {{ d.name }}</option>
+            </select>
+            <p *ngIf="destinoSel" class="mt-0.5 text-xs text-gray-400">{{ destinoSel.state }}</p>
+          </div>
 
-  <!-- Resultados -->
-  <div *ngIf="!loading && resultados.length > 0">
-    <div class="mb-3 flex items-center justify-between">
-      <p class="text-sm text-gray-500 dark:text-gray-400">
-        <span class="font-bold text-gray-800 dark:text-white">{{ resultados.length }}</span>
-        {{ resultados.length === 1 ? 'viaje disponible' : 'viajes disponibles' }}
-        <ng-container *ngIf="searchFecha">para el {{ searchFecha | date:'dd/MM/yyyy' }}</ng-container>
-        <ng-container *ngIf="!searchFecha">próximos disponibles</ng-container>
-      </p>
-      <p class="text-xs text-gray-400">Ordenado por hora de salida</p>
-    </div>
+          <!-- Puerto de salida -->
+          <div class="p-4">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400">⚓ Sale desde</label>
+            <select [(ngModel)]="puertoId"
+              class="mt-1 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white">
+              <option [ngValue]="null">Cualquier puerto</option>
+              <option *ngFor="let p of puertos" [ngValue]="p.id">{{ p.icon }} {{ p.name }} · {{ p.state }}</option>
+            </select>
+          </div>
 
-    <div class="space-y-4">
-      <div *ngFor="let v of resultados"
-        class="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-brand-200 transition-all dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-500/30">
-        <div class="flex flex-col md:flex-row">
-          <!-- Foto embarcación -->
-          <div class="relative h-44 w-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 md:h-auto md:w-52">
-            <img *ngIf="v.schedule?.vessel?.photos?.[0]"
-              [src]="imageUrl(v.schedule.vessel.photos[0])"
-              [alt]="v.schedule?.vessel?.name"
-              class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            <div *ngIf="!v.schedule?.vessel?.photos?.[0]"
-              class="flex h-full items-center justify-center text-6xl opacity-20">🚤</div>
-            <div class="absolute top-3 left-3">
-              <span class="rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-slate-700 shadow-sm">
-                {{ v.schedule?.vessel?.type ?? 'Lancha' }}
-              </span>
+          <!-- Fecha + Tipo de viaje -->
+          <div class="p-4 space-y-2">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400">📅 Fecha del viaje</label>
+              <input type="date" [(ngModel)]="fecha" [min]="today"
+                class="mt-1 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white" />
+            </div>
+            <div class="flex gap-2">
+              <button type="button" (click)="tripType = 'IDA_VUELTA'"
+                class="flex-1 rounded-lg py-1.5 text-xs font-bold transition"
+                [class.bg-brand-500]="tripType === 'IDA_VUELTA'"
+                [class.text-white]="tripType === 'IDA_VUELTA'"
+                [class.bg-gray-100]="tripType !== 'IDA_VUELTA'"
+                [class.text-gray-600]="tripType !== 'IDA_VUELTA'">
+                ↔ Ida y vuelta
+              </button>
+              <button type="button" (click)="tripType = 'IDA'"
+                class="flex-1 rounded-lg py-1.5 text-xs font-bold transition"
+                [class.bg-brand-500]="tripType === 'IDA'"
+                [class.text-white]="tripType === 'IDA'"
+                [class.bg-gray-100]="tripType !== 'IDA'"
+                [class.text-gray-600]="tripType !== 'IDA'">
+                → Solo ida
+              </button>
             </div>
           </div>
 
-          <!-- Info -->
-          <div class="flex flex-1 flex-col gap-4 p-5">
-            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <!-- Nombre y ruta -->
-              <div>
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white/90">
-                  {{ v.schedule?.vessel?.name }}
-                </h3>
-                <div class="mt-1 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <span class="font-medium">{{ v.schedule?.route?.originPier?.name }}</span>
-                  <span class="text-gray-400">→</span>
-                  <span class="font-medium">{{ v.schedule?.route?.destinationPier?.name }}</span>
-                  <span *ngIf="v.schedule?.route?.durationMinutes" class="text-xs text-gray-400">
-                    · {{ duracion(v.schedule.route.durationMinutes) }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Precio en Bs -->
-              <div class="text-right">
-                <div class="text-xl font-extrabold text-brand-600 dark:text-brand-400">
-                  {{ tasaService.formatBs(v.schedule?.route?.pricePerSeat ?? 0) }}
-                </div>
-                <div class="text-xs text-gray-400">${{ v.schedule?.route?.pricePerSeat | number:'1.2-2' }} USD · por pasajero</div>
+          <!-- Pasajeros + Buscar -->
+          <div class="p-4 space-y-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400">👥 Pasajeros</label>
+              <div class="mt-1 flex items-center gap-3">
+                <button type="button" (click)="passengers = passengers > 1 ? passengers - 1 : 1"
+                  class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:border-brand-400 hover:text-brand-600 dark:border-gray-600 dark:text-gray-300">−</button>
+                <span class="font-bold text-gray-800 dark:text-white">{{ passengers }}</span>
+                <button type="button" (click)="passengers = passengers + 1"
+                  class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:border-brand-400 hover:text-brand-600 dark:border-gray-600 dark:text-gray-300">+</button>
               </div>
             </div>
-
-            <!-- Horario y disponibilidad -->
-            <div class="flex flex-wrap items-center gap-4">
-              <div class="flex items-center gap-2">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-base dark:bg-brand-500/10">🕐</span>
-                <div>
-                  <p class="text-xs text-gray-400">Salida</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-white/90">{{ v.departureTime }}</p>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-base dark:bg-green-500/10">🪑</span>
-                <div>
-                  <p class="text-xs text-gray-400">Disponibles</p>
-                  <p class="text-sm font-bold" [ngClass]="seatColor(v.availableSeats, v.totalSeats)">
-                    {{ v.availableSeats }} / {{ v.totalSeats }}
-                  </p>
-                </div>
-              </div>
-
-              <div *ngIf="v.schedule?.vessel?.capacity" class="flex items-center gap-2">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-base dark:bg-purple-500/10">👥</span>
-                <div>
-                  <p class="text-xs text-gray-400">Capacidad</p>
-                  <p class="text-sm font-bold text-gray-800 dark:text-white/90">{{ v.schedule.vessel.capacity }} personas</p>
-                </div>
-              </div>
-
-              <!-- Poca disponibilidad -->
-              <span *ngIf="v.availableSeats <= 3 && v.availableSeats > 0"
-                class="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                ⚡ ¡Últimos {{ v.availableSeats }} puestos!
-              </span>
-            </div>
-
-            <!-- CTA -->
-            <div class="flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-800">
-              <div class="text-xs text-gray-400">
-                {{ v.schedule?.vessel?.description ?? '' }}
-              </div>
-              <button (click)="seleccionar(v)"
-                [disabled]="v.availableSeats === 0"
-                class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm">
-                {{ v.availableSeats === 0 ? 'Agotado' : 'Reservar →' }}
-              </button>
-            </div>
+            <button (click)="buscar()" [disabled]="!destinoId || loading"
+              class="w-full rounded-xl bg-brand-500 py-3 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+              {{ loading ? 'Buscando...' : '🔍 Buscar lanchas' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Sin búsqueda aún -->
-  <div *ngIf="!loading && !buscado"
-    class="rounded-2xl border border-dashed border-gray-200 bg-white p-14 text-center dark:border-gray-800 dark:bg-white/[0.02]">
-    <div class="text-6xl mb-4">🌊</div>
-    <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">Encuentra tu viaje</h3>
-    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-      Selecciona origen, destino y fecha para ver las lanchas disponibles.
-    </p>
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 gap-4">
+    <div class="text-5xl animate-bounce">🚤</div>
+    <p class="text-gray-500 dark:text-gray-400">Buscando lanchas disponibles...</p>
   </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="!loading && buscado && vesselGroups.length === 0"
+    class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+    <div class="text-5xl mb-4">🔍</div>
+    <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">No hay lanchas disponibles</h3>
+    <p class="mt-2 text-sm text-gray-500">Prueba otro destino, cambia el puerto de salida o busca solo ida.</p>
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="!loading && vesselGroups.length > 0" class="space-y-4">
+    <div class="flex items-center justify-between">
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        <span class="font-bold text-gray-800 dark:text-white">{{ vesselGroups.length }}</span>
+        lancha{{ vesselGroups.length !== 1 ? 's' : '' }} disponible{{ vesselGroups.length !== 1 ? 's' : '' }}
+        <ng-container *ngIf="destinoSel"> → {{ destinoSel.icon }} {{ destinoSel.name }}</ng-container>
+      </p>
+    </div>
+
+    <div *ngFor="let g of vesselGroups"
+      class="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-lg hover:border-brand-200 transition-all dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-500/30">
+      <div class="flex flex-col md:flex-row">
+
+        <!-- Foto -->
+        <div class="relative h-52 w-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 md:h-auto md:w-64">
+          <img *ngIf="g.vessel.photos?.[0]"
+            [src]="imageUrl(g.vessel.photos![0])"
+            [alt]="g.vessel.name"
+            class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div *ngIf="!g.vessel.photos?.[0]"
+            class="flex h-full items-center justify-center text-7xl opacity-20">{{ typeIcon(g.vessel.type) }}</div>
+          <span class="absolute top-2 left-2 rounded-full bg-white/95 px-2 py-0.5 text-xs font-bold text-slate-700 shadow-sm">
+            {{ typeIcon(g.vessel.type) }} {{ g.vessel.type }}
+          </span>
+        </div>
+
+        <!-- Info -->
+        <div class="flex flex-1 flex-col p-5">
+          <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+
+            <div class="flex-1 min-w-0">
+              <h3 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ g.vessel.name }}</h3>
+              <p *ngIf="g.vessel.provider?.companyName" class="text-xs text-gray-400">{{ g.vessel.provider?.companyName }}</p>
+
+              <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                <span>👥 Hasta {{ g.vessel.capacity }} pasajeros</span>
+                <span *ngIf="g.vessel.rooms">🛏️ {{ g.vessel.rooms }} cabinas</span>
+                <span class="font-medium text-green-600 dark:text-green-400">✓ Disponible</span>
+              </div>
+
+              <!-- Slots IDA -->
+              <div *ngIf="g.idaSlots.length > 0" class="mt-3">
+                <p class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-1.5">→ Salidas disponibles</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span *ngFor="let s of g.idaSlots"
+                    class="rounded-xl bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+                    {{ s.departurePoint.icon ?? '⚓' }} {{ s.departureTime }}
+                    → {{ s.destination.icon }} {{ s.destination.name }}
+                    · ${{ s.pricePerPerson }}/pax
+                  </span>
+                </div>
+              </div>
+
+              <!-- Slots REGRESO -->
+              <div *ngIf="g.regresoSlots.length > 0 && tripType === 'IDA_VUELTA'" class="mt-2">
+                <p class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-1.5">← Regresos disponibles</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span *ngFor="let s of g.regresoSlots"
+                    class="rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                    {{ s.destination.icon }} {{ s.departureTime }}
+                    → {{ s.departurePoint.icon ?? '⚓' }} {{ s.departurePoint.name }}
+                    · ${{ s.pricePerPerson }}/pax
+                  </span>
+                </div>
+              </div>
+
+              <!-- Amenidades -->
+              <div *ngIf="g.vessel.amenities?.length" class="mt-3 flex flex-wrap gap-1.5">
+                <span *ngFor="let a of (g.vessel.amenities ?? []).slice(0, 5)"
+                  class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-white/[0.06] dark:text-gray-400">
+                  {{ amenityIcon(a) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Precio + CTA -->
+            <div class="flex-shrink-0 md:min-w-[160px] md:text-right">
+              <p class="text-xs text-gray-400">desde</p>
+              <p class="text-3xl font-extrabold text-brand-600 dark:text-brand-400">
+                ${{ minPrice(g) | number:'1.0-0' }}
+              </p>
+              <p class="text-xs text-gray-400 mt-0.5">USD por persona</p>
+              <p class="text-xs text-brand-500 mt-1 font-semibold">
+                {{ tasaService.formatBs(minPrice(g) * passengers) }}
+              </p>
+              <p class="text-[10px] text-gray-400">total {{ passengers }} pax</p>
+
+              <button (click)="seleccionar(g)"
+                class="mt-4 w-full rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-white hover:bg-brand-600 transition-colors shadow-sm">
+                Seleccionar →
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>

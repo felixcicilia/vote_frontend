@@ -31,6 +31,14 @@ export class AlquileresService {
     return this.http.get<any>(`${this.base}/client/${clientId}`).pipe(map(r => this.extractArray(r)));
   }
 
+  getByProvider(providerId: number): Observable<Alquiler[]> {
+    return this.http.get<any>(`${this.base}/provider/${providerId}`).pipe(map(r => this.extractArray(r)));
+  }
+
+  getByVessel(vesselId: number): Observable<Alquiler[]> {
+    return this.http.get<any>(`${this.base}/vessel/${vesselId}`).pipe(map(r => this.extractArray(r)));
+  }
+
   create(dto: CreateAlquilerDto): Observable<Alquiler> {
     return this.http.post<any>(this.base, dto).pipe(map(r => this.extractItem(r)));
   }

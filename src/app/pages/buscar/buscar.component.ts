@@ -1,14 +1,22 @@
-import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
-import { ViajesService } from '../viajes/services/viajes.service';
-import { MuellesService } from '../muelles/services/muelles.service';
-import { Viaje } from '../viajes/models/viaje.model';
-import { Muelle } from '../muelles/models/muelle.model';
+import { IslandTripsService } from './services/island-trips.service';
+import { DestinosService } from '../alquileres/services/destinos.service';
 import { TasaService } from '../../shared/services/tasa.service';
+import { Destino } from '../alquileres/models/destino.model';
+import { PuertoSalida, VesselSlot } from './models/island-trip.model';
+import { Embarcacion } from '../embarcaciones/models/embarcacion.model';
+import { amenityIcon } from '../alquileres/data/amenities';
 import { environment } from '../../../environments/environment';
+
+interface VesselGroup {
+  vessel: Embarcacion;
+  idaSlots:    VesselSlot[];
+  regresoSlots: VesselSlot[];
+}
 
 @Component({
   selector: 'app-buscar',
@@ -17,63 +25,96 @@ import { environment } from '../../../environments/environment';
   templateUrl: './buscar.component.html',
 })
 export class BuscarComponent implements OnInit {
-  private readonly viajesService = inject(ViajesService);
-  private readonly muellesService = inject(MuellesService);
-  private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
+  private readonly tripsService = inject(IslandTripsService);
+  private readonly destinosService = inject(DestinosService);
   readonly tasaService = inject(TasaService);
+  private readonly router = inject(Router);
 
-  muelles: Muelle[] = [];
-  viajes: Viaje[] = [];
-  resultados: Viaje[] = [];
+  destinos: Destino[] = [];
+  puertos: PuertoSalida[] = [];
   loading = false;
   buscado = false;
 
-  searchOrigen = '';
-  searchDestino = '';
-  searchFecha = '';
+  // Filtros
+  destinoId: number | null = null;
+  puertoId: number | null  = null;
+  fecha = '';
+  passengers = 2;
+  tripType: 'IDA' | 'IDA_VUELTA' = 'IDA_VUELTA';
+
+  // Resultados agrupados por embarcación
+  vesselGroups: VesselGroup[] = [];
+
+  readonly today = new Date().toISOString().split('T')[0];
+  amenityIcon = amenityIcon;
+
+  get destinoSel(): Destino | null {
+    return this.destinos.find(d => d.id === this.destinoId) ?? null;
+  }
+  get puertoSel(): PuertoSalida | null {
+    return this.puertos.find(p => p.id === this.puertoId) ?? null;
+  }
 
   ngOnInit(): void {
     this.tasaService.load();
-    this.muellesService.getAll(true).subscribe({ next: (m) => { this.muelles = m; } });
-
-    // Leer params de query (desde el hero de inicio)
-    this.route.queryParams.subscribe(p => {
-      if (p['origen']) this.searchOrigen = p['origen'];
-      if (p['destino']) this.searchDestino = p['destino'];
-      if (p['fecha']) this.searchFecha = p['fecha'];
-      // Siempre buscar al cargar (con o sin parámetros)
-      this.buscar();
-    });
+    this.destinosService.getAll().subscribe({ next: d => { this.destinos = d; } });
+    this.tripsService.getPuertos().subscribe({ next: p => { this.puertos = p; } });
   }
 
   buscar(): void {
+    if (!this.destinoId) return;
     this.loading = true;
     this.buscado = true;
-    this.resultados = [];
+    this.vesselGroups = [];
 
-    // Fetch all SCHEDULED trips — date filtering happens client-side
-    this.viajesService.getAll('SCHEDULED').subscribe({
-      next: (viajes) => {
-        this.viajes = viajes;
-        this.resultados = viajes.filter(v => {
-          // departureDate may come as "2026-05-19" or "2026-05-19T04:00:00.000Z"
-          const tripDate = (v.departureDate ?? '').substring(0, 10);
-          const fechaOk = !this.searchFecha || tripDate === this.searchFecha;
-          const origenOk = !this.searchOrigen ||
-            String(v.schedule?.route?.originPier?.id) === String(this.searchOrigen);
-          const destinoOk = !this.searchDestino ||
-            String(v.schedule?.route?.destinationPier?.id) === String(this.searchDestino);
-          return fechaOk && origenOk && destinoOk;
-        });
+    const params: any = { destinationId: this.destinoId };
+    if (this.puertoId) params.departurePointId = this.puertoId;
+
+    this.tripsService.getSlots(params).subscribe({
+      next: (slots) => {
+        this.vesselGroups = this.groupByVessel(slots);
         this.loading = false;
       },
       error: () => { this.loading = false; },
     });
   }
 
-  seleccionar(viaje: Viaje): void {
-    this.router.navigate(['/checkout'], { queryParams: { viajeId: viaje.id } });
+  private groupByVessel(slots: VesselSlot[]): VesselGroup[] {
+    const map = new Map<number, VesselGroup>();
+    for (const s of slots) {
+      const vid = s.vessel.id;
+      if (!map.has(vid)) {
+        map.set(vid, { vessel: s.vessel, idaSlots: [], regresoSlots: [] });
+      }
+      const g = map.get(vid)!;
+      if (s.direction === 'IDA') g.idaSlots.push(s);
+      else g.regresoSlots.push(s);
+    }
+    // Filter: if IDA_VUELTA, only show vessels that have both directions
+    return [...map.values()].filter(g => {
+      if (this.tripType === 'IDA_VUELTA') {
+        return g.idaSlots.length > 0 && g.regresoSlots.length > 0;
+      }
+      return g.idaSlots.length > 0;
+    });
+  }
+
+  seleccionar(group: VesselGroup): void {
+    this.router.navigate(['/buscar/lancha', group.vessel.id], {
+      queryParams: {
+        destinoId:  this.destinoId,
+        puertoId:   this.puertoId,
+        fecha:      this.fecha,
+        passengers: this.passengers,
+        tripType:   this.tripType,
+      },
+    });
+  }
+
+  minPrice(group: VesselGroup): number {
+    const allSlots = [...group.idaSlots, ...group.regresoSlots];
+    if (!allSlots.length) return 0;
+    return Math.min(...allSlots.map(s => Number(s.pricePerPerson)));
   }
 
   imageUrl(url?: string | null): string {
@@ -82,23 +123,5 @@ export class BuscarComponent implements OnInit {
     return `${environment.apiUrl.replace('/api', '')}${url}`;
   }
 
-  nombreMuelle(id: string): string {
-    const m = this.muelles.find(x => String(x.id) === String(id));
-    return m?.name ?? '—';
-  }
-
-  duracion(mins?: number): string {
-    if (!mins) return '';
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return h > 0 ? `${h}h ${m > 0 ? m + 'm' : ''}` : `${m}m`;
-  }
-
-  seatColor(available: number, total: number): string {
-    const pct = available / total;
-    if (pct > 0.5) return 'text-green-600 dark:text-green-400';
-    if (pct > 0.2) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-  }
-
+  typeIcon(t: string): string { return t === 'YATE' ? '⛵' : t === 'CATAMARAN' ? '🛥️' : '🚤'; }
 }

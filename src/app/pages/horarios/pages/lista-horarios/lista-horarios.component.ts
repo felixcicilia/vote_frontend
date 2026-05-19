@@ -53,8 +53,8 @@ export class ListaHorariosComponent implements OnInit {
   onSearchChange(): void { this.page = 1; this.aplicarFiltros(); }
   cambiarPagina(p: number): void { if (p >= 1 && p <= this.totalPages) { this.page = p; this.aplicarFiltros(); } }
 
-  diasLabel(days: string[]): string {
-    return days.map(d => this.DAYS[Number(d)] ?? d).join(', ');
+  diasLabel(days: number[]): string {
+    return days.map(d => this.DAYS[d] ?? d).join(', ');
   }
 
   eliminar(h: Horario): void {

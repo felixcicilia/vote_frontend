@@ -49,34 +49,40 @@ export const routes: Routes = [
     children: [
       // ── Inicio (role-based home) ──────────────────────────────────────────────
       {
-        path: 'inicio',
+        path: "inicio",
         loadComponent: () =>
-          import('./pages/inicio/inicio.component').then((m) => m.InicioComponent),
-        title: 'Inicio | MARITIMO',
+          import("./pages/inicio/inicio.component").then(
+            (m) => m.InicioComponent,
+          ),
+        title: "Inicio | MARITIMO",
       },
 
       // ── Buscar viajes ─────────────────────────────────────────────────────────
       {
-        path: 'buscar',
+        path: "buscar",
         loadComponent: () =>
-          import('./pages/buscar/buscar.component').then((m) => m.BuscarComponent),
-        title: 'Buscar viajes | MARITIMO',
+          import("./pages/buscar/buscar.component").then(
+            (m) => m.BuscarComponent,
+          ),
+        title: "Buscar viajes | MARITIMO",
       },
-
-      // ── Mis Reservas (cliente) ────────────────────────────────────────────────
       {
-        path: 'mis-reservas',
+        path: "buscar/lancha/:id",
         loadComponent: () =>
-          import('./pages/mis-reservas/mis-reservas.component').then((m) => m.MisReservasComponent),
-        title: 'Mis Reservas | MARITIMO',
+          import("./pages/buscar/pages/detalle-lancha/detalle-lancha.component").then(
+            (m) => m.DetalleLanchaComponent,
+          ),
+        title: "Detalle lancha | MARITIMO",
       },
 
       // ── Mi Negocio (proveedor) ────────────────────────────────────────────────
       {
-        path: 'mi-negocio',
+        path: "mi-negocio",
         loadComponent: () =>
-          import('./pages/mi-negocio/mi-negocio.component').then((m) => m.MiNegocioComponent),
-        title: 'Mi Negocio | MARITIMO',
+          import("./pages/mi-negocio/mi-negocio.component").then(
+            (m) => m.MiNegocioComponent,
+          ),
+        title: "Mi Negocio | MARITIMO",
       },
 
       // Dashboard (legacy / admin)
@@ -84,6 +90,16 @@ export const routes: Routes = [
         path: "dashboard",
         component: DashboardComponent,
         title: "Dashboard | MARITIMO",
+      },
+
+      // ── Mis Reservas (cliente) ────────────────────────────────────────────────
+      {
+        path: "mis-reservas",
+        loadComponent: () =>
+          import("./pages/mis-reservas/mis-reservas.component").then(
+            (m) => m.MisReservasComponent,
+          ),
+        title: "Mis Reservas | MARITIMO",
       },
 
       // Perfil
@@ -115,7 +131,7 @@ export const routes: Routes = [
         path: "embarcaciones",
         loadComponent: () =>
           import("./pages/embarcaciones/pages/lista-embarcaciones/lista-embarcaciones.component").then(
-            (m) => m.ListaEmbarcacionesComponent
+            (m) => m.ListaEmbarcacionesComponent,
           ),
         title: "Embarcaciones | MARITIMO",
       },
@@ -123,7 +139,7 @@ export const routes: Routes = [
         path: "embarcaciones/crear",
         loadComponent: () =>
           import("./pages/embarcaciones/pages/crear-embarcacion/crear-embarcacion.component").then(
-            (m) => m.CrearEmbarcacionComponent
+            (m) => m.CrearEmbarcacionComponent,
           ),
         title: "Nueva embarcación | MARITIMO",
       },
@@ -131,7 +147,7 @@ export const routes: Routes = [
         path: "embarcaciones/editar/:id",
         loadComponent: () =>
           import("./pages/embarcaciones/pages/editar-embarcacion/editar-embarcacion.component").then(
-            (m) => m.EditarEmbarcacionComponent
+            (m) => m.EditarEmbarcacionComponent,
           ),
         title: "Editar embarcación | MARITIMO",
       },
@@ -141,7 +157,7 @@ export const routes: Routes = [
         path: "muelles",
         loadComponent: () =>
           import("./pages/muelles/pages/lista-muelles/lista-muelles.component").then(
-            (m) => m.ListaMuellesComponent
+            (m) => m.ListaMuellesComponent,
           ),
         title: "Muelles | MARITIMO",
       },
@@ -149,7 +165,7 @@ export const routes: Routes = [
         path: "muelles/crear",
         loadComponent: () =>
           import("./pages/muelles/pages/crear-muelle/crear-muelle.component").then(
-            (m) => m.CrearMuelleComponent
+            (m) => m.CrearMuelleComponent,
           ),
         title: "Nuevo muelle | MARITIMO",
       },
@@ -157,7 +173,7 @@ export const routes: Routes = [
         path: "muelles/editar/:id",
         loadComponent: () =>
           import("./pages/muelles/pages/editar-muelle/editar-muelle.component").then(
-            (m) => m.EditarMuelleComponent
+            (m) => m.EditarMuelleComponent,
           ),
         title: "Editar muelle | MARITIMO",
       },
@@ -167,7 +183,7 @@ export const routes: Routes = [
         path: "rutas",
         loadComponent: () =>
           import("./pages/rutas/pages/lista-rutas/lista-rutas.component").then(
-            (m) => m.ListaRutasComponent
+            (m) => m.ListaRutasComponent,
           ),
         title: "Rutas | MARITIMO",
       },
@@ -175,7 +191,7 @@ export const routes: Routes = [
         path: "rutas/crear",
         loadComponent: () =>
           import("./pages/rutas/pages/crear-ruta/crear-ruta.component").then(
-            (m) => m.CrearRutaComponent
+            (m) => m.CrearRutaComponent,
           ),
         title: "Nueva ruta | MARITIMO",
       },
@@ -183,7 +199,7 @@ export const routes: Routes = [
         path: "rutas/editar/:id",
         loadComponent: () =>
           import("./pages/rutas/pages/editar-ruta/editar-ruta.component").then(
-            (m) => m.EditarRutaComponent
+            (m) => m.EditarRutaComponent,
           ),
         title: "Editar ruta | MARITIMO",
       },
@@ -193,7 +209,7 @@ export const routes: Routes = [
         path: "horarios",
         loadComponent: () =>
           import("./pages/horarios/pages/lista-horarios/lista-horarios.component").then(
-            (m) => m.ListaHorariosComponent
+            (m) => m.ListaHorariosComponent,
           ),
         title: "Horarios | MARITIMO",
       },
@@ -201,7 +217,7 @@ export const routes: Routes = [
         path: "horarios/crear",
         loadComponent: () =>
           import("./pages/horarios/pages/crear-horario/crear-horario.component").then(
-            (m) => m.CrearHorarioComponent
+            (m) => m.CrearHorarioComponent,
           ),
         title: "Nuevo horario | MARITIMO",
       },
@@ -209,19 +225,19 @@ export const routes: Routes = [
         path: "horarios/editar/:id",
         loadComponent: () =>
           import("./pages/horarios/pages/editar-horario/editar-horario.component").then(
-            (m) => m.EditarHorarioComponent
+            (m) => m.EditarHorarioComponent,
           ),
         title: "Editar horario | MARITIMO",
       },
 
       // ── Checkout ─────────────────────────────────────────────────────────────
       {
-        path: 'checkout',
+        path: "checkout",
         loadComponent: () =>
-          import('./pages/checkout/checkout.component').then(
-            (m) => m.CheckoutComponent
+          import("./pages/checkout/checkout.component").then(
+            (m) => m.CheckoutComponent,
           ),
-        title: 'Checkout | MARITIMO',
+        title: "Checkout | MARITIMO",
       },
 
       // ── Viajes (Terminal) ─────────────────────────────────────────────────────
@@ -229,7 +245,7 @@ export const routes: Routes = [
         path: "viajes",
         loadComponent: () =>
           import("./pages/viajes/pages/lista-viajes/lista-viajes.component").then(
-            (m) => m.ListaViajesComponent
+            (m) => m.ListaViajesComponent,
           ),
         title: "Viajes | MARITIMO",
       },
@@ -237,7 +253,7 @@ export const routes: Routes = [
         path: "viajes/:id",
         loadComponent: () =>
           import("./pages/viajes/pages/detalle-viaje/detalle-viaje.component").then(
-            (m) => m.DetalleViajeComponent
+            (m) => m.DetalleViajeComponent,
           ),
         title: "Detalle de viaje | MARITIMO",
       },
@@ -247,7 +263,7 @@ export const routes: Routes = [
         path: "tickets",
         loadComponent: () =>
           import("./pages/tickets/pages/lista-tickets/lista-tickets.component").then(
-            (m) => m.ListaTicketsComponent
+            (m) => m.ListaTicketsComponent,
           ),
         title: "Tickets | MARITIMO",
       },
@@ -255,35 +271,82 @@ export const routes: Routes = [
         path: "tickets/:id",
         loadComponent: () =>
           import("./pages/tickets/pages/detalle-ticket/detalle-ticket.component").then(
-            (m) => m.DetalleTicketComponent
+            (m) => m.DetalleTicketComponent,
           ),
         title: "Ticket | MARITIMO",
       },
 
-      // ── Alquileres ────────────────────────────────────────────────────────────
+      // ── Alquileres (cliente) ─────────────────────────────────────────────────
       {
         path: "alquileres",
         loadComponent: () =>
           import("./pages/alquileres/pages/lista-alquileres/lista-alquileres.component").then(
-            (m) => m.ListaAlquileresComponent
+            (m) => m.ListaAlquileresComponent,
           ),
-        title: "Alquileres | MARITIMO",
+        title: "Charter privado | MARITIMO",
       },
       {
-        path: "alquileres/crear",
+        path: "alquileres/yate/:id",
         loadComponent: () =>
-          import("./pages/alquileres/pages/crear-alquiler/crear-alquiler.component").then(
-            (m) => m.CrearAlquilerComponent
+          import("./pages/alquileres/pages/detalle-yate/detalle-yate.component").then(
+            (m) => m.DetalleYateComponent,
           ),
-        title: "Nuevo alquiler | MARITIMO",
+        title: "Detalle de embarcación | MARITIMO",
       },
       {
         path: "alquileres/:id",
         loadComponent: () =>
           import("./pages/alquileres/pages/detalle-alquiler/detalle-alquiler.component").then(
-            (m) => m.DetalleAlquilerComponent
+            (m) => m.DetalleAlquilerComponent,
           ),
-        title: "Alquiler | MARITIMO",
+        title: "Reserva de charter | MARITIMO",
+      },
+
+      // ── Mi Charter (proveedor) ────────────────────────────────────────────────
+      {
+        path: "mi-charter",
+        redirectTo: "mi-charter/yates",
+        pathMatch: "full",
+      },
+      {
+        path: "mi-charter/yates",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/lista-yates/lista-yates.component").then(
+            (m) => m.ListaYatesComponent,
+          ),
+        title: "Mis embarcaciones | MARITIMO",
+      },
+      {
+        path: "mi-charter/yates/nuevo",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/form-yate/form-yate.component").then(
+            (m) => m.FormYateComponent,
+          ),
+        title: "Nueva embarcación | MARITIMO",
+      },
+      {
+        path: "mi-charter/yates/:id/editar",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/form-yate/form-yate.component").then(
+            (m) => m.FormYateComponent,
+          ),
+        title: "Editar embarcación | MARITIMO",
+      },
+      {
+        path: "mi-charter/reservas",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/reservas-charter/reservas-charter.component").then(
+            (m) => m.ReservasCharterComponent,
+          ),
+        title: "Reservas de charter | MARITIMO",
+      },
+      {
+        path: "mi-charter/itinerario",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/itinerario/itinerario.component").then(
+            (m) => m.ItinerarioComponent,
+          ),
+        title: "Mi itinerario | MARITIMO",
       },
 
       // ── Viajes Taxi ───────────────────────────────────────────────────────────
@@ -291,7 +354,7 @@ export const routes: Routes = [
         path: "viajes-taxi",
         loadComponent: () =>
           import("./pages/viajes-taxi/pages/lista-viajes-taxi/lista-viajes-taxi.component").then(
-            (m) => m.ListaViajesTaxiComponent
+            (m) => m.ListaViajesTaxiComponent,
           ),
         title: "Viajes Taxi | MARITIMO",
       },
@@ -299,7 +362,7 @@ export const routes: Routes = [
         path: "viajes-taxi/solicitar",
         loadComponent: () =>
           import("./pages/viajes-taxi/pages/solicitar-viaje/solicitar-viaje.component").then(
-            (m) => m.SolicitarViajeComponent
+            (m) => m.SolicitarViajeComponent,
           ),
         title: "Solicitar taxi | MARITIMO",
       },
@@ -307,7 +370,7 @@ export const routes: Routes = [
         path: "viajes-taxi/:id",
         loadComponent: () =>
           import("./pages/viajes-taxi/pages/detalle-viaje-taxi/detalle-viaje-taxi.component").then(
-            (m) => m.DetalleViajeTaxiComponent
+            (m) => m.DetalleViajeTaxiComponent,
           ),
         title: "Viaje taxi | MARITIMO",
       },
@@ -317,7 +380,7 @@ export const routes: Routes = [
         path: "pagos",
         loadComponent: () =>
           import("./pages/pagos/pages/lista-pagos/lista-pagos.component").then(
-            (m) => m.ListaPagosComponent
+            (m) => m.ListaPagosComponent,
           ),
         title: "Pagos | MARITIMO",
       },
@@ -325,7 +388,7 @@ export const routes: Routes = [
         path: "pagos/:id",
         loadComponent: () =>
           import("./pages/pagos/pages/detalle-pago/detalle-pago.component").then(
-            (m) => m.DetallePagoComponent
+            (m) => m.DetallePagoComponent,
           ),
         title: "Pago | MARITIMO",
       },
@@ -335,7 +398,7 @@ export const routes: Routes = [
         path: "resenas",
         loadComponent: () =>
           import("./pages/resenas/pages/lista-resenas/lista-resenas.component").then(
-            (m) => m.ListaResenasComponent
+            (m) => m.ListaResenasComponent,
           ),
         title: "Reseñas | MARITIMO",
       },
@@ -345,7 +408,7 @@ export const routes: Routes = [
         path: "tasas",
         loadComponent: () =>
           import("./pages/tasas/pages/lista-tasas/lista-tasas.component").then(
-            (m) => m.ListaTasasComponent
+            (m) => m.ListaTasasComponent,
           ),
         title: "Tasas | MARITIMO",
       },
@@ -353,7 +416,7 @@ export const routes: Routes = [
         path: "tasas/crear",
         loadComponent: () =>
           import("./pages/tasas/pages/crear-tasas/crear-tasas.component").then(
-            (m) => m.CrearTasasComponent
+            (m) => m.CrearTasasComponent,
           ),
         title: "Nueva tasa | MARITIMO",
       },
@@ -361,7 +424,7 @@ export const routes: Routes = [
         path: "tasas/editar/:id",
         loadComponent: () =>
           import("./pages/tasas/pages/editar-tasas/editar-tasas.component").then(
-            (m) => m.EditarTasasComponent
+            (m) => m.EditarTasasComponent,
           ),
         title: "Editar tasa | MARITIMO",
       },
@@ -371,7 +434,7 @@ export const routes: Routes = [
         path: "notificaciones",
         loadComponent: () =>
           import("./pages/notificaciones/pages/lista-notificaciones/lista-notificaciones.component").then(
-            (m) => m.ListaNotificacionesComponent
+            (m) => m.ListaNotificacionesComponent,
           ),
         title: "Notificaciones | MARITIMO",
       },

@@ -41,7 +41,7 @@
 
     <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
 
-      <!-- ══════════════════ IZQUIERDA: Trip summary (sticky) ══════════════ -->
+      <!-- ══════════════════ IZQUIERDA: Trip summary ══════════════ -->
       <div class="w-full flex-shrink-0 lg:sticky lg:top-6 lg:w-80">
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
           <!-- Vessel photo -->
@@ -94,11 +94,11 @@
               </div>
             </div>
 
-            <!-- Total dinámico en Bs -->
+            <!-- Total dinámico -->
             <div *ngIf="step < 3" class="rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 p-4 text-center">
               <p class="text-xs font-medium text-brand-100">Total a pagar</p>
-              <p class="text-2xl font-extrabold text-white">{{ tasaService.formatBs(totalPrice) }}</p>
-              <p class="text-xs text-brand-100 mt-0.5">${{ totalPrice | number:'1.2-2' }} USD · {{ of.seats.value || 1 }} {{ (of.seats.value || 1) === 1 ? 'pasajero' : 'pasajeros' }}</p>
+              <p class="text-2xl font-extrabold text-white">{{ tasaService.formatBs(totalUsd) }}</p>
+              <p class="text-xs text-brand-100 mt-0.5">${{ totalUsd | number:'1.2-2' }} USD · {{ of.seats.value || 1 }} {{ (of.seats.value || 1) === 1 ? 'pasajero' : 'pasajeros' }}</p>
             </div>
 
             <div *ngIf="step < 3" class="text-center">
@@ -137,19 +137,19 @@
             </button>
           </div>
 
-          <!-- Resumen cuando está colapsado -->
+          <!-- Resumen colapsado -->
           <div *ngIf="step > 1" class="flex items-center justify-between px-5 py-3">
             <p class="text-sm text-gray-600 dark:text-gray-300">
               {{ of.seats.value }} {{ (of.seats.value || 1) === 1 ? 'pasajero' : 'pasajeros' }}
             </p>
-            <p class="font-bold text-gray-800 dark:text-white">${{ totalPrice | number:'1.2-2' }}</p>
+            <p class="font-bold text-gray-800 dark:text-white">${{ totalUsd | number:'1.2-2' }}</p>
           </div>
 
           <!-- Form paso 1 -->
           <ng-container *ngIf="step === 1">
             <div class="p-5 space-y-5">
 
-              <!-- Cliente (solo visible para admin/empleado) -->
+              <!-- Cliente (admin/empleado) -->
               <div *ngIf="!isCliente">
                 <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Pasajero principal <span class="text-red-500">*</span>
@@ -201,15 +201,15 @@
                 </div>
               </div>
 
-              <!-- Precio total en Bs -->
+              <!-- Precio total -->
               <div class="rounded-xl bg-brand-50 px-5 py-4 dark:bg-brand-500/10">
                 <div class="flex items-center justify-between">
                   <p class="text-sm text-gray-600 dark:text-gray-300">
                     {{ of.seats.value ?? 1 }} × {{ tasaService.formatBs(pricePerSeat) }}
                   </p>
-                  <p class="text-xl font-extrabold text-brand-700 dark:text-brand-300">{{ tasaService.formatBs(totalPrice) }}</p>
+                  <p class="text-xl font-extrabold text-brand-700 dark:text-brand-300">{{ tasaService.formatBs(totalUsd) }}</p>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">= ${{ totalPrice | number:'1.2-2' }} USD · Tasa: Bs {{ tasaService.rate() | number:'1.2-2' }}/$</p>
+                <p class="text-xs text-gray-400 mt-1">= ${{ totalUsd | number:'1.2-2' }} USD · Tasa: Bs {{ tasaService.rate() | number:'1.2-2' }}/$</p>
               </div>
 
               <button type="button" (click)="confirmarOrden()" [disabled]="loadingAction"
@@ -245,63 +245,177 @@
           <!-- Resumen colapsado -->
           <div *ngIf="step > 2" class="flex items-center justify-between px-5 py-3">
             <p class="text-sm text-gray-600 dark:text-gray-300">{{ pf.method.value }} · {{ pf.currency.value }}</p>
-            <p class="font-bold text-gray-800 dark:text-white">${{ pf.amount.value | number:'1.2-2' }}</p>
+            <p class="font-bold text-gray-800 dark:text-white">{{ displayAmount }}</p>
           </div>
 
           <!-- Form paso 2 -->
           <ng-container *ngIf="step === 2">
             <div class="p-5 space-y-5">
 
-              <!-- Método de pago: tarjetas visuales -->
+              <!-- Métodos de pago -->
               <div>
-                <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">Método de pago</label>
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <ng-container *ngFor="let m of [
-                    {value: 'PAGO_MOVIL', icon: '📱', label: 'Pago Móvil'},
-                    {value: 'TRANSFERENCIA', icon: '🏦', label: 'Transferencia'},
-                    {value: 'EFECTIVO', icon: '💵', label: 'Efectivo'},
-                    {value: 'ZELLE', icon: '💚', label: 'Zelle'}
-                  ]">
-                    <button type="button" (click)="pf.method.setValue(m.value)"
-                      class="flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all"
-                      [ngClass]="pf.method.value === m.value
-                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
-                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
-                      <span class="text-2xl">{{ m.icon }}</span>
-                      <span class="text-xs font-semibold" [ngClass]="pf.method.value === m.value ? 'text-brand-700 dark:text-brand-300' : 'text-gray-600 dark:text-gray-400'">
-                        {{ m.label }}
-                      </span>
-                    </button>
-                  </ng-container>
+                <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">Selecciona tu método de pago</label>
+                <div class="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                  <button *ngFor="let m of PAYMENT_METHODS" type="button" (click)="pf.method.setValue(m.value)"
+                    class="flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all"
+                    [ngClass]="pf.method.value === m.value
+                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
+                      : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+                    <span class="text-2xl">{{ m.icon }}</span>
+                    <span class="text-xs font-semibold leading-tight" [ngClass]="pf.method.value === m.value ? 'text-brand-700 dark:text-brand-300' : 'text-gray-600 dark:text-gray-400'">
+                      {{ m.label }}
+                    </span>
+                  </button>
                 </div>
               </div>
 
-              <!-- Moneda y monto -->
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Moneda</label>
-                  <select [formControl]="pf.currency"
-                    class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 transition dark:border-gray-700 dark:bg-slate-800 dark:text-white">
-                    <option value="BS">🇻🇪 Bs — Bolívar (REF)</option>
-                    <option value="USD">🇺🇸 USD — Dólar</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Monto</label>
-                  <input type="number" step="0.01" [formControl]="pf.amount"
-                    class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+              <!-- Datos del método seleccionado -->
+              <div *ngIf="selectedPaymentInfo"
+                class="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/30 dark:bg-blue-500/10">
+                <p class="mb-3 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">
+                  {{ selectedPaymentInfo.title }}
+                </p>
+                <div class="space-y-2">
+                  <div *ngFor="let f of selectedPaymentInfo.fields" class="flex items-start justify-between gap-3">
+                    <span class="text-xs text-blue-600/70 dark:text-blue-400/70 min-w-0 flex-shrink-0">{{ f.key }}</span>
+                    <span class="text-xs font-bold text-blue-800 dark:text-blue-200 text-right break-all">{{ f.value }}</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- Referencia -->
+              <!-- ── Campos de Tarjeta (solo cuando method === CARD) ── -->
+              <div *ngIf="isCard" class="space-y-4">
+                <!-- Preview visual de tarjeta -->
+                <div class="relative h-48 w-full max-w-sm mx-auto rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 p-5 shadow-xl text-white select-none overflow-hidden">
+                  <!-- Chip -->
+                  <div class="mb-4 h-8 w-12 rounded-md bg-yellow-400/80"></div>
+                  <!-- Número -->
+                  <p class="font-mono text-lg tracking-widest text-white/90">
+                    {{ (pf.cardNumber.value || '').padEnd(19, '·').replace(/(.{4})/g, '$1 ').trim() || '···· ···· ···· ····' }}
+                  </p>
+                  <!-- Nombre y fecha -->
+                  <div class="mt-3 flex items-end justify-between">
+                    <div>
+                      <p class="text-[10px] text-white/50 uppercase tracking-wider">Titular</p>
+                      <p class="text-sm font-semibold tracking-wide text-white/90 uppercase">
+                        {{ pf.cardName.value || 'NOMBRE APELLIDO' }}
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-[10px] text-white/50 uppercase tracking-wider">Vence</p>
+                      <p class="text-sm font-semibold font-mono text-white/90">{{ pf.cardExpiry.value || 'MM/AA' }}</p>
+                    </div>
+                  </div>
+                  <!-- Logo decorativo -->
+                  <div class="absolute top-4 right-4 flex gap-1 opacity-80">
+                    <div class="h-8 w-8 rounded-full bg-red-500/70"></div>
+                    <div class="h-8 w-8 rounded-full bg-yellow-500/70 -ml-3"></div>
+                  </div>
+                </div>
+
+                <!-- Número de tarjeta -->
+                <div>
+                  <label class="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Número de tarjeta <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" [formControl]="pf.cardNumber" placeholder="1234 5678 9012 3456"
+                    maxlength="19" (input)="formatCardNumber($event)"
+                    class="h-11 w-full rounded-xl border px-4 font-mono text-sm text-gray-800 outline-none transition dark:text-white"
+                    [ngClass]="pf.cardNumber.touched && pf.cardNumber.invalid
+                      ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
+                      : 'border-gray-200 bg-gray-50 focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800'" />
+                  <p *ngIf="pf.cardNumber.touched && pf.cardNumber.invalid" class="mt-1 text-xs text-red-500">Ingresa el número de tarjeta.</p>
+                </div>
+
+                <!-- Nombre del titular -->
+                <div>
+                  <label class="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Nombre del titular <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" [formControl]="pf.cardName" placeholder="NOMBRE APELLIDO"
+                    class="h-11 w-full rounded-xl border px-4 text-sm uppercase tracking-wide text-gray-800 outline-none transition dark:text-white"
+                    [ngClass]="pf.cardName.touched && pf.cardName.invalid
+                      ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
+                      : 'border-gray-200 bg-gray-50 focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800'" />
+                  <p *ngIf="pf.cardName.touched && pf.cardName.invalid" class="mt-1 text-xs text-red-500">Ingresa el nombre del titular.</p>
+                </div>
+
+                <!-- Fecha de vencimiento + CVV -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Fecha de vencimiento <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" [formControl]="pf.cardExpiry" placeholder="MM/AA"
+                      maxlength="5" (input)="formatExpiry($event)"
+                      class="h-11 w-full rounded-xl border px-4 font-mono text-sm text-gray-800 outline-none transition dark:text-white"
+                      [ngClass]="pf.cardExpiry.touched && pf.cardExpiry.invalid
+                        ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
+                        : 'border-gray-200 bg-gray-50 focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800'" />
+                    <p *ngIf="pf.cardExpiry.touched && pf.cardExpiry.invalid" class="mt-1 text-xs text-red-500">Ingresa la fecha.</p>
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      CVV <span class="text-red-500">*</span>
+                    </label>
+                    <input type="password" [formControl]="pf.cardCvv" placeholder="···"
+                      maxlength="4" (input)="formatCvv($event)"
+                      class="h-11 w-full rounded-xl border px-4 font-mono text-sm text-gray-800 outline-none transition dark:text-white"
+                      [ngClass]="pf.cardCvv.touched && pf.cardCvv.invalid
+                        ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
+                        : 'border-gray-200 bg-gray-50 focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800'" />
+                    <p *ngIf="pf.cardCvv.touched && pf.cardCvv.invalid" class="mt-1 text-xs text-red-500">Ingresa el CVV.</p>
+                  </div>
+                </div>
+
+                <p class="flex items-center gap-1.5 text-xs text-gray-400">
+                  <span>🔒</span> Tus datos están protegidos con cifrado SSL.
+                </p>
+              </div>
+
+              <!-- Moneda -->
               <div>
-                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Número de referencia / confirmación</label>
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Moneda de pago</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <button type="button" (click)="pf.currency.setValue('BS')"
+                    class="flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all"
+                    [ngClass]="pf.currency.value === 'BS'
+                      ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400'">
+                    🇻🇪 Bolívar (REF)
+                  </button>
+                  <button type="button" (click)="pf.currency.setValue('USD')"
+                    class="flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all"
+                    [ngClass]="pf.currency.value === 'USD'
+                      ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400'">
+                    🇺🇸 Dólar (USD)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Monto a pagar (solo lectura) -->
+              <div class="rounded-2xl border-2 border-brand-200 bg-gradient-to-r from-brand-500 to-brand-600 p-5 text-center shadow-sm dark:border-brand-500/40">
+                <p class="text-xs font-medium text-brand-100 mb-1">Monto total a pagar</p>
+                <p class="text-4xl font-extrabold text-white tracking-tight">{{ displayAmount }}</p>
+                <p class="text-xs text-brand-100 mt-1.5">
+                  {{ of.seats.value }} {{ (of.seats.value || 1) === 1 ? 'pasajero' : 'pasajeros' }}
+                  <span *ngIf="pf.currency.value === 'BS'"> · ${{ totalUsd | number:'1.2-2' }} USD</span>
+                  <span *ngIf="pf.currency.value === 'USD'"> · REF {{ tasaService.toBs(totalUsd) | number:'1.2-2' }}</span>
+                </p>
+              </div>
+
+              <!-- Número de referencia (condicional) -->
+              <div *ngIf="selectedPaymentInfo?.showRef">
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Número de referencia / confirmación
+                </label>
                 <input type="text" [formControl]="pf.transactionRef" placeholder="Ej: 123456789"
                   class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
               </div>
 
-              <!-- Comprobante -->
-              <div>
+              <!-- Comprobante (condicional) -->
+              <div *ngIf="selectedPaymentInfo?.showProof">
                 <app-image-upload
                   label="Foto del comprobante de pago"
                   [currentUrl]="pf.proofImageUrl.value"
@@ -373,9 +487,15 @@
                   </div>
                 </div>
 
+                <!-- Total pagado con moneda correcta -->
                 <div class="mt-4 flex items-center justify-between rounded-xl bg-white p-4 shadow-sm dark:bg-white/[0.05]">
-                  <p class="text-sm text-gray-500">Total pagado</p>
-                  <p class="text-2xl font-extrabold text-gray-800 dark:text-white">${{ createdTicket.totalPrice | number:'1.2-2' }}</p>
+                  <div>
+                    <p class="text-sm text-gray-500">Total pagado</p>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ createdPago?.method }} · {{ createdPago?.currency }}</p>
+                  </div>
+                  <p class="text-2xl font-extrabold text-gray-800 dark:text-white">
+                    {{ createdPago ? pagoDisplay(createdPago) : ('$' + (createdTicket.totalPrice | number:'1.2-2')) }}
+                  </p>
                 </div>
               </div>
 

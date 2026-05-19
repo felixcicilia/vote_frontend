@@ -49,16 +49,11 @@ export class AppSidebarComponent {
       path: "/buscar",
     },
     {
-      icon: `<i class="fas fa-ticket fa-lg"></i>`,
-      name: "Mis reservas",
-      path: "/mis-reservas",
-    },
-    {
       icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Alquileres",
+      name: "Charter privado",
       subItems: [
-        { name: "Explorar embarcaciones", path: "/embarcaciones" },
-        { name: "Mis alquileres", path: "/alquileres" },
+        { name: "Buscar yate / catamarán", path: "/alquileres" },
+        { name: "Mis reservas de charter", path: "/mis-reservas" },
       ],
     },
     {
@@ -68,6 +63,11 @@ export class AppSidebarComponent {
         { name: "Solicitar taxi", path: "/viajes-taxi/solicitar" },
         { name: "Mis viajes", path: "/viajes-taxi" },
       ],
+    },
+    {
+      icon: `<i class="fas fa-ticket fa-lg"></i>`,
+      name: "Mis reservas",
+      path: "/mis-reservas",
     },
     {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
@@ -104,18 +104,13 @@ export class AppSidebarComponent {
       path: "/mi-negocio",
     },
     {
-      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
-      name: "Embarcaciones",
-      subItems: [
-        { name: "Mis embarcaciones", path: "/embarcaciones" },
-        { name: "Nueva embarcación", path: "/embarcaciones/crear" },
-      ],
-    },
-    {
       icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Alquileres",
+      name: "Mi Charter",
       subItems: [
-        { name: "Lista de alquileres", path: "/alquileres" },
+        { name: "Mis embarcaciones", path: "/mi-charter/yates" },
+        { name: "Agregar embarcación", path: "/mi-charter/yates/nuevo" },
+        { name: "Mi itinerario", path: "/mi-charter/itinerario" },
+        { name: "Reservas recibidas", path: "/mi-charter/reservas" },
       ],
     },
     {
@@ -163,9 +158,7 @@ export class AppSidebarComponent {
     {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
       name: "Pagos",
-      subItems: [
-        { name: "Verificar pagos", path: "/pagos" },
-      ],
+      subItems: [{ name: "Verificar pagos", path: "/pagos" }],
     },
     {
       icon: `<i class="fas fa-coins fa-lg"></i>`,
@@ -212,9 +205,7 @@ export class AppSidebarComponent {
     {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
       name: "Pagos",
-      subItems: [
-        { name: "Lista de pagos", path: "/pagos" },
-      ],
+      subItems: [{ name: "Lista de pagos", path: "/pagos" }],
     },
     {
       icon: `<i class="fas fa-star fa-lg"></i>`,
