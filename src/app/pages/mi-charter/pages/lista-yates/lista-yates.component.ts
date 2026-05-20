@@ -63,8 +63,14 @@ export class ListaYatesComponent implements OnInit {
     return `${environment.apiUrl.replace('/api', '')}${url}`;
   }
 
-  typeIcon(t: string): string { return t === 'YATE' ? '⛵' : '🛥️'; }
-  typeLabel(t: string): string { return t === 'YATE' ? 'Yate' : 'Catamarán'; }
+  typeIcon(t: string): string {
+    const m: Record<string, string> = { LANCHA: '🚤', YATE: '⛵', CATAMARAN: '🛥️', BOTE: '🛶' };
+    return m[t] ?? '🚤';
+  }
+  typeLabel(t: string): string {
+    const m: Record<string, string> = { LANCHA: 'Lancha', YATE: 'Yate', CATAMARAN: 'Catamarán', BOTE: 'Bote' };
+    return m[t] ?? t;
+  }
   amenityLabel = amenityLabel;
   amenityIcon  = amenityIcon;
 }

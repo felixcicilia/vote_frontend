@@ -47,7 +47,7 @@
           <!-- Vessel photo -->
           <div class="relative h-44 overflow-hidden bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
             <img *ngIf="viaje.schedule?.vessel?.photos?.[0]"
-              [src]="imageUrl(viaje.schedule.vessel.photos[0])"
+              [src]="imageUrl(viaje.schedule.vessel.photos![0])"
               [alt]="viaje.schedule.vessel.name"
               class="h-full w-full object-cover" />
             <div *ngIf="!viaje.schedule?.vessel?.photos?.[0]"

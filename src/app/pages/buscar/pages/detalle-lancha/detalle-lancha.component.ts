@@ -5,11 +5,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { IslandTripsService } from '../../services/island-trips.service';
 import { EmbarcacionesService } from '../../../embarcaciones/services/embarcaciones.service';
-import { DestinosService } from '../../../alquileres/services/destinos.service';
 import { AuthService } from '../../../auth-pages/services/auth.service';
 import { TasaService } from '../../../../shared/services/tasa.service';
 import { Embarcacion } from '../../../embarcaciones/models/embarcacion.model';
-import { Destino } from '../../../alquileres/models/destino.model';
 import { PuertoSalida, VesselSlot } from '../../models/island-trip.model';
 import { AMENITIES } from '../../../alquileres/data/amenities';
 import { environment } from '../../../../../environments/environment';
@@ -21,11 +19,10 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './detalle-lancha.component.html',
 })
 export class DetalleLanchaComponent implements OnInit {
-  private readonly route      = inject(ActivatedRoute);
-  private readonly router     = inject(Router);
+  private readonly route        = inject(ActivatedRoute);
+  private readonly router       = inject(Router);
   private readonly tripsService = inject(IslandTripsService);
   private readonly embService   = inject(EmbarcacionesService);
-  private readonly destService  = inject(DestinosService);
   readonly authService = inject(AuthService);
   readonly tasaService = inject(TasaService);
 
@@ -35,20 +32,22 @@ export class DetalleLanchaComponent implements OnInit {
   submitting = false;
   errorMessage = '';
   vessel: Embarcacion | null = null;
-  idaSlots:    VesselSlot[] = [];
+  idaSlots: VesselSlot[] = [];
   regresoSlots: VesselSlot[] = [];
-  destino: Destino | null = null;
   activePhoto = 0;
 
   // Parámetros heredados del buscador
-  destinoId: number | null = null;
-  puertoId: number | null  = null;
+  llegadaId: number | null = null;
+  salidaId: number | null  = null;
   fecha = '';
   passengers = 2;
-  tripType: 'IDA' | 'IDA_VUELTA' = 'IDA_VUELTA';
+
+  get tripType(): 'IDA' | 'IDA_VUELTA' {
+    return this.selectedRegreso ? 'IDA_VUELTA' : 'IDA';
+  }
 
   // Selección del cliente
-  selectedIda:    VesselSlot | null = null;
+  selectedIda: VesselSlot | null = null;
   selectedRegreso: VesselSlot | null = null;
   specialRequests = '';
 
@@ -56,15 +55,58 @@ export class DetalleLanchaComponent implements OnInit {
 
   get currentUser() { return this.authService.user(); }
 
+  get llegadaSel(): PuertoSalida | null {
+    return this.idaSlots[0]?.arrivalPoint ?? this.regresoSlots[0]?.departurePoint ?? null;
+  }
+
+  get salidaSel(): PuertoSalida | null {
+    return this.idaSlots[0]?.departurePoint ?? null;
+  }
+
   get totalPrice(): number {
     const ida    = this.selectedIda     ? Number(this.selectedIda.pricePerPerson)     * this.passengers : 0;
     const vuelta = this.selectedRegreso ? Number(this.selectedRegreso.pricePerPerson) * this.passengers : 0;
     return ida + vuelta;
   }
 
+  get maxPassengers(): number {
+    const cap = this.vessel?.capacity ?? 999;
+    const slotMax = this.selectedIda?.maxPassengers ?? cap;
+    return Math.min(cap, slotMax);
+  }
+
+  private nowHHMM(): string {
+    const n = new Date();
+    return `${n.getHours().toString().padStart(2, '0')}:${n.getMinutes().toString().padStart(2, '0')}`;
+  }
+
+  private isToday(date: string): boolean {
+    return date === this.today;
+  }
+
+  private isSlotVisible(slot: VesselSlot): boolean {
+    const now = this.nowHHMM();
+    if (slot.departureDate) {
+      if (slot.departureDate < this.today) return false;                       // fecha pasada → ocultar
+      if (slot.departureDate === this.today && slot.departureTime <= now) return false; // hoy y ya salió
+      if (this.fecha && slot.departureDate !== this.fecha) return false;       // no coincide con la fecha elegida
+      return true;
+    }
+    // slot sin fecha (recurrente): filtrar por hora solo si el cliente eligió hoy
+    if (this.fecha && this.isToday(this.fecha) && slot.departureTime <= now) return false;
+    return true;
+  }
+
+  get visibleIdaSlots(): VesselSlot[] {
+    return this.idaSlots.filter(s => this.isSlotVisible(s));
+  }
+
+  get visibleRegresoSlots(): VesselSlot[] {
+    return this.regresoSlots.filter(s => this.isSlotVisible(s));
+  }
+
   get canBook(): boolean {
     if (!this.selectedIda) return false;
-    if (this.tripType === 'IDA_VUELTA' && !this.selectedRegreso) return false;
     if (!this.fecha) return false;
     return true;
   }
@@ -76,36 +118,25 @@ export class DetalleLanchaComponent implements OnInit {
 
   ngOnInit(): void {
     this.tasaService.load();
-    const p = this.route.snapshot;
-    const vesselId = Number(p.paramMap.get('id'));
+    const snap = this.route.snapshot;
+    const vesselId = Number(snap.paramMap.get('id'));
 
-    this.destinoId = Number(p.queryParamMap.get('destinoId')) || null;
-    this.puertoId  = Number(p.queryParamMap.get('puertoId'))  || null;
-    this.fecha     = p.queryParamMap.get('fecha') ?? '';
-    this.passengers = Number(p.queryParamMap.get('passengers')) || 2;
-    this.tripType  = (p.queryParamMap.get('tripType') as any) ?? 'IDA_VUELTA';
+    this.llegadaId  = Number(snap.queryParamMap.get('llegadaId'))  || null;
+    this.salidaId   = Number(snap.queryParamMap.get('salidaId'))   || null;
+    this.fecha      = snap.queryParamMap.get('fecha') ?? '';
+    this.passengers = Number(snap.queryParamMap.get('passengers')) || 2;
 
     this.embService.getById(vesselId).subscribe({
       next: (v) => { this.vessel = v; this.loading = false; },
       error: () => { this.loading = false; },
     });
 
-    const slotParams: any = { vesselId };
-    if (this.destinoId) slotParams.destinationId = this.destinoId;
-    if (this.puertoId)  slotParams.departurePointId = this.puertoId;
-
-    this.tripsService.getSlots(slotParams).subscribe({
+    this.tripsService.getSlots({ vesselId }).subscribe({
       next: (slots) => {
-        this.idaSlots     = slots.filter(s => s.direction === 'IDA');
-        this.regresoSlots = slots.filter(s => s.direction === 'REGRESO');
+        this.idaSlots     = slots.filter(s => s.direction === 'IDA').sort((a, b) => a.departureTime.localeCompare(b.departureTime));
+        this.regresoSlots = slots.filter(s => s.direction === 'REGRESO').sort((a, b) => a.departureTime.localeCompare(b.departureTime));
       },
     });
-
-    if (this.destinoId) {
-      this.destService.getById(this.destinoId).subscribe({
-        next: (d) => { this.destino = d; },
-      });
-    }
   }
 
   selectIda(slot: VesselSlot): void {
@@ -125,18 +156,18 @@ export class DetalleLanchaComponent implements OnInit {
     this.errorMessage = '';
 
     this.tripsService.createBooking({
-      clientId:        user.id,
-      vesselId:        this.vessel.id,
-      destinationId:   this.destinoId!,
+      clientId:         user.id,
+      vesselId:         this.vessel.id,
+      destinationId:    this.llegadaId!,
       departurePointId: this.selectedIda!.departurePoint.id,
-      outboundSlotId:  this.selectedIda!.id,
-      returnSlotId:    this.tripType === 'IDA_VUELTA' ? this.selectedRegreso?.id : undefined,
-      tripDate:        this.fecha || this.today,
-      tripType:        this.tripType,
-      passengers:      this.passengers,
-      specialRequests: this.specialRequests || undefined,
+      outboundSlotId:   this.selectedIda!.id,
+      returnSlotId:     this.selectedRegreso?.id,
+      tripDate:         this.fecha || this.today,
+      tripType:         this.tripType,
+      passengers:       this.passengers,
+      specialRequests:  this.specialRequests || undefined,
     }).subscribe({
-      next: (b) => { this.submitting = false; this.router.navigate(['/mis-reservas']); },
+      next: () => { this.submitting = false; this.router.navigate(['/mis-reservas']); },
       error: (err) => {
         const msg = err?.error?.message;
         this.errorMessage = Array.isArray(msg) ? msg.join(', ') : typeof msg === 'string' ? msg : 'No se pudo crear la reserva.';

@@ -2,11 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { IslandTripsService } from './services/island-trips.service';
-import { DestinosService } from '../alquileres/services/destinos.service';
 import { TasaService } from '../../shared/services/tasa.service';
-import { Destino } from '../alquileres/models/destino.model';
 import { PuertoSalida, VesselSlot } from './models/island-trip.model';
 import { Embarcacion } from '../embarcaciones/models/embarcacion.model';
 import { amenityIcon } from '../alquileres/data/amenities';
@@ -14,7 +13,7 @@ import { environment } from '../../../environments/environment';
 
 interface VesselGroup {
   vessel: Embarcacion;
-  idaSlots:    VesselSlot[];
+  idaSlots: VesselSlot[];
   regresoSlots: VesselSlot[];
 }
 
@@ -26,49 +25,53 @@ interface VesselGroup {
 })
 export class BuscarComponent implements OnInit {
   private readonly tripsService = inject(IslandTripsService);
-  private readonly destinosService = inject(DestinosService);
   readonly tasaService = inject(TasaService);
   private readonly router = inject(Router);
 
-  destinos: Destino[] = [];
-  puertos: PuertoSalida[] = [];
+  muelles: PuertoSalida[] = [];
+  islas: PuertoSalida[] = [];
+
   loading = false;
+  loadingPuntos = true;
   buscado = false;
 
   // Filtros
-  destinoId: number | null = null;
-  puertoId: number | null  = null;
+  salidaId: number | null = null;
+  llegadaId: number | null = null;
   fecha = '';
   passengers = 2;
-  tripType: 'IDA' | 'IDA_VUELTA' = 'IDA_VUELTA';
 
-  // Resultados agrupados por embarcación
   vesselGroups: VesselGroup[] = [];
 
   readonly today = new Date().toISOString().split('T')[0];
   amenityIcon = amenityIcon;
 
-  get destinoSel(): Destino | null {
-    return this.destinos.find(d => d.id === this.destinoId) ?? null;
-  }
-  get puertoSel(): PuertoSalida | null {
-    return this.puertos.find(p => p.id === this.puertoId) ?? null;
-  }
+  get salidaSel(): PuertoSalida | null { return this.muelles.find(p => p.id === this.salidaId) ?? null; }
+  get llegadaSel(): PuertoSalida | null { return this.islas.find(p => p.id === this.llegadaId) ?? null; }
 
   ngOnInit(): void {
     this.tasaService.load();
-    this.destinosService.getAll().subscribe({ next: d => { this.destinos = d; } });
-    this.tripsService.getPuertos().subscribe({ next: p => { this.puertos = p; } });
+    forkJoin({
+      muelles: this.tripsService.getMuelles(),
+      islas: this.tripsService.getIslasPiers(),
+    }).subscribe({
+      next: ({ muelles, islas }) => {
+        this.muelles = muelles;
+        this.islas = islas;
+        this.loadingPuntos = false;
+      },
+      error: () => { this.loadingPuntos = false; },
+    });
   }
 
   buscar(): void {
-    if (!this.destinoId) return;
+    if (!this.llegadaId) return;
     this.loading = true;
     this.buscado = true;
     this.vesselGroups = [];
 
-    const params: any = { destinationId: this.destinoId };
-    if (this.puertoId) params.departurePointId = this.puertoId;
+    const params: any = { arrivalPointId: this.llegadaId };
+    if (this.salidaId) params.departurePointId = this.salidaId;
 
     this.tripsService.getSlots(params).subscribe({
       next: (slots) => {
@@ -79,42 +82,52 @@ export class BuscarComponent implements OnInit {
     });
   }
 
+  private isSlotVisible(slot: VesselSlot): boolean {
+    const now = new Date();
+    const hhmm = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    if (slot.departureDate) {
+      if (slot.departureDate < this.today) return false;
+      if (slot.departureDate === this.today && slot.departureTime <= hhmm) return false;
+      if (this.fecha && slot.departureDate !== this.fecha) return false;
+      return true;
+    }
+    if (this.fecha && this.fecha === this.today && slot.departureTime <= hhmm) return false;
+    return true;
+  }
+
   private groupByVessel(slots: VesselSlot[]): VesselGroup[] {
+    const visible = slots.filter(s => this.isSlotVisible(s));
     const map = new Map<number, VesselGroup>();
-    for (const s of slots) {
+    for (const s of visible) {
       const vid = s.vessel.id;
-      if (!map.has(vid)) {
-        map.set(vid, { vessel: s.vessel, idaSlots: [], regresoSlots: [] });
-      }
+      if (!map.has(vid)) map.set(vid, { vessel: s.vessel, idaSlots: [], regresoSlots: [] });
       const g = map.get(vid)!;
       if (s.direction === 'IDA') g.idaSlots.push(s);
       else g.regresoSlots.push(s);
     }
-    // Filter: if IDA_VUELTA, only show vessels that have both directions
-    return [...map.values()].filter(g => {
-      if (this.tripType === 'IDA_VUELTA') {
-        return g.idaSlots.length > 0 && g.regresoSlots.length > 0;
-      }
-      return g.idaSlots.length > 0;
-    });
+    return [...map.values()].filter(g => g.idaSlots.length > 0);
   }
 
   seleccionar(group: VesselGroup): void {
     this.router.navigate(['/buscar/lancha', group.vessel.id], {
       queryParams: {
-        destinoId:  this.destinoId,
-        puertoId:   this.puertoId,
+        llegadaId:  this.llegadaId,
+        salidaId:   this.salidaId,
         fecha:      this.fecha,
         passengers: this.passengers,
-        tripType:   this.tripType,
       },
     });
   }
 
+  elegirDestino(isla: PuertoSalida): void {
+    this.llegadaId = isla.id;
+    const el = document.getElementById('search-form');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   minPrice(group: VesselGroup): number {
-    const allSlots = [...group.idaSlots, ...group.regresoSlots];
-    if (!allSlots.length) return 0;
-    return Math.min(...allSlots.map(s => Number(s.pricePerPerson)));
+    const all = [...group.idaSlots, ...group.regresoSlots];
+    return all.length ? Math.min(...all.map(s => Number(s.pricePerPerson))) : 0;
   }
 
   imageUrl(url?: string | null): string {

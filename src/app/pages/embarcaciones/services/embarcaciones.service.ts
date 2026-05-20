@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Embarcacion, CreateEmbarcacionDto, UpdateEmbarcacionDto, VesselType, VesselStatus } from '../models/embarcacion.model';
+import { Embarcacion, CreateEmbarcacionDto, UpdateEmbarcacionDto, VesselType, VesselStatus, VesselVerificationStatus } from '../models/embarcacion.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmbarcacionesService {
@@ -52,5 +52,13 @@ export class EmbarcacionesService {
 
   delete(id: number): Observable<any> {
     return this.http.delete<any>(`${this.base}/${id}`);
+  }
+
+  getPendingVerification(): Observable<Embarcacion[]> {
+    return this.http.get<any>(`${this.base}/pending-verification`).pipe(map(r => this.extractArray(r)));
+  }
+
+  verify(id: number, status: VesselVerificationStatus, rejectionReason?: string): Observable<Embarcacion> {
+    return this.http.patch<any>(`${this.base}/${id}/verify`, { status, rejectionReason }).pipe(map(r => this.extractItem(r)));
   }
 }

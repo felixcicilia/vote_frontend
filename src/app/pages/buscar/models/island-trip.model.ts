@@ -7,6 +7,7 @@ export interface PuertoSalida {
   city: string;
   state: string;
   icon?: string | null;
+  locationType?: 'MUELLE' | 'ISLA';
   isActive: boolean;
 }
 
@@ -16,7 +17,8 @@ export interface VesselSlot {
   id: number;
   vessel: Embarcacion;
   departurePoint: PuertoSalida;
-  destination: Destino;
+  arrivalPoint: PuertoSalida;
+  departureDate?: string | null;
   departureTime: string;
   direction: TripDirection;
   pricePerPerson: number;

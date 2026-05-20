@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-import { Embarcacion, VesselType, VesselStatus } from '../../models/embarcacion.model';
+import { Embarcacion, VesselType, VesselStatus, VesselVerificationStatus } from '../../models/embarcacion.model';
 import { EmbarcacionesService } from '../../services/embarcaciones.service';
 
 @Component({
@@ -25,6 +25,7 @@ export class ListaEmbarcacionesComponent implements OnInit {
   search = '';
   filtroTipo: VesselType | '' = '';
   filtroEstado: VesselStatus | '' = '';
+  filtroVerificacion: VesselVerificationStatus | '' = '';
 
   page = 1;
   limit = 10;
@@ -62,7 +63,8 @@ export class ListaEmbarcacionesComponent implements OnInit {
         (e.description ?? '').toLowerCase().includes(term);
       const tipo = !this.filtroTipo || e.type === this.filtroTipo;
       const estado = !this.filtroEstado || e.status === this.filtroEstado;
-      return busqueda && tipo && estado;
+      const verificacion = !this.filtroVerificacion || e.verificationStatus === this.filtroVerificacion;
+      return busqueda && tipo && estado && verificacion;
     });
 
     this.total = this.filtradas.length;
@@ -90,6 +92,7 @@ export class ListaEmbarcacionesComponent implements OnInit {
     this.search = '';
     this.filtroTipo = '';
     this.filtroEstado = '';
+    this.filtroVerificacion = '';
     this.page = 1;
     this.aplicarFiltros();
   }
@@ -122,6 +125,22 @@ export class ListaEmbarcacionesComponent implements OnInit {
 
   estadoLabel(s: VesselStatus): string {
     return s === 'ACTIVE' ? 'Activa' : s === 'MAINTENANCE' ? 'Mantenimiento' : 'Inactiva';
+  }
+
+  verificacionClase(s: VesselVerificationStatus): string {
+    return s === 'APPROVED'
+      ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+      : s === 'REJECTED'
+      ? 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+      : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400';
+  }
+
+  verificacionLabel(s: VesselVerificationStatus): string {
+    return s === 'APPROVED' ? '✓ Aprobada' : s === 'REJECTED' ? '✗ Rechazada' : '⏳ Pendiente';
+  }
+
+  get hayFiltros(): boolean {
+    return !!(this.search || this.filtroTipo || this.filtroEstado || this.filtroVerificacion);
   }
 
   get rangoInicio(): number { return this.total === 0 ? 0 : (this.page - 1) * this.limit + 1; }

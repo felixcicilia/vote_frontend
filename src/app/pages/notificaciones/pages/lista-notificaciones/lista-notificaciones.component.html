@@ -16,6 +16,10 @@
   <div *ngIf="!loading && errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">{{ errorMessage }}</div>
 
   <div *ngIf="!loading && !errorMessage" class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Bandeja de notificaciones</h3>
+      <span class="text-sm text-gray-500">{{ notificaciones.length }} total</span>
+    </div>
     <div class="divide-y divide-gray-100 dark:divide-gray-800">
       <div *ngFor="let n of notificaciones; trackBy: trackById"
         class="flex items-start gap-4 px-5 py-4 transition cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02]"

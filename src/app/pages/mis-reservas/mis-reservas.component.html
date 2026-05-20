@@ -40,7 +40,7 @@
         <!-- Imagen del vessel -->
         <div class="h-40 w-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 sm:h-auto sm:w-48 dark:from-slate-800 dark:to-slate-900">
           <img *ngIf="t.trip?.schedule?.vessel?.photos?.[0]"
-            [src]="imageUrl(t.trip.schedule.vessel.photos[0])"
+            [src]="imageUrl(t.trip.schedule.vessel.photos![0])"
             [alt]="t.trip?.schedule?.vessel?.name"
             class="h-full w-full object-cover" />
           <div *ngIf="!t.trip?.schedule?.vessel?.photos?.[0]"

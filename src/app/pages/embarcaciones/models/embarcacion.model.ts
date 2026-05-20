@@ -1,5 +1,6 @@
 export type VesselType = 'LANCHA' | 'YATE' | 'CATAMARAN' | 'BOTE';
 export type VesselStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
+export type VesselVerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type VesselAmenity =
   | 'WIFI' | 'SOUND_SYSTEM' | 'AIR_CONDITIONING' | 'KITCHEN'
   | 'BATHROOM' | 'REFRIGERATOR' | 'DRINKING_WATER' | 'SNORKELING'
@@ -18,9 +19,12 @@ export interface Embarcacion {
   photos?: string[] | null;
   amenities?: VesselAmenity[] | null;
   pricePerDay?: number | null;
+  pricePerPerson?: number | null;
   licensePlate?: string | null;
   year?: number | null;
   isAvailable: boolean;
+  verificationStatus: VesselVerificationStatus;
+  rejectionReason?: string | null;
   status: VesselStatus;
   provider?: {
     id: number;

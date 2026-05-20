@@ -1,0 +1,204 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">📍 Puntos de salida</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Muelles de tierra firme e islas/cayos</p>
+      </div>
+      <button (click)="openNew()"
+        class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+        + Nuevo punto
+      </button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div *ngIf="successMessage"
+    class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800/30 dark:bg-green-500/10 dark:text-green-400">
+    ✓ {{ successMessage }}
+  </div>
+
+  <!-- Form -->
+  <div *ngIf="showForm" class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+      <h2 class="text-base font-semibold text-gray-800 dark:text-white/90">
+        {{ editingId ? 'Editar punto' : 'Nuevo punto de salida' }}
+      </h2>
+    </div>
+    <div class="p-6">
+      <div *ngIf="errorMessage"
+        class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+        ⚠️ {{ errorMessage }}
+      </div>
+
+      <!-- Tipo -->
+      <div class="mb-5">
+        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Tipo <span class="text-red-500">*</span></label>
+        <div class="flex gap-3 h-11">
+          <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 text-sm font-semibold transition"
+            [class.border-brand-500]="form.locationType === 'MUELLE'" [class.bg-brand-50]="form.locationType === 'MUELLE'"
+            [class.text-brand-700]="form.locationType === 'MUELLE'" [class.border-gray-300]="form.locationType !== 'MUELLE'"
+            [class.text-gray-500]="form.locationType !== 'MUELLE'">
+            <input type="radio" [(ngModel)]="form.locationType" value="MUELLE" class="sr-only" />
+            ⚓ Muelle (tierra)
+          </label>
+          <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 text-sm font-semibold transition"
+            [class.border-emerald-500]="form.locationType === 'ISLA'" [class.bg-emerald-50]="form.locationType === 'ISLA'"
+            [class.text-emerald-700]="form.locationType === 'ISLA'" [class.border-gray-300]="form.locationType !== 'ISLA'"
+            [class.text-gray-500]="form.locationType !== 'ISLA'">
+            <input type="radio" [(ngModel)]="form.locationType" value="ISLA" class="sr-only" />
+            🏝️ Isla / Cayo
+          </label>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="lg:col-span-2">
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Nombre <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.name" placeholder="ej. Marina Chichiriviche"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Ciudad <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.city" placeholder="ej. Chichiriviche"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Estado <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.state" placeholder="ej. Falcón"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Ícono (emoji)</label>
+          <input type="text" [(ngModel)]="form.icon" placeholder="⚓"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button (click)="save()" [disabled]="submitting"
+          class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 transition-colors">
+          {{ submitting ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear punto') }}
+        </button>
+        <button (click)="cancel()" type="button"
+          class="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.03]">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div *ngIf="!loading" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <!-- Search -->
+      <div class="relative w-full sm:max-w-sm">
+        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">🔍</span>
+        <input type="text" [(ngModel)]="search" placeholder="Buscar por nombre, ciudad o estado..."
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <button *ngIf="search" (click)="search = ''"
+          class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600">✕</button>
+      </div>
+      <!-- Type pills -->
+      <div class="flex gap-2">
+        <button *ngFor="let f of ['ALL','MUELLE','ISLA']" (click)="filterType = $any(f)"
+          class="rounded-lg px-4 py-2 text-sm font-medium transition"
+          [class.bg-brand-500]="filterType === f" [class.text-white]="filterType === f"
+          [class.bg-gray-100]="filterType !== f" [class.text-gray-600]="filterType !== f"
+          [class.dark:bg-gray-800]="filterType !== f" [class.dark:text-gray-300]="filterType !== f">
+          {{ f === 'ALL' ? '🌐 Todos' : f === 'MUELLE' ? '⚓ Muelles' : '🏝️ Islas' }}
+          <span class="ml-1 text-xs opacity-70">({{ countByType($any(f)) }})</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 gap-3">
+    <div class="text-4xl animate-bounce">📍</div>
+    <p class="text-sm text-gray-400">Cargando puntos...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading && filteredPuntos.length > 0"
+    class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Lista de puntos de salida</h3>
+      <span class="text-sm text-gray-500">{{ rangoInicio }}-{{ rangoFin }} de {{ total }}</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="border-b border-gray-100 dark:border-gray-800">
+          <tr>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-400">Punto</th>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-gray-400">Ubicación</th>
+            <th class="px-5 py-4 text-center text-xs font-semibold uppercase text-gray-400">Tipo</th>
+            <th class="px-5 py-4 text-center text-xs font-semibold uppercase text-gray-400">Estado</th>
+            <th class="px-5 py-4 text-right text-xs font-semibold uppercase text-gray-400">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <tr *ngFor="let p of paginatedPuntos" [class.opacity-50]="!p.isActive">
+            <td class="px-5 py-4">
+              <span class="mr-2 text-lg">{{ p.icon }}</span>
+              <span class="font-medium text-gray-800 dark:text-white/90">{{ p.name }}</span>
+            </td>
+            <td class="px-5 py-4 text-gray-500 dark:text-gray-400">{{ p.city }}, {{ p.state }}</td>
+            <td class="px-5 py-4 text-center">
+              <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                [class.bg-blue-100]="p.locationType === 'MUELLE'" [class.text-blue-700]="p.locationType === 'MUELLE'"
+                [class.bg-emerald-100]="p.locationType === 'ISLA'" [class.text-emerald-700]="p.locationType === 'ISLA'">
+                {{ p.locationType === 'MUELLE' ? '⚓ Muelle' : '🏝️ Isla' }}
+              </span>
+            </td>
+            <td class="px-5 py-4 text-center">
+              <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                [class.bg-green-100]="p.isActive" [class.text-green-700]="p.isActive"
+                [class.bg-gray-100]="!p.isActive" [class.text-gray-500]="!p.isActive">
+                {{ p.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex items-center justify-end gap-2">
+                <button (click)="toggleActive(p)"
+                  class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                  [class.border-amber-200]="p.isActive" [class.text-amber-600]="p.isActive" [class.hover:bg-amber-50]="p.isActive"
+                  [class.border-green-200]="!p.isActive" [class.text-green-600]="!p.isActive" [class.hover:bg-green-50]="!p.isActive">
+                  {{ p.isActive ? 'Desactivar' : 'Activar' }}
+                </button>
+                <button (click)="openEdit(p)"
+                  class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-400">
+                  Editar
+                </button>
+                <button (click)="delete(p)"
+                  class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:border-red-300 hover:bg-red-50 transition dark:border-gray-700">
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flex items-center justify-between border-t border-gray-100 px-5 py-4 dark:border-gray-800">
+      <p class="text-sm text-gray-500">Página {{ page }} de {{ totalPages }}</p>
+      <div class="flex gap-2">
+        <button (click)="cambiarPagina(page - 1)" [disabled]="page === 1" class="rounded-lg border border-gray-300 px-4 py-2 text-sm disabled:opacity-50 dark:border-gray-700 dark:text-gray-300">Anterior</button>
+        <button (click)="cambiarPagina(page + 1)" [disabled]="page === totalPages || total === 0" class="rounded-lg border border-gray-300 px-4 py-2 text-sm disabled:opacity-50 dark:border-gray-700 dark:text-gray-300">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && filteredPuntos.length === 0"
+    class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+    <div class="text-5xl mb-4">📍</div>
+    <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">Sin puntos de salida</h3>
+    <p class="mt-2 text-sm text-gray-500">Agrega muelles e islas para que los proveedores configuren sus itinerarios.</p>
+    <button (click)="openNew()" class="mt-5 rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+      + Agregar primer punto
+    </button>
+  </div>
+
+</div>

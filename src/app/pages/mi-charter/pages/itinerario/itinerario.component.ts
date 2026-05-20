@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IslandTripsService } from '../../../buscar/services/island-trips.service';
 import { EmbarcacionesService } from '../../../embarcaciones/services/embarcaciones.service';
-import { DestinosService } from '../../../alquileres/services/destinos.service';
 import { AuthService } from '../../../auth-pages/services/auth.service';
 import { VesselSlot, PuertoSalida } from '../../../buscar/models/island-trip.model';
 import { Embarcacion } from '../../../embarcaciones/models/embarcacion.model';
-import { Destino } from '../../../alquileres/models/destino.model';
+import { environment } from '../../../../../environments/environment';
+import { amenityIcon, amenityLabel } from '../../../alquileres/data/amenities';
 
 interface SlotForm {
   vesselId: number | null;
   departurePointId: number | null;
-  destinationId: number | null;
+  arrivalPointId: number | null;
+  departureDate: string;
   departureTime: string;
   direction: 'IDA' | 'REGRESO';
   pricePerPerson: number | null;
@@ -30,7 +31,6 @@ interface SlotForm {
 export class ItinerarioComponent implements OnInit {
   private readonly tripsService = inject(IslandTripsService);
   private readonly embService   = inject(EmbarcacionesService);
-  private readonly destService  = inject(DestinosService);
   readonly authService = inject(AuthService);
 
   loading = true;
@@ -39,26 +39,90 @@ export class ItinerarioComponent implements OnInit {
   successMessage = '';
 
   vessels: Embarcacion[] = [];
-  destinos: Destino[] = [];
-  puertos: PuertoSalida[] = [];
+  muelles: PuertoSalida[] = [];
+  islaPiers: PuertoSalida[] = [];
   slots: VesselSlot[] = [];
 
+  selectedVesselId: number | null = null;
+  selectedDate: string = new Date().toISOString().split('T')[0];
+  search = '';
+  vesselSearch = '';
   showForm = false;
   editingId: number | null = null;
 
   form: SlotForm = this.emptyForm();
 
+  get selectedVessel(): Embarcacion | null {
+    return this.vessels.find(v => v.id === this.selectedVesselId) ?? null;
+  }
+
+  get filteredVessels(): Embarcacion[] {
+    const t = this.vesselSearch.trim().toLowerCase();
+    if (!t) return this.vessels;
+    return this.vessels.filter(v => v.name.toLowerCase().includes(t));
+  }
+
+  get allSlots(): VesselSlot[] {
+    return [...this.idaSlots, ...this.regresoSlots].sort((a, b) =>
+      (a.departureDate ?? '').localeCompare(b.departureDate ?? '') || a.departureTime.localeCompare(b.departureTime));
+  }
+
+  get filteredSlots(): VesselSlot[] {
+    if (!this.selectedVesselId) return [];
+    return this.slots.filter(s => s.vessel.id === this.selectedVesselId);
+  }
+
+  private matchSearch(s: VesselSlot): boolean {
+    if (!this.search.trim()) return true;
+    const t = this.search.toLowerCase();
+    return s.departurePoint.name.toLowerCase().includes(t)
+        || s.arrivalPoint.name.toLowerCase().includes(t)
+        || s.departureTime.includes(t)
+        || (s.departureDate ?? '').includes(t);
+  }
+
+  get idaSlots(): VesselSlot[] {
+    return this.filteredSlots.filter(s => s.direction === 'IDA' && this.matchSearch(s))
+      .sort((a, b) => (a.departureDate ?? '').localeCompare(b.departureDate ?? '') || a.departureTime.localeCompare(b.departureTime));
+  }
+  get regresoSlots(): VesselSlot[] {
+    return this.filteredSlots.filter(s => s.direction === 'REGRESO' && this.matchSearch(s))
+      .sort((a, b) => (a.departureDate ?? '').localeCompare(b.departureDate ?? '') || a.departureTime.localeCompare(b.departureTime));
+  }
+
+  readonly today = new Date().toISOString().split('T')[0];
+
+  isSlotPast(slot: VesselSlot): boolean {
+    if (this.selectedDate > this.today) return false;
+    if (this.selectedDate < this.today) return true;
+    const now = new Date();
+    const hhmm = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    return slot.departureTime <= hhmm;
+  }
+
   get providerId(): number | null {
     return (this.authService.user() as any)?.providerProfile?.id ?? null;
+  }
+
+  refresh(): void {
+    const pid = this.providerId;
+    if (!pid) return;
+    this.loading = true;
+    this.tripsService.getSlotsByProvider(pid).subscribe({
+      next: s => { this.slots = s; this.loading = false; },
+      error: () => { this.loading = false; },
+    });
   }
 
   ngOnInit(): void {
     const pid = this.providerId;
     if (!pid) { this.loading = false; return; }
 
-    this.embService.getByProvider(pid).subscribe({ next: v => { this.vessels = v; } });
-    this.destService.getAll().subscribe({ next: d => { this.destinos = d; } });
-    this.tripsService.getPuertos().subscribe({ next: p => { this.puertos = p; } });
+    this.embService.getByProvider(pid).subscribe({
+      next: v => { this.vessels = v; if (v.length > 0) this.selectedVesselId = v[0].id; },
+    });
+    this.tripsService.getMuelles().subscribe({ next: p => { this.muelles = p; } });
+    this.tripsService.getIslasPiers().subscribe({ next: p => { this.islaPiers = p; } });
 
     this.tripsService.getSlotsByProvider(pid).subscribe({
       next: s => { this.slots = s; this.loading = false; },
@@ -77,14 +141,15 @@ export class ItinerarioComponent implements OnInit {
   openEdit(slot: VesselSlot): void {
     this.editingId = slot.id;
     this.form = {
-      vesselId:        slot.vessel.id,
+      vesselId:         slot.vessel.id,
       departurePointId: slot.departurePoint.id,
-      destinationId:   slot.destination.id,
-      departureTime:   slot.departureTime,
-      direction:       slot.direction,
-      pricePerPerson:  Number(slot.pricePerPerson),
-      durationMinutes: slot.durationMinutes ?? null,
-      maxPassengers:   slot.maxPassengers ?? null,
+      arrivalPointId:   slot.arrivalPoint.id,
+      departureDate:    slot.departureDate ?? '',
+      departureTime:    slot.departureTime,
+      direction:        slot.direction,
+      pricePerPerson:   slot.pricePerPerson ? Number(slot.pricePerPerson) : null,
+      durationMinutes:  slot.durationMinutes ?? null,
+      maxPassengers:    slot.maxPassengers ?? null,
     };
     this.showForm = true;
     this.errorMessage = '';
@@ -98,7 +163,7 @@ export class ItinerarioComponent implements OnInit {
   }
 
   save(): void {
-    if (!this.form.vesselId || !this.form.departurePointId || !this.form.destinationId || !this.form.departureTime || !this.form.pricePerPerson) {
+    if (!this.form.vesselId || !this.form.departurePointId || !this.form.arrivalPointId || !this.form.departureTime) {
       this.errorMessage = 'Completa todos los campos obligatorios.';
       return;
     }
@@ -108,11 +173,12 @@ export class ItinerarioComponent implements OnInit {
     const dto: any = {
       vesselId:         this.form.vesselId,
       departurePointId: this.form.departurePointId,
-      destinationId:    this.form.destinationId,
+      arrivalPointId:   this.form.arrivalPointId,
       departureTime:    this.form.departureTime,
       direction:        this.form.direction,
-      pricePerPerson:   this.form.pricePerPerson,
     };
+    if (this.form.departureDate)   dto.departureDate   = this.form.departureDate;
+    if (this.form.pricePerPerson)  dto.pricePerPerson  = this.form.pricePerPerson;
     if (this.form.durationMinutes) dto.durationMinutes = this.form.durationMinutes;
     if (this.form.maxPassengers)   dto.maxPassengers   = this.form.maxPassengers;
 
@@ -156,16 +222,37 @@ export class ItinerarioComponent implements OnInit {
     return this.vessels.find(v => v.id === id)?.name ?? '';
   }
 
+  imageUrl(url?: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${environment.apiUrl.replace('/api', '')}${url}`;
+  }
+
+  typeIcon(t: string): string {
+    return t === 'LANCHA' ? '🚤' : t === 'YATE' ? '⛵' : t === 'CATAMARAN' ? '🛥️' : '🛶';
+  }
+  typeLabel(t: string): string {
+    const m: Record<string,string> = { LANCHA:'Lancha', YATE:'Yate', CATAMARAN:'Catamarán', BOTE:'Bote' };
+    return m[t] ?? t;
+  }
+  amenityIcon  = amenityIcon;
+  amenityLabel = amenityLabel;
+
+  slotCountForVessel(vesselId: number): number {
+    return this.slots.filter(s => s.vessel.id === vesselId).length;
+  }
+
   private emptyForm(): SlotForm {
     return {
-      vesselId: this.vessels[0]?.id ?? null,
+      vesselId:         this.selectedVesselId ?? this.vessels[0]?.id ?? null,
       departurePointId: null,
-      destinationId: null,
-      departureTime: '',
-      direction: 'IDA',
-      pricePerPerson: null,
-      durationMinutes: null,
-      maxPassengers: null,
+      arrivalPointId:   null,
+      departureDate:    this.selectedDate ?? '',
+      departureTime:    '',
+      direction:        'IDA',
+      pricePerPerson:   null,
+      durationMinutes:  null,
+      maxPassengers:    null,
     };
   }
 }

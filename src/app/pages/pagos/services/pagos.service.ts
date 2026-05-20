@@ -36,10 +36,10 @@ export class PagosService {
   }
 
   verify(id: number, dto: VerifyPagoDto): Observable<Pago> {
-    return this.http.patch<any>(`${this.base}/${id}/verify`, dto).pipe(map(r => this.extractItem(r)));
+    return this.http.patch<any>(`${this.base}/${id}`, { status: 'VERIFIED', verifiedById: dto.verifiedById }).pipe(map(r => this.extractItem(r)));
   }
 
   reject(id: number, dto: RejectPagoDto): Observable<Pago> {
-    return this.http.patch<any>(`${this.base}/${id}/reject`, dto).pipe(map(r => this.extractItem(r)));
+    return this.http.patch<any>(`${this.base}/${id}`, { status: 'REJECTED', rejectionReason: dto.rejectionReason }).pipe(map(r => this.extractItem(r)));
   }
 }

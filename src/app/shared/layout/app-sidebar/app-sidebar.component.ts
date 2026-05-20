@@ -26,6 +26,7 @@ type NavItem = {
   icon: string;
   path?: string;
   new?: boolean;
+  masterOnly?: boolean;
   subItems?: NavSubItem[];
 };
 
@@ -108,7 +109,6 @@ export class AppSidebarComponent {
       name: "Mi Charter",
       subItems: [
         { name: "Mis embarcaciones", path: "/mi-charter/yates" },
-        { name: "Agregar embarcación", path: "/mi-charter/yates/nuevo" },
         { name: "Mi itinerario", path: "/mi-charter/itinerario" },
         { name: "Reservas recibidas", path: "/mi-charter/reservas" },
       ],
@@ -172,17 +172,18 @@ export class AppSidebarComponent {
     },
   ];
 
-  // ─── Items visibles para ADMINISTRADOR y MASTER ─────────────────────────────
+  // ─── MONITOREO: Items operacionales para ADMINISTRADOR y MASTER ─────────────
   navItems: NavItem[] = [
-    {
-      icon: `<i class="fas fa-home fa-lg"></i>`,
-      name: "Inicio",
-      path: "/inicio",
-    },
     {
       icon: `<i class="fas fa-dashboard fa-lg"></i>`,
       name: "Dashboard",
       path: "/dashboard",
+    },
+    {
+      icon: `<i class="fas fa-chart-line fa-lg"></i>`,
+      name: "Finanzas",
+      path: "/finanzas",
+      masterOnly: true,
     },
     {
       icon: `<i class="fas fa-taxi fa-lg"></i>`,
@@ -196,6 +197,11 @@ export class AppSidebarComponent {
         { name: "Viajes programados", path: "/viajes" },
         { name: "Tickets emitidos", path: "/tickets" },
       ],
+    },
+    {
+      icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
+      name: "Reservas de isla",
+      path: "/reservas-isla",
     },
     {
       icon: `<i class="fas fa-anchor fa-lg"></i>`,
@@ -219,38 +225,20 @@ export class AppSidebarComponent {
     },
   ];
 
+  // ─── ADMINISTRACIÓN: Catálogo y sistema para ADMINISTRADOR y MASTER ──────────
   othersItems: NavItem[] = [
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
       name: "Embarcaciones",
       subItems: [
-        { name: "Lista", path: "/embarcaciones" },
-        { name: "Nueva", path: "/embarcaciones/crear" },
+        { name: "Todas las embarcaciones", path: "/embarcaciones" },
+        { name: "Verificar pendientes", path: "/embarcaciones/verificar" },
       ],
     },
     {
-      icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Muelles",
-      subItems: [
-        { name: "Lista de muelles", path: "/muelles" },
-        { name: "Nuevo muelle", path: "/muelles/crear" },
-      ],
-    },
-    {
-      icon: `<i class="fas fa-route fa-lg"></i>`,
-      name: "Rutas",
-      subItems: [
-        { name: "Lista de rutas", path: "/rutas" },
-        { name: "Nueva ruta", path: "/rutas/crear" },
-      ],
-    },
-    {
-      icon: `<i class="fas fa-clock fa-lg"></i>`,
-      name: "Horarios",
-      subItems: [
-        { name: "Lista de horarios", path: "/horarios" },
-        { name: "Nuevo horario", path: "/horarios/crear" },
-      ],
+      icon: `<i class="fas fa-map-pin fa-lg"></i>`,
+      name: "Puntos de salida",
+      path: "/puntos-salida",
     },
     {
       icon: `<i class="fas fa-users fa-lg"></i>`,
@@ -259,6 +247,11 @@ export class AppSidebarComponent {
         { name: "Lista de usuarios", path: "/usuarios" },
         { name: "Nuevo usuario", path: "/usuarios/crear" },
       ],
+    },
+    {
+      icon: `<i class="fas fa-coins fa-lg"></i>`,
+      name: "Tasas de cambio",
+      path: "/tasas",
     },
   ];
 
@@ -362,7 +355,7 @@ export class AppSidebarComponent {
     if (!role) return [];
 
     if (role === "MASTER" || role === "ADMINISTRADOR") {
-      return items; // navItems (operacional)
+      return items.filter(item => !item.masterOnly || role === "MASTER");
     }
 
     if (role === "EMPLEADO") {

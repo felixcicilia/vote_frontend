@@ -17,9 +17,19 @@ export class IslandTripsService {
     return this.http.get<any>(`${this.base}/departure-points`, { params }).pipe(map(r => this.arr(r)));
   }
 
-  getSlots(params: { destinationId?: number; departurePointId?: number; vesselId?: number }): Observable<VesselSlot[]> {
+  getMuelles(onlyActive = true): Observable<PuertoSalida[]> {
+    const params: Record<string, string> = onlyActive ? {} : { active: 'false' };
+    return this.http.get<any>(`${this.base}/departure-points/muelles`, { params }).pipe(map(r => this.arr(r)));
+  }
+
+  getIslasPiers(onlyActive = true): Observable<PuertoSalida[]> {
+    const params: Record<string, string> = onlyActive ? {} : { active: 'false' };
+    return this.http.get<any>(`${this.base}/departure-points/islas`, { params }).pipe(map(r => this.arr(r)));
+  }
+
+  getSlots(params: { arrivalPointId?: number; departurePointId?: number; vesselId?: number }): Observable<VesselSlot[]> {
     const p: Record<string, string> = {};
-    if (params.destinationId)    p['destinationId']    = String(params.destinationId);
+    if (params.arrivalPointId)   p['arrivalPointId']   = String(params.arrivalPointId);
     if (params.departurePointId) p['departurePointId'] = String(params.departurePointId);
     if (params.vesselId)         p['vesselId']         = String(params.vesselId);
     return this.http.get<any>(`${this.base}/vessel-slots`, { params: p }).pipe(map(r => this.arr(r)));

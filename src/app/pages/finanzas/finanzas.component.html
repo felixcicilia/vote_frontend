@@ -1,0 +1,380 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">💰 Finanzas</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Panel financiero completo · Solo visible para MASTER</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 gap-3">
+    <div class="text-4xl animate-bounce">📊</div>
+    <p class="text-sm text-gray-400">Cargando datos financieros...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 gap-4 xl:grid-cols-4">
+
+      <div class="rounded-2xl border border-green-200 bg-green-50 p-5 dark:border-green-800/30 dark:bg-green-500/10">
+        <p class="text-xs font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">Ingresos verificados</p>
+        <p class="mt-2 text-sm font-semibold text-green-700 dark:text-green-400">{{ verificados.length }} pagos</p>
+        <div class="mt-2 space-y-1">
+          <div *ngFor="let m of verificadosPorMoneda" class="flex items-center justify-between">
+            <span class="text-xs text-green-600 dark:text-green-500">{{ currencyLabel(m.currency) }}</span>
+            <span class="text-sm font-bold text-green-800 dark:text-green-200">{{ fmtAmount(m.total, m.currency) }}</span>
+          </div>
+          <p *ngIf="verificadosPorMoneda.length === 0" class="text-xs text-green-600 dark:text-green-500">Sin pagos verificados</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 dark:border-yellow-800/30 dark:bg-yellow-500/10">
+        <p class="text-xs font-semibold uppercase tracking-wide text-yellow-600 dark:text-yellow-400">Por verificar</p>
+        <p class="mt-2 text-sm font-semibold text-yellow-700 dark:text-yellow-400">{{ pendientes.length }} pagos</p>
+        <div class="mt-2 space-y-1">
+          <div *ngFor="let m of pendientesPorMoneda" class="flex items-center justify-between">
+            <span class="text-xs text-yellow-600 dark:text-yellow-500">{{ currencyLabel(m.currency) }}</span>
+            <span class="text-sm font-bold text-yellow-800 dark:text-yellow-200">{{ fmtAmount(m.total, m.currency) }}</span>
+          </div>
+          <p *ngIf="pendientesPorMoneda.length === 0" class="text-xs text-yellow-600 dark:text-yellow-500">Sin pagos pendientes</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-800/30 dark:bg-blue-500/10">
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Reservas activas</p>
+        <p class="mt-2 text-2xl font-bold text-blue-800 dark:text-blue-200">{{ bookingsActivosCount }}</p>
+        <p class="mt-1 text-xs text-blue-600 dark:text-blue-500">{{ bookingsPendientesCount }} pendientes de confirmar</p>
+      </div>
+
+      <div class="rounded-2xl border border-purple-200 bg-purple-50 p-5 dark:border-purple-800/30 dark:bg-purple-500/10">
+        <p class="text-xs font-semibold uppercase tracking-wide text-purple-600 dark:text-purple-400">Ingresos isla</p>
+        <p class="mt-2 text-2xl font-bold text-purple-800 dark:text-purple-200">{{ fmtCurrency(totalIslandRevenue) }}</p>
+        <p class="mt-1 text-xs text-purple-600 dark:text-purple-500">{{ bookingsCompletadosCount }} completadas · {{ bookingsCanceladosCount }} canceladas</p>
+      </div>
+
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-gray-800 dark:bg-gray-800/60">
+      <button *ngFor="let tab of [['resumen','📊 Resumen'],['pagos','💳 Pagos'],['reservas','🏝️ Reservas de isla']]"
+        (click)="setTab($any(tab[0]))"
+        class="flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all"
+        [class.bg-white]="activeTab === tab[0]"
+        [class.text-gray-800]="activeTab === tab[0]"
+        [class.shadow-sm]="activeTab === tab[0]"
+        [class.dark:bg-gray-900]="activeTab === tab[0]"
+        [class.dark:text-white]="activeTab === tab[0]"
+        [class.text-gray-500]="activeTab !== tab[0]">
+        {{ tab[1] }}
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════ TAB: RESUMEN ════════════════════════════════════ -->
+    <ng-container *ngIf="activeTab === 'resumen'">
+
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+        <!-- Por método -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h2 class="mb-5 text-sm font-semibold text-gray-700 dark:text-gray-300">Pagos por método</h2>
+          <div *ngIf="pagosPorMetodo.length === 0" class="py-8 text-center text-sm text-gray-400">Sin pagos</div>
+          <div class="space-y-4">
+            <div *ngFor="let m of pagosPorMetodo" class="rounded-xl border border-gray-100 p-3 dark:border-gray-800">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ m.label }}</span>
+                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800">{{ m.count }} pagos</span>
+              </div>
+              <div class="mt-2 space-y-1">
+                <div *ngFor="let c of m.monedas" class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="h-1.5 w-1.5 rounded-full"
+                      [class.bg-brand-500]="c.currency === 'USD' || c.currency === 'USDT'"
+                      [class.bg-amber-400]="c.currency === 'VES' || c.currency === 'BS'"></span>
+                    <span class="text-xs text-gray-400">{{ c.currency }}</span>
+                  </span>
+                  <span class="text-sm font-bold text-gray-800 dark:text-white/90">{{ fmtAmount(c.total, c.currency) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Por tipo (verificados) -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h2 class="mb-5 text-sm font-semibold text-gray-700 dark:text-gray-300">Ingresos verificados por tipo</h2>
+          <div *ngIf="pagosPorTipo.length === 0" class="py-8 text-center text-sm text-gray-400">Sin pagos verificados</div>
+          <div class="space-y-3">
+            <div *ngFor="let t of pagosPorTipo" class="flex items-center justify-between rounded-xl border border-gray-100 p-3 dark:border-gray-800">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">{{ t.label.split(' ')[0] }}</span>
+                <div>
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t.label.split(' ').slice(1).join(' ') }}</p>
+                  <p class="text-xs text-gray-400">{{ t.count }} transacciones</p>
+                </div>
+              </div>
+              <span class="text-base font-bold text-gray-800 dark:text-white/90">{{ fmtCurrency(t.total) }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Resumen reservas de isla -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">🏝️ Reservas de isla — resumen</h2>
+          <button (click)="setTab('reservas')" class="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">Ver detalle →</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-3 text-center dark:border-yellow-800/30 dark:bg-yellow-500/10">
+            <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{{ bookingsPendientesCount }}</p>
+            <p class="text-xs text-yellow-600 dark:text-yellow-400">Pendientes</p>
+          </div>
+          <div class="rounded-xl border border-blue-200 bg-blue-50 p-3 text-center dark:border-blue-800/30 dark:bg-blue-500/10">
+            <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ bookingsActivosCount }}</p>
+            <p class="text-xs text-blue-600 dark:text-blue-400">Activas</p>
+          </div>
+          <div class="rounded-xl border border-green-200 bg-green-50 p-3 text-center dark:border-green-800/30 dark:bg-green-500/10">
+            <p class="text-2xl font-bold text-green-700 dark:text-green-300">{{ bookingsCompletadosCount }}</p>
+            <p class="text-xs text-green-600 dark:text-green-400">Completadas</p>
+          </div>
+          <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-center dark:border-red-800/30 dark:bg-red-500/10">
+            <p class="text-2xl font-bold text-red-700 dark:text-red-300">{{ bookingsCanceladosCount }}</p>
+            <p class="text-xs text-red-600 dark:text-red-400">Canceladas</p>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ════════════════════════════════════ TAB: PAGOS ════════════════════════════════════ -->
+    <ng-container *ngIf="activeTab === 'pagos'">
+
+      <!-- Filtros pagos -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex flex-wrap gap-3">
+
+          <!-- Search -->
+          <div class="relative min-w-[200px] flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
+            <input type="text" [(ngModel)]="pagoSearch" (ngModelChange)="onPagoFilterChange()"
+              placeholder="Cliente o referencia..."
+              class="h-11 w-full rounded-lg border border-gray-300 bg-transparent pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+          </div>
+
+          <!-- Estado -->
+          <select [(ngModel)]="pagoStatus" (ngModelChange)="onPagoFilterChange()"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+            <option value="">Todos los estados</option>
+            <option value="PENDING">⏳ Pendiente</option>
+            <option value="VERIFIED">✓ Verificado</option>
+            <option value="REJECTED">✗ Rechazado</option>
+          </select>
+
+          <!-- Método -->
+          <select [(ngModel)]="pagoMethod" (ngModelChange)="onPagoFilterChange()"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+            <option value="">Todos los métodos</option>
+            <option *ngFor="let m of paymentMethods" [value]="m">{{ methodLabels[m] }}</option>
+          </select>
+
+          <!-- Tipo -->
+          <select [(ngModel)]="pagoType" (ngModelChange)="onPagoFilterChange()"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+            <option value="">Todos los tipos</option>
+            <option *ngFor="let t of referenceTypes" [value]="t">{{ typeLabels[t] }}</option>
+          </select>
+
+          <!-- Rango fecha -->
+          <select [(ngModel)]="pagoDateRange" (ngModelChange)="onPagoFilterChange()"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+            <option value="todo">Todos los tiempos</option>
+            <option value="hoy">Hoy</option>
+            <option value="semana">Últimos 7 días</option>
+            <option value="mes">Últimos 30 días</option>
+          </select>
+
+          <button *ngIf="hayFiltrosPagos" (click)="limpiarPagos()"
+            class="h-11 rounded-lg border border-gray-300 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+            Limpiar
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Tabla pagos -->
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Pagos</h3>
+            <span class="text-xs text-gray-400">{{ pagosRangoInicio }}-{{ pagosRangoFin }} de {{ filteredPagos.length }}</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="border-b border-gray-100 dark:border-gray-800">
+              <tr>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">#</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Cliente</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Tipo</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Método</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Referencia</th>
+                <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-400">Monto</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Fecha</th>
+                <th class="px-5 py-3 text-center text-xs font-semibold uppercase text-gray-400">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              <tr *ngFor="let p of pagosPaginados" class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="px-5 py-3 text-xs text-gray-400">#{{ p.id }}</td>
+                <td class="px-5 py-3">
+                  <p class="font-medium text-gray-800 dark:text-white/90">{{ p.client.firstName }} {{ p.client.lastName }}</p>
+                  <p class="text-xs text-gray-400">{{ p.client.email }}</p>
+                </td>
+                <td class="px-5 py-3 text-xs text-gray-500 dark:text-gray-400">{{ typeLabels[p.referenceType] ?? p.referenceType }}</td>
+                <td class="px-5 py-3 text-xs text-gray-500 dark:text-gray-400">{{ methodLabels[p.method] ?? p.method }}</td>
+                <td class="px-5 py-3 text-xs font-mono text-gray-500 dark:text-gray-400">{{ p.transactionRef || '—' }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-gray-800 dark:text-white/80">
+                  {{ p.currency }} {{ (+p.amount).toFixed(2) }}
+                </td>
+                <td class="px-5 py-3 text-xs text-gray-500 dark:text-gray-400">{{ fmtDate(p.createdAt) }}</td>
+                <td class="px-5 py-3 text-center">
+                  <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusColor(p.status)">
+                    {{ statusLabels[p.status] ?? p.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="pagosPaginados.length === 0">
+                <td colspan="8" class="py-12 text-center text-sm text-gray-400">No se encontraron pagos con esos filtros.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación pagos -->
+        <div *ngIf="filteredPagos.length > pagoLimit" class="flex items-center justify-between border-t border-gray-100 px-5 py-3 dark:border-gray-800">
+          <p class="text-xs text-gray-400">Página {{ pagoPage }} de {{ pagosTotalPages }}</p>
+          <div class="flex gap-2">
+            <button (click)="cambiarPaginaPagos(pagoPage - 1)" [disabled]="pagoPage === 1"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400">
+              ← Anterior
+            </button>
+            <button (click)="cambiarPaginaPagos(pagoPage + 1)" [disabled]="pagoPage === pagosTotalPages"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400">
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ════════════════════════════════════ TAB: RESERVAS ════════════════════════════════════ -->
+    <ng-container *ngIf="activeTab === 'reservas'">
+
+      <!-- Filtros reservas -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex flex-wrap gap-3">
+
+          <div class="relative min-w-[200px] flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">🔍</span>
+            <input type="text" [(ngModel)]="bookingSearch" (ngModelChange)="onBookingFilterChange()"
+              placeholder="Cliente o embarcación..."
+              class="h-11 w-full rounded-lg border border-gray-300 bg-transparent pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+          </div>
+
+          <select [(ngModel)]="bookingStatus" (ngModelChange)="onBookingFilterChange()"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+            <option value="">Todos los estados</option>
+            <option value="PENDING">⏳ Pendiente</option>
+            <option value="CONFIRMED">✅ Confirmada</option>
+            <option value="ACTIVE">🟢 Activa</option>
+            <option value="COMPLETED">🏆 Completada</option>
+            <option value="CANCELLED">❌ Cancelada</option>
+          </select>
+
+          <select [(ngModel)]="bookingDateRange" (ngModelChange)="onBookingFilterChange()"
+            class="h-11 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+            <option value="todo">Todos los tiempos</option>
+            <option value="hoy">Hoy</option>
+            <option value="semana">Últimos 7 días</option>
+            <option value="mes">Últimos 30 días</option>
+          </select>
+
+          <button *ngIf="hayFiltrosBookings" (click)="limpiarBookings()"
+            class="h-11 rounded-lg border border-gray-300 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+            Limpiar
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Tabla reservas -->
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="border-b border-gray-100 px-5 py-3 dark:border-gray-800">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Reservas de isla</h3>
+            <span class="text-xs text-gray-400">{{ bookingsRangoInicio }}-{{ bookingsRangoFin }} de {{ filteredBookings.length }}</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="border-b border-gray-100 dark:border-gray-800">
+              <tr>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">#</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Cliente</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Embarcación</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Fecha viaje</th>
+                <th class="px-5 py-3 text-center text-xs font-semibold uppercase text-gray-400">Pax</th>
+                <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-400">Total</th>
+                <th class="px-5 py-3 text-center text-xs font-semibold uppercase text-gray-400">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              <tr *ngFor="let b of bookingsPaginadas" class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="px-5 py-3 text-xs text-gray-400">#{{ b.id }}</td>
+                <td class="px-5 py-3">
+                  <p class="font-medium text-gray-800 dark:text-white/90">{{ b.client.firstName }} {{ b.client.lastName }}</p>
+                </td>
+                <td class="px-5 py-3 text-gray-600 dark:text-gray-400">{{ b.vessel?.name ?? '—' }}</td>
+                <td class="px-5 py-3 text-xs text-gray-500 dark:text-gray-400">{{ fmtDate(b.tripDate) }}</td>
+                <td class="px-5 py-3 text-center text-gray-600 dark:text-gray-400">{{ b.passengers }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-gray-800 dark:text-white/80">{{ fmtCurrency(+b.totalPrice) }}</td>
+                <td class="px-5 py-3 text-center">
+                  <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="bookingStatusColor(b.status)">
+                    {{ b.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="bookingsPaginadas.length === 0">
+                <td colspan="7" class="py-12 text-center text-sm text-gray-400">No se encontraron reservas con esos filtros.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación reservas -->
+        <div *ngIf="filteredBookings.length > bookingLimit" class="flex items-center justify-between border-t border-gray-100 px-5 py-3 dark:border-gray-800">
+          <p class="text-xs text-gray-400">Página {{ bookingPage }} de {{ bookingsTotalPages }}</p>
+          <div class="flex gap-2">
+            <button (click)="cambiarPaginaBookings(bookingPage - 1)" [disabled]="bookingPage === 1"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400">
+              ← Anterior
+            </button>
+            <button (click)="cambiarPaginaBookings(bookingPage + 1)" [disabled]="bookingPage === bookingsTotalPages"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400">
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+</div>

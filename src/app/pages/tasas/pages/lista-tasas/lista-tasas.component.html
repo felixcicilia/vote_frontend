@@ -15,7 +15,11 @@
         </p>
       </div>
 
-      <a
+      <span *ngIf="!isMaster"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400">
+        👁️ Solo visualización
+      </span>
+      <a *ngIf="isMaster"
         routerLink="/tasas/crear"
         class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
       >
@@ -187,7 +191,7 @@
             <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
               Estado
             </th>
-            <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">
+            <th *ngIf="isMaster" class="px-5 py-3 text-center text-xs font-medium text-gray-500">
               Acciones
             </th>
           </tr>
@@ -230,7 +234,7 @@
               </span>
             </td>
 
-            <td class="px-5 py-4">
+            <td *ngIf="isMaster" class="px-5 py-4">
               <div class="flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"

@@ -5,6 +5,8 @@ import { RouterModule } from "@angular/router";
 
 import { Tasa } from "../../models/tasa.model";
 import { TasasService } from "../../services/tasas.service";
+import { AuthService } from "../../../auth-pages/services/auth.service";
+import { UserRole } from "../../../auth-pages/models/auth.model";
 
 @Component({
   selector: "app-lista-tasas",
@@ -14,6 +16,9 @@ import { TasasService } from "../../services/tasas.service";
 })
 export class ListaTasasComponent implements OnInit {
   private readonly tasasService = inject(TasasService);
+  private readonly auth = inject(AuthService);
+
+  get isMaster(): boolean { return this.auth.hasRole(UserRole.MASTER); }
 
   loading = false;
   loadingActiva = false;

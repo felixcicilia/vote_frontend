@@ -1,86 +1,114 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { AuthService } from '../auth-pages/services/auth.service';
 import { EmbarcacionesService } from '../embarcaciones/services/embarcaciones.service';
-import { TicketsService } from '../tickets/services/tickets.service';
+import { AlquileresService } from '../alquileres/services/alquileres.service';
+import { IslandTripsService } from '../buscar/services/island-trips.service';
+import { TasaService } from '../../shared/services/tasa.service';
 import { Embarcacion } from '../embarcaciones/models/embarcacion.model';
-import { Ticket } from '../tickets/models/ticket.model';
+import { Alquiler } from '../alquileres/models/alquiler.model';
+import { IslandBooking } from '../buscar/models/island-trip.model';
 import { environment } from '../../../environments/environment';
+
+interface VesselStats {
+  vessel: Embarcacion;
+  charterRevenue: number;
+  charterCount: number;
+  islandRevenue: number;
+  islandCount: number;
+  totalRevenue: number;
+  totalBookings: number;
+}
 
 @Component({
   selector: 'app-mi-negocio',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './mi-negocio.component.html',
 })
 export class MiNegocioComponent implements OnInit {
   readonly auth = inject(AuthService);
-  private readonly embService = inject(EmbarcacionesService);
-  private readonly ticketsService = inject(TicketsService);
-  private readonly route = inject(ActivatedRoute);
+  private readonly embService    = inject(EmbarcacionesService);
+  private readonly alqService    = inject(AlquileresService);
+  private readonly tripsService  = inject(IslandTripsService);
+  readonly tasaService = inject(TasaService);
 
-  embarcaciones: Embarcacion[] = [];
-  selectedEmbarcacion: Embarcacion | null = null;
-  tickets: Ticket[] = [];
-  filteredTickets: Ticket[] = [];
-
-  loadingEmb = true;
-  loadingTickets = false;
-  filtroStatus = '';
-  filtroBusqueda = '';
+  loading = true;
+  vessels: Embarcacion[] = [];
+  vesselStats: VesselStats[] = [];
+  recentCharter: Alquiler[] = [];
+  recentIsland: IslandBooking[] = [];
 
   get user() { return this.auth.user(); }
 
+  get providerId(): number | null {
+    return (this.auth.user() as any)?.providerProfile?.id ?? null;
+  }
+
+  get totalRevenue(): number {
+    return this.vesselStats.reduce((s, v) => s + v.totalRevenue, 0);
+  }
+
+  get totalBookings(): number {
+    return this.vesselStats.reduce((s, v) => s + v.totalBookings, 0);
+  }
+
+  get totalCharterRevenue(): number {
+    return this.vesselStats.reduce((s, v) => s + v.charterRevenue, 0);
+  }
+
+  get totalIslandRevenue(): number {
+    return this.vesselStats.reduce((s, v) => s + v.islandRevenue, 0);
+  }
+
+  get activeVessels(): number {
+    return this.vessels.filter(v => v.verificationStatus === 'APPROVED' && v.isAvailable).length;
+  }
+
   ngOnInit(): void {
-    this.embService.getAll().subscribe({
-      next: (emb) => {
-        this.embarcaciones = emb;
-        this.loadingEmb = false;
-        // Check if query param
-        this.route.queryParams.subscribe(p => {
-          if (p['embarcacion']) {
-            const found = emb.find(e => String(e.id) === String(p['embarcacion']));
-            if (found) this.selectEmbarcacion(found);
-            else if (emb.length > 0) this.selectEmbarcacion(emb[0]);
-          } else if (emb.length > 0) {
-            this.selectEmbarcacion(emb[0]);
-          }
-        });
+    this.tasaService.load();
+    const pid = this.providerId;
+    if (!pid) { this.loading = false; return; }
+
+    forkJoin({
+      vessels: this.embService.getByProvider(pid),
+      charter: this.alqService.getByProvider(pid),
+      island:  this.tripsService.getBookings({ providerId: pid }),
+    }).subscribe({
+      next: ({ vessels, charter, island }) => {
+        this.vessels = vessels;
+        this.recentCharter = charter
+          .filter(a => a.status !== 'CANCELLED')
+          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
+          .slice(0, 5);
+        this.recentIsland = island
+          .filter(b => b.status !== 'CANCELLED')
+          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
+          .slice(0, 5);
+
+        this.vesselStats = vessels.map(v => {
+          const vc = charter.filter(a => a.vessel?.id === v.id && a.status !== 'CANCELLED');
+          const vi = island.filter(b => b.vessel?.id === v.id && b.status !== 'CANCELLED');
+          const cr = vc.reduce((s, a) => s + Number(a.totalPrice ?? 0), 0);
+          const ir = vi.reduce((s, b) => s + Number(b.totalPrice ?? 0), 0);
+          return {
+            vessel: v,
+            charterRevenue: cr,
+            charterCount: vc.length,
+            islandRevenue: ir,
+            islandCount: vi.length,
+            totalRevenue: cr + ir,
+            totalBookings: vc.length + vi.length,
+          };
+        }).sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+        this.loading = false;
       },
-      error: () => { this.loadingEmb = false; },
+      error: () => { this.loading = false },
     });
-  }
-
-  selectEmbarcacion(emb: Embarcacion): void {
-    this.selectedEmbarcacion = emb;
-    this.loadingTickets = true;
-    this.tickets = [];
-    this.filteredTickets = [];
-
-    this.ticketsService.getAll({ vesselId: emb.id }).subscribe({
-      next: (t) => {
-        this.tickets = t;
-        this.applyFilter();
-        this.loadingTickets = false;
-      },
-      error: () => { this.loadingTickets = false; },
-    });
-  }
-
-  applyFilter(): void {
-    let result = [...this.tickets];
-    if (this.filtroStatus) result = result.filter(t => t.status === this.filtroStatus);
-    if (this.filtroBusqueda) {
-      const q = this.filtroBusqueda.toLowerCase();
-      result = result.filter(t =>
-        `${t.client?.firstName} ${t.client?.lastName}`.toLowerCase().includes(q) ||
-        t.client?.email?.toLowerCase().includes(q)
-      );
-    }
-    this.filteredTickets = result;
   }
 
   imageUrl(url?: string | null): string {
@@ -89,36 +117,22 @@ export class MiNegocioComponent implements OnInit {
     return `${environment.apiUrl.replace('/api', '')}${url}`;
   }
 
-  statusClass(status: string): string {
-    const map: Record<string, string> = {
-      CONFIRMED: 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400',
-      PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-      USED: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-      CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400',
-    };
-    return map[status] ?? 'bg-gray-100 text-gray-600';
+  typeIcon(t: string): string { return t === 'YATE' ? '⛵' : t === 'CATAMARAN' ? '🛥️' : '🚤'; }
+
+  verificationLabel(s: string): string {
+    return s === 'APPROVED' ? 'Verificada' : s === 'PENDING' ? 'En revisión' : 'Rechazada';
   }
 
-  statusLabel(status: string): string {
-    const map: Record<string, string> = {
-      CONFIRMED: 'Confirmado', PENDING: 'Pendiente', USED: 'Usado', CANCELLED: 'Cancelado',
-    };
-    return map[status] ?? status;
+  verificationClass(s: string): string {
+    return s === 'APPROVED'
+      ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+      : s === 'PENDING'
+        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+        : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400';
   }
 
-  totalIngresos(): number {
-    return this.tickets
-      .filter(t => t.status !== 'CANCELLED')
-      .reduce((s, t) => s + Number(t.totalPrice ?? 0), 0);
-  }
-
-  countByStatus(status: string): number {
-    return this.tickets.filter(t => t.status === status).length;
-  }
-
-  totalPasajeros(): number {
-    return this.tickets
-      .filter(t => t.status !== 'CANCELLED')
-      .reduce((s, t) => s + (t.seats ?? 0), 0);
+  islandStatusLabel(s: string): string {
+    const m: Record<string, string> = { PENDING: 'Pendiente', CONFIRMED: 'Confirmada', ACTIVE: 'Activa', COMPLETED: 'Completada', CANCELLED: 'Cancelada' };
+    return m[s] ?? s;
   }
 }

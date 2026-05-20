@@ -2,6 +2,7 @@ import { Routes } from "@angular/router";
 
 import { AppLayoutComponent } from "./shared/layout/app-layout/app-layout.component";
 import { authGuard } from "./pages/auth-pages/pages/components/auth.guard";
+import { masterGuard } from "./pages/auth-pages/pages/components/master.guard";
 
 // Auth
 import { LoginComponent } from "./pages/auth-pages/pages/login/login.component";
@@ -135,13 +136,14 @@ export const routes: Routes = [
           ),
         title: "Embarcaciones | MARITIMO",
       },
+
       {
-        path: "embarcaciones/crear",
+        path: "embarcaciones/verificar",
         loadComponent: () =>
-          import("./pages/embarcaciones/pages/crear-embarcacion/crear-embarcacion.component").then(
-            (m) => m.CrearEmbarcacionComponent,
+          import("./pages/embarcaciones/pages/verificar-embarcaciones/verificar-embarcaciones.component").then(
+            (m) => m.VerificarEmbarcacionesComponent,
           ),
-        title: "Nueva embarcación | MARITIMO",
+        title: "Verificar embarcaciones | MARITIMO",
       },
       {
         path: "embarcaciones/editar/:id",
@@ -414,6 +416,7 @@ export const routes: Routes = [
       },
       {
         path: "tasas/crear",
+        canActivate: [masterGuard],
         loadComponent: () =>
           import("./pages/tasas/pages/crear-tasas/crear-tasas.component").then(
             (m) => m.CrearTasasComponent,
@@ -422,6 +425,7 @@ export const routes: Routes = [
       },
       {
         path: "tasas/editar/:id",
+        canActivate: [masterGuard],
         loadComponent: () =>
           import("./pages/tasas/pages/editar-tasas/editar-tasas.component").then(
             (m) => m.EditarTasasComponent,
@@ -437,6 +441,47 @@ export const routes: Routes = [
             (m) => m.ListaNotificacionesComponent,
           ),
         title: "Notificaciones | MARITIMO",
+      },
+
+      // ── Finanzas (MASTER only) ────────────────────────────────────────────────
+      {
+        path: "finanzas",
+        canActivate: [masterGuard],
+        loadComponent: () =>
+          import("./pages/finanzas/finanzas.component").then(
+            (m) => m.FinanzasComponent,
+          ),
+        title: "Finanzas | MARITIMO",
+      },
+
+      // ── Puntos de salida (admin) ──────────────────────────────────────────────
+      {
+        path: "puntos-salida",
+        loadComponent: () =>
+          import("./pages/puntos-salida/lista-puntos-salida.component").then(
+            (m) => m.ListaPuntosSalidaComponent,
+          ),
+        title: "Puntos de salida | MARITIMO",
+      },
+
+      // ── Destinos (admin) ──────────────────────────────────────────────────────
+      {
+        path: "destinos",
+        loadComponent: () =>
+          import("./pages/destinos-admin/lista-destinos-admin.component").then(
+            (m) => m.ListaDestinosAdminComponent,
+          ),
+        title: "Destinos | MARITIMO",
+      },
+
+      // ── Reservas de isla (admin) ──────────────────────────────────────────────
+      {
+        path: "reservas-isla",
+        loadComponent: () =>
+          import("./pages/reservas-isla/lista-reservas-isla.component").then(
+            (m) => m.ListaReservasIslaComponent,
+          ),
+        title: "Reservas de isla | MARITIMO",
       },
     ],
   },

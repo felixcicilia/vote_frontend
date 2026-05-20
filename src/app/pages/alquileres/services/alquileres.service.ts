@@ -44,6 +44,6 @@ export class AlquileresService {
   }
 
   changeStatus(id: number, dto: ChangeStatusAlquilerDto): Observable<Alquiler> {
-    return this.http.patch<any>(`${this.base}/${id}/status`, dto).pipe(map(r => this.extractItem(r)));
+    return this.http.patch<any>(`${this.base}/${id}`, dto).pipe(map(r => this.extractItem(r)));
   }
 }

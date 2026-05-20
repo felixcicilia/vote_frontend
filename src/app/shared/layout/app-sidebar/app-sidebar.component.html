@@ -77,7 +77,7 @@
               (isHovered$ | async) ||
               (isMobileOpen$ | async)
             ) {
-              Principal
+              {{ (authService.role() === 'MASTER' || authService.role() === 'ADMINISTRADOR') ? 'Monitoreo' : 'Principal' }}
             } @else {
               <svg
                 width="1em"
