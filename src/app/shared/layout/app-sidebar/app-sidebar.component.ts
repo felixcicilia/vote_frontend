@@ -45,6 +45,11 @@ export class AppSidebarComponent {
       path: "/inicio",
     },
     {
+      icon: `<i class="fas fa-chart-pie fa-lg"></i>`,
+      name: "Mi Dashboard",
+      path: "/mi-dashboard",
+    },
+    {
       icon: `<i class="fas fa-search fa-lg"></i>`,
       name: "Buscar viaje",
       path: "/buscar",
@@ -58,14 +63,6 @@ export class AppSidebarComponent {
       ],
     },
     {
-      icon: `<i class="fas fa-taxi fa-lg"></i>`,
-      name: "Taxi acuático",
-      subItems: [
-        { name: "Solicitar taxi", path: "/viajes-taxi/solicitar" },
-        { name: "Mis viajes", path: "/viajes-taxi" },
-      ],
-    },
-    {
       icon: `<i class="fas fa-ticket fa-lg"></i>`,
       name: "Mis reservas",
       path: "/mis-reservas",
@@ -76,14 +73,14 @@ export class AppSidebarComponent {
       path: "/pagos",
     },
     {
+      icon: `<i class="fas fa-credit-card fa-lg"></i>`,
+      name: "Métodos de pago",
+      path: "/mis-metodos-pago",
+    },
+    {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Mis reseñas",
       path: "/resenas",
-    },
-    {
-      icon: `<i class="fas fa-coins fa-lg"></i>`,
-      name: "Tasa del día",
-      path: "/tasas",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
@@ -100,8 +97,8 @@ export class AppSidebarComponent {
       path: "/inicio",
     },
     {
-      icon: `<i class="fas fa-store fa-lg"></i>`,
-      name: "Mi Negocio",
+      icon: `<i class="fas fa-chart-line fa-lg"></i>`,
+      name: "Mi Dashboard",
       path: "/mi-negocio",
     },
     {
@@ -114,14 +111,14 @@ export class AppSidebarComponent {
       ],
     },
     {
+      icon: `<i class="fas fa-university fa-lg"></i>`,
+      name: "Datos bancarios",
+      path: "/mis-cuentas-retiro",
+    },
+    {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Reseñas",
       path: "/resenas",
-    },
-    {
-      icon: `<i class="fas fa-coins fa-lg"></i>`,
-      name: "Tasa del día",
-      path: "/tasas",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,

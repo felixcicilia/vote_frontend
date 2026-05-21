@@ -5,10 +5,16 @@
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Mis Reservas</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Historial completo de tus viajes</p>
       </div>
-      <a routerLink="/buscar"
-        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">
-        + Nueva reserva
-      </a>
+      <div class="flex gap-2">
+        <button (click)="reload()"
+          class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-300">
+          <i class="fas fa-rotate-right"></i> Actualizar
+        </button>
+        <a routerLink="/buscar"
+          class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">
+          + Nueva reserva
+        </a>
+      </div>
     </div>
   </div>
 
@@ -99,10 +105,10 @@
                 class="rounded-xl border border-current/20 bg-white/50 px-4 py-2 text-xs font-bold text-gray-700 hover:bg-white transition-colors dark:text-white/80 dark:hover:bg-white/10">
                 Ver detalles
               </a>
-              <a *ngIf="t.status === 'PENDING'" routerLink="/pagos"
-                class="rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold text-white hover:bg-brand-600 transition-colors shadow-sm">
-                Verificar pago
-              </a>
+              <span *ngIf="t.status === 'PENDING'"
+                class="inline-flex items-center gap-1.5 rounded-xl bg-amber-100 px-4 py-2 text-xs font-bold text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
+                <i class="fas fa-clock"></i> Pago en revisión
+              </span>
             </div>
           </div>
         </div>

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload.component';
+import { FilesService } from '../../shared/services/files.service';
 
 interface PuntoSalida {
   id: number;
@@ -11,6 +13,7 @@ interface PuntoSalida {
   city: string;
   state: string;
   icon: string;
+  photoUrl?: string | null;
   locationType: 'MUELLE' | 'ISLA';
   isActive: boolean;
 }
@@ -20,17 +23,19 @@ interface PuntoForm {
   city: string;
   state: string;
   icon: string;
+  photoUrl?: string | null;
   locationType: 'MUELLE' | 'ISLA';
 }
 
 @Component({
   selector: 'app-lista-puntos-salida',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImageUploadComponent],
   templateUrl: './lista-puntos-salida.component.html',
 })
 export class ListaPuntosSalidaComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly filesService = inject(FilesService);
   private readonly base = `${environment.apiUrl}/departure-points`;
 
   loading = true;
@@ -103,10 +108,19 @@ export class ListaPuntosSalidaComponent implements OnInit {
 
   openEdit(p: PuntoSalida): void {
     this.editingId = p.id;
-    this.form = { name: p.name, city: p.city, state: p.state, icon: p.icon, locationType: p.locationType };
+    this.form = { name: p.name, city: p.city, state: p.state, icon: p.icon, photoUrl: p.photoUrl, locationType: p.locationType };
     this.showForm = true;
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  onPhotoUploaded(url: string): void {
+    this.form.photoUrl = url || null;
+  }
+
+  imageUrl(url?: string | null): string {
+    if (!url) return '';
+    return this.filesService.absoluteUrl(url);
   }
 
   cancel(): void { this.showForm = false; this.editingId = null; this.form = this.emptyForm(); }
@@ -157,6 +171,6 @@ export class ListaPuntosSalidaComponent implements OnInit {
   }
 
   private emptyForm(): PuntoForm {
-    return { name: '', city: '', state: '', icon: '⚓', locationType: 'MUELLE' };
+    return { name: '', city: '', state: '', icon: '⚓', photoUrl: null, locationType: 'MUELLE' };
   }
 }

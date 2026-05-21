@@ -15,7 +15,7 @@
   </div>
 
   <!-- Métricas -->
-  <div *ngIf="!loading" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div *ngIf="!loading" class="grid grid-cols-2 gap-4 lg:grid-cols-5">
     <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
       <p class="text-xs text-gray-400">Pendientes</p>
       <p class="text-3xl font-extrabold text-amber-500">{{ countByStatus('PENDING') }}</p>
@@ -25,10 +25,14 @@
       <p class="text-3xl font-extrabold text-blue-500">{{ countByStatus('CONFIRMED') }}</p>
     </div>
     <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-      <p class="text-xs text-gray-400">Completadas</p>
-      <p class="text-3xl font-extrabold text-green-500">{{ countByStatus('COMPLETED') }}</p>
+      <p class="text-xs text-gray-400">En curso</p>
+      <p class="text-3xl font-extrabold text-green-500">{{ countByStatus('ACTIVE') }}</p>
     </div>
     <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Completadas</p>
+      <p class="text-3xl font-extrabold text-gray-500">{{ countByStatus('COMPLETED') }}</p>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] col-span-2 lg:col-span-1">
       <p class="text-xs text-gray-400">Ingresos totales</p>
       <p class="text-2xl font-extrabold text-brand-600 dark:text-brand-400">{{ tasaService.formatBs(totalIngresos()) }}</p>
       <p class="text-[10px] text-gray-400">${{ totalIngresos() | number:'1.2-2' }} USD</p>
@@ -38,7 +42,7 @@
   <!-- Filtros -->
   <div *ngIf="!loading && reservas.length > 0"
     class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="flex flex-col gap-3 sm:flex-row">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
       <input [(ngModel)]="filtroBusqueda" (ngModelChange)="applyFilter()"
         placeholder="Buscar cliente o embarcación..."
         class="h-10 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
@@ -50,6 +54,13 @@
         <option value="ACTIVE">En curso</option>
         <option value="COMPLETED">Completadas</option>
         <option value="CANCELLED">Canceladas</option>
+      </select>
+      <!-- Filtro especial: por concluir -->
+      <select [(ngModel)]="filtroConcluir" (ngModelChange)="applyFilter()"
+        class="h-10 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-slate-800 dark:text-white">
+        <option value="">Todos los plazos</option>
+        <option value="ENDING_SOON">Por concluir (≤ 3 días)</option>
+        <option value="NOT_ENDING">Sin vencer pronto</option>
       </select>
     </div>
   </div>
@@ -67,97 +78,149 @@
     <p class="mt-2 text-sm text-gray-500">Las reservas de tus embarcaciones aparecerán aquí.</p>
   </div>
 
-  <!-- Tabla de reservas -->
-  <div *ngIf="!loading && filtradas.length > 0" class="space-y-3">
-    <div *ngFor="let r of filtradas"
-      class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+  <!-- Tabla -->
+  <div *ngIf="!loading && filtradas.length > 0"
+    class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
 
-      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Lista de reservas</h3>
+      <span class="text-xs text-gray-400">{{ filtradas.length }} resultado{{ filtradas.length !== 1 ? 's' : '' }}</span>
+    </div>
 
-        <!-- Info principal -->
-        <div class="flex-1 min-w-0 space-y-2">
-          <!-- Badge estado + embarcación -->
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="rounded-full px-2.5 py-1 text-xs font-bold" [class]="statusClass(r.status)">
-              {{ statusLabel(r.status) }}
-            </span>
-            <span class="font-bold text-gray-800 dark:text-white">{{ r.vessel?.name }}</span>
-          </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="border-b border-gray-100 dark:border-gray-800">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Cliente</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Embarcación</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Fechas</th>
+            <th class="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-400">Estado</th>
+            <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-400">Precio / Estado</th>
+            <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-400">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <tr *ngFor="let r of filtradas"
+            class="group transition-colors hover:bg-gray-50/60 dark:hover:bg-white/[0.02]">
 
-          <!-- Cliente -->
-          <div class="flex items-center gap-2">
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
-              {{ r.client?.firstName?.charAt(0) }}{{ r.client?.lastName?.charAt(0) }}
-            </div>
-            <div>
-              <p class="text-sm font-medium text-gray-800 dark:text-white">
-                {{ r.client?.firstName }} {{ r.client?.lastName }}
+            <!-- Cliente -->
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2.5">
+                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
+                  {{ r.client?.firstName?.charAt(0) }}{{ r.client?.lastName?.charAt(0) }}
+                </div>
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-gray-800 dark:text-white/90">
+                    {{ r.client?.firstName }} {{ r.client?.lastName }}
+                  </p>
+                  <p class="truncate text-xs text-gray-400">{{ r.client?.email }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Embarcación -->
+            <td class="px-5 py-4">
+              <p class="font-medium text-gray-800 dark:text-white/90">{{ r.vessel?.name }}</p>
+              <p *ngIf="r.destination" class="text-xs text-gray-400">🏝️ {{ r.destination.name }}</p>
+              <p *ngIf="r.specialRequests" class="mt-0.5 max-w-[180px] truncate text-[11px] italic text-gray-400">
+                "{{ r.specialRequests }}"
               </p>
-              <p class="text-xs text-gray-400">{{ r.client?.email }}</p>
-            </div>
-          </div>
+            </td>
 
-          <!-- Fechas y detalles -->
-          <div class="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <span>📅 {{ r.startDate }} → {{ r.endDate }}</span>
-            <span>🌙 {{ r.days }} {{ r.days === 1 ? 'noche' : 'noches' }}</span>
-            <span>👥 {{ r.passengers }} pasajeros</span>
-            <span *ngIf="r.destination">🏝️ {{ r.destination.name }}</span>
-          </div>
+            <!-- Fechas -->
+            <td class="px-5 py-4">
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                {{ r.startDate }} → {{ r.endDate }}
+              </p>
+              <p class="text-xs text-gray-400">
+                🌙 {{ r.days }} {{ r.days === 1 ? 'noche' : 'noches' }} ·
+                👥 {{ r.passengers }} pax
+              </p>
+            </td>
 
-          <p *ngIf="r.specialRequests" class="text-xs text-gray-400 italic line-clamp-2">
-            "{{ r.specialRequests }}"
-          </p>
-        </div>
+            <!-- Estado badge -->
+            <td class="px-5 py-4 text-center">
+              <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold"
+                [class]="statusClass(r.status)">
+                <span *ngIf="r.status === 'ACTIVE'" class="relative flex h-1.5 w-1.5">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75"></span>
+                  <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-current"></span>
+                </span>
+                {{ statusLabel(r.status) }}
+              </span>
+            </td>
 
-        <!-- Precio + acciones -->
-        <div class="flex flex-shrink-0 flex-col items-end gap-3">
-          <div class="text-right">
-            <p class="text-xl font-extrabold text-brand-600 dark:text-brand-400">
-              {{ tasaService.formatBs(r.totalPrice) }}
-            </p>
-            <p class="text-xs text-gray-400">${{ r.totalPrice | number:'1.2-2' }} USD</p>
-          </div>
+            <!-- Precio + indicador días -->
+            <td class="px-5 py-4 text-right">
+              <p class="text-base font-extrabold text-brand-600 dark:text-brand-400">
+                {{ tasaService.formatBs(r.totalPrice) }}
+              </p>
+              <p class="text-xs text-gray-400">${{ r.totalPrice | number:'1.2-2' }} USD</p>
 
-          <!-- Botones de acción según estado -->
-          <div *ngIf="r.status === 'PENDING'" class="flex gap-2">
-            <button (click)="changeStatus(r, 'CONFIRMED')"
-              [disabled]="updatingId === r.id"
-              class="rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-600 disabled:opacity-50">
-              ✓ Confirmar
-            </button>
-            <button (click)="changeStatus(r, 'CANCELLED')"
-              [disabled]="updatingId === r.id"
-              class="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50">
-              ✗ Cancelar
-            </button>
-          </div>
+              <!-- Días restantes (ACTIVE) -->
+              <ng-container *ngIf="r.status === 'ACTIVE'">
+                <p *ngIf="!hasEnded(r)"
+                  class="mt-1 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                  🏖️ {{ daysRemaining(r) }}d restante{{ daysRemaining(r) !== 1 ? 's' : '' }}
+                </p>
+                <p *ngIf="hasEnded(r)"
+                  class="mt-1 inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500 dark:bg-white/[0.06]">
+                  ✓ Período finalizado
+                </p>
+              </ng-container>
 
-          <div *ngIf="r.status === 'CONFIRMED'" class="flex gap-2">
-            <button (click)="changeStatus(r, 'ACTIVE')"
-              [disabled]="updatingId === r.id"
-              class="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-600 disabled:opacity-50">
-              ▶ Iniciar
-            </button>
-            <button (click)="changeStatus(r, 'CANCELLED')"
-              [disabled]="updatingId === r.id"
-              class="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50">
-              ✗ Cancelar
-            </button>
-          </div>
+              <!-- Días para iniciar (CONFIRMED) -->
+              <p *ngIf="r.status === 'CONFIRMED' && !hasStarted(r)"
+                class="mt-1 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                ⏳ Inicia el {{ r.startDate }}
+              </p>
+            </td>
 
-          <div *ngIf="r.status === 'ACTIVE'">
-            <button (click)="changeStatus(r, 'COMPLETED')"
-              [disabled]="updatingId === r.id"
-              class="rounded-lg bg-gray-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-gray-800 disabled:opacity-50">
-              ✓ Completar
-            </button>
-          </div>
+            <!-- Acciones -->
+            <td class="px-5 py-4">
+              <div class="flex flex-col items-end gap-1.5">
 
-          <p *ngIf="updatingId === r.id" class="text-xs text-gray-400">Actualizando...</p>
-        </div>
+                <!-- PENDING -->
+                <ng-container *ngIf="r.status === 'PENDING'">
+                  <div class="flex gap-1.5">
+                    <button (click)="changeStatus(r, 'CONFIRMED')" [disabled]="updatingId === r.id"
+                      class="rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-600 disabled:opacity-50 whitespace-nowrap">
+                      ✓ Confirmar
+                    </button>
+                    <button (click)="changeStatus(r, 'CANCELLED')" [disabled]="updatingId === r.id"
+                      class="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50">
+                      ✗
+                    </button>
+                  </div>
+                </ng-container>
 
-      </div>
+                <!-- CONFIRMED -->
+                <ng-container *ngIf="r.status === 'CONFIRMED'">
+                  <button (click)="changeStatus(r, 'CANCELLED')" [disabled]="updatingId === r.id"
+                    class="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50">
+                    ✗ Cancelar
+                  </button>
+                </ng-container>
+
+                <!-- ACTIVE -->
+                <ng-container *ngIf="r.status === 'ACTIVE'">
+                  <button (click)="changeStatus(r, 'COMPLETED')"
+                    [disabled]="updatingId === r.id || !hasEnded(r)"
+                    [title]="!hasEnded(r) ? 'Disponible el ' + r.endDate : 'Cerrar reserva'"
+                    class="rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40 whitespace-nowrap"
+                    [class.bg-gray-700]="hasEnded(r)" [class.hover:bg-gray-800]="hasEnded(r)"
+                    [class.bg-gray-400]="!hasEnded(r)">
+                    ✓ Completar
+                  </button>
+                </ng-container>
+
+                <p *ngIf="updatingId === r.id" class="text-[10px] text-gray-400">Actualizando...</p>
+              </div>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

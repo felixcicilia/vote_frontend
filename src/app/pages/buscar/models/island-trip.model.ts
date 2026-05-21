@@ -7,6 +7,7 @@ export interface PuertoSalida {
   city: string;
   state: string;
   icon?: string | null;
+  photoUrl?: string | null;
   locationType?: 'MUELLE' | 'ISLA';
   isActive: boolean;
 }

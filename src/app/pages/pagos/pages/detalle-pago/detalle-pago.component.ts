@@ -8,17 +8,19 @@ import { AuthService } from '../../../auth-pages/services/auth.service';
 import { environment } from '../../../../../environments/environment';
 
 const METHOD_LABELS: Record<string, string> = {
-  PAGO_MOVIL: '📱 Pago Móvil',
-  ZELLE: '💸 Zelle',
-  BINANCE: '₿ Binance',
-  CARD: '💳 Tarjeta',
-  CASH: '💵 Efectivo',
+  PAGO_MOVIL:    '📱 Pago Móvil',
+  TRANSFERENCIA: '🏦 Transferencia Bs',
+  ZELLE:         '💜 Zelle',
+  BINANCE:       '🟡 Binance',
+  CARD:          '💳 Tarjeta',
+  CASH:          '💵 Efectivo',
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  TAXI_TRIP: '🚤 Taxi acuático',
-  TICKET: '🎫 Ticket ferry',
-  RENTAL: '⛵ Alquiler charter',
+  TAXI_TRIP:    '🚤 Taxi acuático',
+  TICKET:       '🎫 Ticket ferry',
+  RENTAL:       '⛵ Alquiler charter',
+  WALLET_TOPUP: '⚓ Recarga de nudos',
 };
 
 @Component({
@@ -31,6 +33,8 @@ export class DetallePagoComponent implements OnInit {
   private readonly service = inject(PagosService);
   private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
+
+  get isMaster(): boolean { return this.auth.role() === 'MASTER'; }
 
   loading = true;
   errorMessage = '';

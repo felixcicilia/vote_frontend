@@ -1,92 +1,172 @@
 <!-- ─── CLIENTE ─────────────────────────────────────────────────── -->
 <ng-container *ngIf="isCliente">
-  <!-- Hero de búsqueda -->
-  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-500 to-cyan-500 p-8 md:p-12 shadow-xl mb-6">
-    <div class="absolute inset-0 opacity-10" style="background-image: url('https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80'); background-size: cover; background-position: center;"></div>
-    <div class="relative z-10">
-      <h1 class="text-3xl font-bold text-white md:text-4xl">¿A dónde vamos hoy?</h1>
-      <p class="mt-2 text-brand-100 text-lg">Encuentra tu lancha, reserva tu puesto o alquila un yate</p>
 
-      <!-- Buscador rápido tipo Uber -->
-      <div class="mt-6 flex flex-col gap-3 rounded-2xl bg-white/15 backdrop-blur p-4 md:flex-row md:items-end md:gap-4">
-        <div class="flex-1">
-          <label class="block text-xs font-semibold text-white/80 mb-1">🚢 Desde</label>
-          <select [(ngModel)]="searchOrigen"
-            class="h-11 w-full rounded-xl border-0 bg-white px-4 text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-brand-300 outline-none">
-            <option value="">Selecciona el muelle de salida</option>
-            <option *ngFor="let m of muelles" [value]="m.id">{{ m.name }}</option>
-          </select>
-        </div>
-        <div class="flex-1">
-          <label class="block text-xs font-semibold text-white/80 mb-1">🏖️ Hasta</label>
-          <select [(ngModel)]="searchDestino"
-            class="h-11 w-full rounded-xl border-0 bg-white px-4 text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-brand-300 outline-none">
-            <option value="">Selecciona el destino</option>
-            <option *ngFor="let m of muelles" [value]="m.id">{{ m.name }}</option>
-          </select>
-        </div>
-        <div class="w-full md:w-44">
-          <label class="block text-xs font-semibold text-white/80 mb-1">📅 Fecha</label>
-          <input type="date" [(ngModel)]="searchFecha"
-            class="h-11 w-full rounded-xl border-0 bg-white px-4 text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-        </div>
-        <button (click)="buscar()"
-          class="h-11 rounded-xl bg-white px-8 text-sm font-bold text-brand-600 shadow-lg hover:bg-brand-50 transition-colors whitespace-nowrap">
-          Buscar →
-        </button>
+  <!-- ══ SLIDER DE NOTICIAS ══ -->
+  <div class="relative mb-6 overflow-hidden rounded-3xl shadow-xl" style="height:280px;">
+
+    <!-- Slides -->
+    <div *ngFor="let n of noticias; let i = index"
+      class="absolute inset-0 transition-opacity duration-700"
+      [style.opacity]="i === slideActual() ? '1' : '0'"
+      [style.z-index]="i === slideActual() ? '1' : '0'">
+      <!-- Background image -->
+      <div class="absolute inset-0 bg-cover bg-center" [style.background-image]="'url(' + n.imageUrl + ')'"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+      <!-- Content -->
+      <div class="relative z-10 flex h-full flex-col justify-end p-8 md:p-10">
+        <span *ngIf="n.badge" class="mb-3 inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold text-white" [class]="n.badgeColor ?? 'bg-blue-500'">
+          {{ n.badge }}
+        </span>
+        <h2 class="text-2xl font-extrabold text-white md:text-3xl leading-tight">{{ n.titulo }}</h2>
+        <p *ngIf="n.subtitulo" class="mt-2 max-w-lg text-sm text-white/80">{{ n.subtitulo }}</p>
+        <a *ngIf="n.link" [routerLink]="n.link"
+          class="mt-4 inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-gray-900 hover:bg-gray-50 transition-colors shadow">
+          Ver más →
+        </a>
       </div>
+    </div>
+
+    <!-- Flechas -->
+    <button (click)="prevSlide()"
+      class="absolute left-4 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 transition-colors">
+      ‹
+    </button>
+    <button (click)="nextSlide()"
+      class="absolute right-4 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 transition-colors">
+      ›
+    </button>
+
+    <!-- Dots -->
+    <div class="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 flex gap-2">
+      <button *ngFor="let n of noticias; let i = index" (click)="irASlide(i)"
+        class="h-2 rounded-full transition-all duration-300"
+        [class.w-6]="i === slideActual()"
+        [class.w-2]="i !== slideActual()"
+        [class.bg-white]="i === slideActual()"
+        [class.bg-white/40]="i !== slideActual()">
+      </button>
     </div>
   </div>
 
-  <!-- Servicios -->
+  <!-- ══ CARRUSEL CONTROLADO YATES & CATAMARANES ══ -->
+  <div *ngIf="yatesYCatamaranes.length > 0" class="mb-6 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+      <div>
+        <h2 class="font-bold text-gray-800 dark:text-white/90">Yates y Catamaranes disponibles</h2>
+        <p class="text-xs text-gray-400 mt-0.5">{{ yatesYCatamaranes.length }} embarcaciones · Alquiler exclusivo</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a routerLink="/alquileres" class="text-sm font-semibold text-blue-500 hover:text-blue-600">Ver todos →</a>
+        <!-- Botones navegación -->
+        <button (click)="scrollOfertas(-1)"
+          class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+          ‹
+        </button>
+        <button (click)="scrollOfertas(1)"
+          class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+          ›
+        </button>
+      </div>
+    </div>
+
+    <!-- Track scrollable -->
+    <div #ofertasTrack
+      class="flex gap-4 overflow-x-auto scroll-smooth px-6 py-5"
+      style="scrollbar-width:none; -ms-overflow-style:none;"
+      [style.-webkit-overflow-scrolling]="'touch'">
+      <a *ngFor="let e of yatesYCatamaranes"
+        [routerLink]="['/alquileres', e.type === 'YATE' ? 'yate' : 'catamaran', e.id]"
+        class="group flex-shrink-0 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all dark:border-gray-700 dark:bg-gray-900">
+        <!-- Foto -->
+        <div class="relative h-36 overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+          <img *ngIf="e.photos?.[0]" [src]="imageUrl(e.photos![0])" [alt]="e.name"
+            class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <div *ngIf="!e.photos?.[0]" class="flex h-full items-center justify-center text-4xl opacity-30">
+            {{ e.type === 'YATE' ? '⛵' : '🛥️' }}
+          </div>
+          <span class="absolute top-2 left-2 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">
+            {{ e.type === 'YATE' ? 'Yate' : 'Catamarán' }}
+          </span>
+        </div>
+        <!-- Info -->
+        <div class="p-3">
+          <p class="text-sm font-bold text-gray-800 dark:text-white/90 truncate">{{ e.name }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">👥 {{ e.capacity }} personas</p>
+          <p *ngIf="e.pricePerDay" class="mt-2 text-sm font-extrabold text-blue-600 dark:text-blue-400">
+            ${{ e.pricePerDay }}<span class="text-[10px] font-normal text-gray-400">/día</span>
+          </p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ ¿QUÉ NECESITAS? — solo Lancha y Yate ══ -->
   <div class="mb-6">
     <h2 class="mb-4 text-lg font-bold text-gray-800 dark:text-white/90">¿Qué necesitas?</h2>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
       <!-- Lancha rápida -->
       <a routerLink="/buscar" [queryParams]="{tipo: 'lancha'}"
-        class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
-        <div class="absolute -bottom-4 -right-4 text-8xl opacity-20 group-hover:opacity-30 transition-opacity">🚤</div>
+        class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-7 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
+        <div class="absolute -bottom-6 -right-6 text-9xl opacity-10 group-hover:opacity-20 transition-opacity select-none">🚤</div>
         <div class="relative">
-          <span class="text-4xl">🚤</span>
-          <h3 class="mt-3 text-xl font-bold">Lancha Rápida</h3>
-          <p class="mt-1 text-sm text-blue-100">Viajes directos al destino más rápido</p>
-          <div class="mt-4 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
+          <span class="text-5xl">🚤</span>
+          <h3 class="mt-4 text-2xl font-extrabold">Lancha Rápida</h3>
+          <p class="mt-1 text-sm text-blue-100">Viajes directos a las islas más rápido</p>
+          <div class="mt-5 inline-flex items-center gap-1 rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold hover:bg-white/30 transition-colors">
             Ver precios →
           </div>
         </div>
       </a>
 
-      <!-- Reservación de puesto -->
-      <a routerLink="/horarios"
-        class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
-        <div class="absolute -bottom-4 -right-4 text-8xl opacity-20 group-hover:opacity-30 transition-opacity">🛥️</div>
-        <div class="relative">
-          <span class="text-4xl">🛥️</span>
-          <h3 class="mt-3 text-xl font-bold">Reservar Puesto</h3>
-          <p class="mt-1 text-sm text-teal-100">Elige tu asiento con horario fijo</p>
-          <div class="mt-4 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
-            Ver horarios →
-          </div>
-        </div>
-      </a>
-
-      <!-- Alquiler -->
+      <!-- Alquilar Yate -->
       <a routerLink="/alquileres"
-        class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
-        <div class="absolute -bottom-4 -right-4 text-8xl opacity-20 group-hover:opacity-30 transition-opacity">⛵</div>
+        class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 p-7 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
+        <div class="absolute -bottom-6 -right-6 text-9xl opacity-10 group-hover:opacity-20 transition-opacity select-none">⛵</div>
         <div class="relative">
-          <span class="text-4xl">⛵</span>
-          <h3 class="mt-3 text-xl font-bold">Alquilar Yate</h3>
-          <p class="mt-1 text-sm text-purple-100">Yates y catamaranes para grupos</p>
-          <div class="mt-4 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
+          <span class="text-5xl">⛵</span>
+          <h3 class="mt-4 text-2xl font-extrabold">Alquilar Yate</h3>
+          <p class="mt-1 text-sm text-blue-100">Yates y catamaranes exclusivos para grupos</p>
+          <div class="mt-5 inline-flex items-center gap-1 rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold hover:bg-white/30 transition-colors">
             Ver disponibilidad →
           </div>
         </div>
       </a>
+
     </div>
   </div>
 
-  <!-- Mis últimas reservas -->
+  <!-- ══ MAPA MARINO ══ -->
+  <div class="mb-6 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+      <div>
+        <h2 class="font-bold text-gray-800 dark:text-white/90">Muelles y embarcaciones</h2>
+        <p class="text-xs text-gray-400 mt-0.5">
+          ⚓ {{ muelles.length }} muelles &nbsp;·&nbsp;
+          🚤 {{ todasEmbarcaciones.length }} embarcaciones activas
+        </p>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-gray-400">
+        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-full bg-blue-600"></span> Muelle</span>
+        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-lg bg-sky-400"></span> Yate / Catamarán</span>
+        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-lg bg-orange-400"></span> Lancha</span>
+        <a routerLink="/buscar" class="ml-2 font-semibold text-blue-500 hover:text-blue-600">Buscar viaje →</a>
+      </div>
+    </div>
+    <div style="height:460px;">
+      <iframe
+        src="https://maps.google.com/maps?q=10.97,-63.85&t=k&z=10&output=embed&hl=es"
+        width="100%" height="100%"
+        style="border:0;display:block;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <!-- ══ MIS ÚLTIMAS RESERVAS ══ -->
   <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
       <h2 class="font-bold text-gray-800 dark:text-white/90">Mis últimas reservas</h2>
@@ -106,10 +186,7 @@
     <div *ngIf="!loading && misTickets.length > 0" class="divide-y divide-gray-100 dark:divide-gray-800">
       <div *ngFor="let t of misTickets"
         class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-        <!-- Vessel icon -->
-        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand-50 text-2xl dark:bg-brand-500/10">
-          🚤
-        </div>
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-2xl dark:bg-blue-500/10">🚤</div>
         <div class="flex-1 min-w-0">
           <p class="font-semibold text-gray-800 dark:text-white/90 truncate">
             {{ t.trip?.schedule?.route?.originPier?.name ?? '—' }} →

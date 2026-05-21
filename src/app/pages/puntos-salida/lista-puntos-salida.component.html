@@ -77,6 +77,19 @@
         </div>
       </div>
 
+      <!-- Imagen del punto -->
+      <div class="mt-5">
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">
+          Imagen del lugar
+          <span class="ml-1 text-xs text-gray-400 font-normal">(se mostrará en las tarjetas de destino del cliente)</span>
+        </label>
+        <app-image-upload
+          [currentUrl]="form.photoUrl"
+          label="Foto del punto de salida"
+          (uploaded)="onPhotoUploaded($event)">
+        </app-image-upload>
+      </div>
+
       <div class="mt-6 flex gap-3">
         <button (click)="save()" [disabled]="submitting"
           class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 transition-colors">
@@ -142,8 +155,14 @@
         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
           <tr *ngFor="let p of paginatedPuntos" [class.opacity-50]="!p.isActive">
             <td class="px-5 py-4">
-              <span class="mr-2 text-lg">{{ p.icon }}</span>
-              <span class="font-medium text-gray-800 dark:text-white/90">{{ p.name }}</span>
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                  <img *ngIf="p.photoUrl" [src]="imageUrl(p.photoUrl)" [alt]="p.name"
+                    class="h-full w-full object-cover" />
+                  <div *ngIf="!p.photoUrl" class="flex h-full items-center justify-center text-xl">{{ p.icon || '📍' }}</div>
+                </div>
+                <span class="font-medium text-gray-800 dark:text-white/90">{{ p.name }}</span>
+              </div>
             </td>
             <td class="px-5 py-4 text-gray-500 dark:text-gray-400">{{ p.city }}, {{ p.state }}</td>
             <td class="px-5 py-4 text-center">

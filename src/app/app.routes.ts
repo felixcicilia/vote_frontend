@@ -14,6 +14,11 @@ import { RegisterComponent } from "./pages/auth-pages/pages/register/pages/regis
 import { DashboardComponent } from "./pages/dashboard/dashboard.component";
 import { ProfileComponent } from "./pages/profile/profile.component";
 
+// Cliente / Proveedor pages
+import { MiDashboardComponent } from "./pages/mi-dashboard/mi-dashboard.component";
+import { MisMetodosPagoComponent } from "./pages/mis-metodos-pago/mis-metodos-pago.component";
+import { MisCuentasRetiroComponent } from "./pages/mis-cuentas-retiro/mis-cuentas-retiro.component";
+
 // Usuarios
 import { ListaUsuariosComponent } from "./pages/usuarios/lista-usuarios/lista-usuarios.component";
 import { CrearUsuariosComponent } from "./pages/usuarios/crear-usuarios/crear-usuarios.component";
@@ -108,6 +113,27 @@ export const routes: Routes = [
         path: "profile",
         component: ProfileComponent,
         title: "Perfil | MARITIMO",
+      },
+
+      // ── Dashboard cliente ─────────────────────────────────────────────────────
+      {
+        path: "mi-dashboard",
+        component: MiDashboardComponent,
+        title: "Mi Dashboard | MARITIMO",
+      },
+
+      // ── Métodos de pago (cliente) ─────────────────────────────────────────────
+      {
+        path: "mis-metodos-pago",
+        component: MisMetodosPagoComponent,
+        title: "Mis métodos de pago | MARITIMO",
+      },
+
+      // ── Cuentas de retiro (proveedor) ─────────────────────────────────────────
+      {
+        path: "mis-cuentas-retiro",
+        component: MisCuentasRetiroComponent,
+        title: "Datos bancarios | MARITIMO",
       },
 
       // Usuarios (ADMINISTRADOR / MASTER)

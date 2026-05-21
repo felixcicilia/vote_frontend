@@ -127,8 +127,8 @@
           </div>
         </div>
 
-        <!-- Acciones (solo PENDING) -->
-        <div *ngIf="pago.status === 'PENDING'" class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <!-- Acciones (solo PENDING, solo MASTER) -->
+        <div *ngIf="pago.status === 'PENDING' && isMaster" class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
           <h2 class="mb-4 text-sm font-semibold text-gray-600 dark:text-gray-400">⚡ Acciones</h2>
 
           <div *ngIf="!showRejectForm" class="flex flex-wrap gap-3">

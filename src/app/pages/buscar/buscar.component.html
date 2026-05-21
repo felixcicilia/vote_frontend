@@ -108,21 +108,50 @@
     </div>
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       <button *ngFor="let isla of islas" (click)="elegirDestino(isla)"
-        class="group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg"
+        class="group relative overflow-hidden rounded-2xl border-2 text-left transition-all hover:shadow-xl"
         [class.border-brand-400]="llegadaId === isla.id"
-        [class.bg-brand-50]="llegadaId === isla.id"
-        [class.dark:bg-brand-500/10]="llegadaId === isla.id"
-        [class.border-gray-200]="llegadaId !== isla.id"
-        [class.bg-white]="llegadaId !== isla.id"
-        [class.dark:bg-white/[0.03]]="llegadaId !== isla.id"
-        [class.dark:border-gray-800]="llegadaId !== isla.id">
-        <div class="mb-3 text-4xl">{{ isla.icon ?? '🏝️' }}</div>
-        <p class="font-bold text-gray-800 dark:text-white/90 group-hover:text-brand-600 transition-colors">{{ isla.name }}</p>
-        <p class="mt-0.5 text-xs text-gray-400">{{ isla.city }}, {{ isla.state }}</p>
-        <span *ngIf="llegadaId === isla.id"
-          class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white">
-          ✓ Seleccionado
-        </span>
+        [class.border-transparent]="llegadaId !== isla.id">
+
+        <!-- Con foto: tarjeta estilo "destination card" -->
+        <ng-container *ngIf="isla.photoUrl; else sinFoto">
+          <div class="relative h-36 w-full sm:h-44">
+            <img [src]="imageUrl(isla.photoUrl)" [alt]="isla.name"
+              class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <!-- Overlay gradiente -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <!-- Nombre sobre la foto -->
+            <div class="absolute bottom-0 left-0 right-0 p-3">
+              <p class="text-sm font-bold text-white leading-tight">{{ isla.name }}</p>
+              <p class="text-[10px] text-white/70">{{ isla.city }}, {{ isla.state }}</p>
+            </div>
+            <!-- Badge seleccionado -->
+            <span *ngIf="llegadaId === isla.id"
+              class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+              ✓ Seleccionado
+            </span>
+            <!-- Overlay seleccionado -->
+            <div *ngIf="llegadaId === isla.id"
+              class="absolute inset-0 ring-2 ring-inset ring-brand-400 rounded-2xl"></div>
+          </div>
+        </ng-container>
+
+        <!-- Sin foto: tarjeta original con emoji -->
+        <ng-template #sinFoto>
+          <div class="p-5"
+            [class.bg-brand-50]="llegadaId === isla.id"
+            [class.dark:bg-brand-500/10]="llegadaId === isla.id"
+            [class.bg-white]="llegadaId !== isla.id"
+            [class.dark:bg-white/[0.03]]="llegadaId !== isla.id">
+            <div class="mb-3 text-4xl">{{ isla.icon ?? '🏝️' }}</div>
+            <p class="font-bold text-gray-800 dark:text-white/90 group-hover:text-brand-600 transition-colors">{{ isla.name }}</p>
+            <p class="mt-0.5 text-xs text-gray-400">{{ isla.city }}, {{ isla.state }}</p>
+            <span *ngIf="llegadaId === isla.id"
+              class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white">
+              ✓ Seleccionado
+            </span>
+          </div>
+        </ng-template>
+
       </button>
     </div>
   </div>

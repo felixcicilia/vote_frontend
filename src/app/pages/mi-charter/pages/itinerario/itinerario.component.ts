@@ -93,8 +93,12 @@ export class ItinerarioComponent implements OnInit {
   readonly today = new Date().toISOString().split('T')[0];
 
   isSlotPast(slot: VesselSlot): boolean {
-    if (this.selectedDate > this.today) return false;
-    if (this.selectedDate < this.today) return true;
+    // Use the slot's own date if it has one; only fall back to the UI filter date
+    // for recurring slots (no specific date assigned).
+    const slotDate = slot.departureDate ?? this.selectedDate;
+    if (slotDate > this.today) return false;   // future date → never past
+    if (slotDate < this.today) return true;    // past date → always past
+    // Same day as today → compare departure time against current time
     const now = new Date();
     const hhmm = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
     return slot.departureTime <= hhmm;

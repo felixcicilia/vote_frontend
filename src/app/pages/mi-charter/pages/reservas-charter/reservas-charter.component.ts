@@ -26,6 +26,7 @@ export class ReservasCharterComponent implements OnInit {
   filtradas: Alquiler[] = [];
   filtroStatus = '';
   filtroBusqueda = '';
+  filtroConcluir = '';
 
   get providerProfileId(): number | null {
     const user = this.authService.user();
@@ -45,7 +46,9 @@ export class ReservasCharterComponent implements OnInit {
 
   applyFilter(): void {
     let r = [...this.reservas];
+
     if (this.filtroStatus) r = r.filter(x => x.status === this.filtroStatus);
+
     if (this.filtroBusqueda) {
       const q = this.filtroBusqueda.toLowerCase();
       r = r.filter(x =>
@@ -54,6 +57,15 @@ export class ReservasCharterComponent implements OnInit {
         x.vessel?.name?.toLowerCase().includes(q)
       );
     }
+
+    if (this.filtroConcluir === 'ENDING_SOON') {
+      // ACTIVE charters ending in 3 days or less (but not ended yet)
+      r = r.filter(x => x.status === 'ACTIVE' && !this.hasEnded(x) && this.daysRemaining(x) <= 3);
+    } else if (this.filtroConcluir === 'NOT_ENDING') {
+      // ACTIVE charters with more than 3 days remaining
+      r = r.filter(x => x.status === 'ACTIVE' && !this.hasEnded(x) && this.daysRemaining(x) > 3);
+    }
+
     this.filtradas = r;
   }
 
@@ -100,5 +112,24 @@ export class ReservasCharterComponent implements OnInit {
     return this.reservas
       .filter(r => r.status !== 'CANCELLED')
       .reduce((sum, r) => sum + Number(r.totalPrice ?? 0), 0);
+  }
+
+  /** true when today >= startDate (charter has begun or starts today) */
+  hasStarted(r: Alquiler): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return r.startDate <= today;
+  }
+
+  /** true when today > endDate (charter period is fully over) */
+  hasEnded(r: Alquiler): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return r.endDate < today;
+  }
+
+  /** Days remaining in the charter (negative means it's over) */
+  daysRemaining(r: Alquiler): number {
+    const today = new Date();
+    const end = new Date(r.endDate + 'T00:00:00');
+    return Math.ceil((end.getTime() - today.getTime()) / 86400000);
   }
 }

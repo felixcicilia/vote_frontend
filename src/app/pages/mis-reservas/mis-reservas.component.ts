@@ -23,6 +23,16 @@ export class MisReservasComponent implements OnInit {
   get user() { return this.auth.user(); }
 
   ngOnInit(): void {
+    this.loadTickets();
+  }
+
+  reload(): void {
+    this.loading = true;
+    this.tickets = [];
+    this.loadTickets();
+  }
+
+  private loadTickets(): void {
     const id = this.user?.id;
     if (!id) { this.loading = false; return; }
     this.ticketsService.getAll({ clientId: id }).subscribe({

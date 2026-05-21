@@ -13,17 +13,19 @@ type Tab = 'resumen' | 'pagos' | 'reservas';
 type DateRange = 'hoy' | 'semana' | 'mes' | 'todo';
 
 const METHOD_LABELS: Record<PaymentMethod, string> = {
-  PAGO_MOVIL: '📱 Pago Móvil',
-  ZELLE: '💸 Zelle',
-  BINANCE: '₿ Binance',
-  CARD: '💳 Tarjeta',
-  CASH: '💵 Efectivo',
+  PAGO_MOVIL:    '📱 Pago Móvil',
+  TRANSFERENCIA: '🏦 Transferencia Bs',
+  ZELLE:         '💜 Zelle',
+  BINANCE:       '🟡 Binance',
+  CARD:          '💳 Tarjeta',
+  CASH:          '💵 Efectivo',
 };
 
 const TYPE_LABELS: Record<PaymentReferenceType, string> = {
-  TAXI_TRIP: '🚤 Taxi acuático',
-  TICKET: '🎫 Ticket ferry',
-  RENTAL: '⛵ Alquiler charter',
+  TAXI_TRIP:    '🚤 Taxi acuático',
+  TICKET:       '🎫 Ticket ferry',
+  RENTAL:       '⛵ Alquiler charter',
+  WALLET_TOPUP: '⚓ Recarga de nudos',
 };
 
 const STATUS_LABELS: Record<PaymentStatus, string> = {
