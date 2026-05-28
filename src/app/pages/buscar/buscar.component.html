@@ -39,7 +39,7 @@
             </label>
             <select [(ngModel)]="llegadaId" [disabled]="loadingPuntos"
               class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white cursor-pointer">
-              <option [ngValue]="null">¿A dónde vas?</option>
+              <option [ngValue]="null">Cualquier destino</option>
               <option *ngFor="let p of islas" [ngValue]="p.id">{{ p.icon ?? '🏝️' }} {{ p.name }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-400">{{ llegadaSel ? llegadaSel.city + ', ' + llegadaSel.state : 'Isla o cayo destino' }}</p>
@@ -69,7 +69,7 @@
                   class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 text-lg font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600 transition dark:border-slate-600">+</button>
               </div>
             </div>
-            <button (click)="buscar()" [disabled]="!llegadaId || loading"
+            <button (click)="buscar()" [disabled]="loading"
               class="mt-4 w-full rounded-xl bg-brand-500 py-3 text-sm font-black text-white shadow-lg hover:bg-brand-600 disabled:opacity-40 transition-all hover:shadow-brand-500/30 hover:shadow-xl">
               {{ loading ? 'Buscando...' : '🔍 Buscar lanchas' }}
             </button>

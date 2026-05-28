@@ -158,7 +158,7 @@ export class DetalleLanchaComponent implements OnInit {
     this.tripsService.createBooking({
       clientId:         user.id,
       vesselId:         this.vessel.id,
-      destinationId:    this.llegadaId!,
+      destinationId:    this.llegadaId ?? this.selectedIda!.arrivalPoint.id,
       departurePointId: this.selectedIda!.departurePoint.id,
       outboundSlotId:   this.selectedIda!.id,
       returnSlotId:     this.selectedRegreso?.id,
@@ -167,7 +167,7 @@ export class DetalleLanchaComponent implements OnInit {
       passengers:       this.passengers,
       specialRequests:  this.specialRequests || undefined,
     }).subscribe({
-      next: () => { this.submitting = false; this.router.navigate(['/mis-reservas']); },
+      next: (b) => { this.submitting = false; this.router.navigate(['/pagar-reserva'], { queryParams: { bookingId: b.id } }); },
       error: (err) => {
         const msg = err?.error?.message;
         this.errorMessage = Array.isArray(msg) ? msg.join(', ') : typeof msg === 'string' ? msg : 'No se pudo crear la reserva.';

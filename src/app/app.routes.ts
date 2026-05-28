@@ -107,6 +107,22 @@ export const routes: Routes = [
           ),
         title: "Mis Reservas | MARITIMO",
       },
+      {
+        path: "mis-reservas/:id",
+        loadComponent: () =>
+          import("./pages/mis-reservas/detalle-reserva/detalle-reserva.component").then(
+            (m) => m.DetalleReservaComponent,
+          ),
+        title: "Detalle de Reserva | MARITIMO",
+      },
+      {
+        path: "pagar-reserva",
+        loadComponent: () =>
+          import("./pages/mis-reservas/pagar-reserva/pagar-reserva.component").then(
+            (m) => m.PagarReservaComponent,
+          ),
+        title: "Pagar Reserva | MARITIMO",
+      },
 
       // Perfil
       {
@@ -467,6 +483,16 @@ export const routes: Routes = [
             (m) => m.ListaNotificacionesComponent,
           ),
         title: "Notificaciones | MARITIMO",
+      },
+
+      // ── Métodos de cobro (MASTER/ADMIN) ──────────────────────────────────────
+      {
+        path: "metodos-cobro",
+        loadComponent: () =>
+          import("./pages/metodos-cobro/metodos-cobro.component").then(
+            (m) => m.MetodosCobroComponent,
+          ),
+        title: "Métodos de cobro | MARITIMO",
       },
 
       // ── Finanzas (MASTER only) ────────────────────────────────────────────────

@@ -22,10 +22,11 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
 };
 
 const TYPE_LABELS: Record<PaymentReferenceType, string> = {
-  TAXI_TRIP:    '🚤 Taxi acuático',
-  TICKET:       '🎫 Ticket ferry',
-  RENTAL:       '⛵ Alquiler charter',
-  WALLET_TOPUP: '⚓ Recarga de nudos',
+  TAXI_TRIP:     '🚤 Taxi acuático',
+  TICKET:        '🎫 Ticket ferry',
+  RENTAL:        '⛵ Alquiler charter',
+  ISLAND_BOOKING: '🏝️ Excursión isla',
+  WALLET_TOPUP:  '⚓ Recarga de nudos',
 };
 
 const STATUS_LABELS: Record<PaymentStatus, string> = {

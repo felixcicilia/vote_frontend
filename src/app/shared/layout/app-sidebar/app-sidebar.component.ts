@@ -59,7 +59,6 @@ export class AppSidebarComponent {
       name: "Charter privado",
       subItems: [
         { name: "Buscar yate / catamarán", path: "/alquileres" },
-        { name: "Mis reservas de charter", path: "/mis-reservas" },
       ],
     },
     {
@@ -233,6 +232,15 @@ export class AppSidebarComponent {
       ],
     },
     {
+      icon: `<i class="fas fa-route fa-lg"></i>`,
+      name: "Rutas y horarios",
+      subItems: [
+        { name: "Rutas", path: "/rutas" },
+        { name: "Horarios", path: "/horarios" },
+        { name: "Muelles", path: "/muelles" },
+      ],
+    },
+    {
       icon: `<i class="fas fa-map-pin fa-lg"></i>`,
       name: "Puntos de salida",
       path: "/puntos-salida",
@@ -244,6 +252,11 @@ export class AppSidebarComponent {
         { name: "Lista de usuarios", path: "/usuarios" },
         { name: "Nuevo usuario", path: "/usuarios/crear" },
       ],
+    },
+    {
+      icon: `<i class="fas fa-credit-card fa-lg"></i>`,
+      name: "Métodos de cobro",
+      path: "/metodos-cobro",
     },
     {
       icon: `<i class="fas fa-coins fa-lg"></i>`,

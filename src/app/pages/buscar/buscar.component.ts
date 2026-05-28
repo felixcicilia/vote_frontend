@@ -53,7 +53,7 @@ export class BuscarComponent implements OnInit {
     this.tasaService.load();
     forkJoin({
       muelles: this.tripsService.getMuelles(),
-      islas: this.tripsService.getIslasPiers(),
+      islas: this.tripsService.getPuertos(true),
     }).subscribe({
       next: ({ muelles, islas }) => {
         this.muelles = muelles;
@@ -65,13 +65,13 @@ export class BuscarComponent implements OnInit {
   }
 
   buscar(): void {
-    if (!this.llegadaId) return;
     this.loading = true;
     this.buscado = true;
     this.vesselGroups = [];
 
-    const params: any = { arrivalPointId: this.llegadaId };
-    if (this.salidaId) params.departurePointId = this.salidaId;
+    const params: any = {};
+    if (this.llegadaId)  params.arrivalPointId   = this.llegadaId;
+    if (this.salidaId)   params.departurePointId = this.salidaId;
 
     this.tripsService.getSlots(params).subscribe({
       next: (slots) => {

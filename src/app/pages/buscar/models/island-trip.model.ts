@@ -1,5 +1,4 @@
 import { Embarcacion } from '../../embarcaciones/models/embarcacion.model';
-import { Destino } from '../../alquileres/models/destino.model';
 
 export interface PuertoSalida {
   id: number;
@@ -34,7 +33,7 @@ export interface IslandBooking {
   id: number;
   client: { id: number; firstName: string; lastName: string; email: string };
   vessel: Embarcacion;
-  destination: Destino;
+  destination: PuertoSalida;
   departurePoint: PuertoSalida;
   outboundSlot: VesselSlot;
   returnSlot?: VesselSlot | null;

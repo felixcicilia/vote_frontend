@@ -1,15 +1,16 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs';
 
 import { AuthService } from '../auth-pages/services/auth.service';
 import { TasaService } from '../../shared/services/tasa.service';
+import { PaymentAccountsService } from '../metodos-cobro/services/payment-accounts.service';
+import { PaymentAccount } from '../metodos-cobro/models/payment-account.model';
 import { environment } from '../../../environments/environment';
 import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload.component';
 
-// ── Métodos de pago con sus cuentas y moneda ──────────────────────────────────
+// ── Legacy constant kept for backward compatibility (no longer used directly) ──
 export const MARITIMO_ACCOUNTS = [
   {
     id:       'binance',
@@ -91,9 +92,10 @@ export const MARITIMO_ACCOUNTS = [
 export class MisMetodosPagoComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly http = inject(HttpClient);
+  private readonly accountsService = inject(PaymentAccountsService);
   readonly tasaService  = inject(TasaService);
 
-  readonly accounts = MARITIMO_ACCOUNTS;
+  accounts: PaymentAccount[] = [];
 
   // ── Saldo ───────────────────────────────────────────────────────────────────
   saldoNudos  = 0;
@@ -121,7 +123,7 @@ export class MisMetodosPagoComponent implements OnInit {
   selectedCardId    = '';
 
   // Campos del formulario
-  selectedAccount: typeof MARITIMO_ACCOUNTS[0] | null = null;
+  selectedAccount: PaymentAccount | null = null;
   nudos: number | null = null;
   referencia  = '';
   proofUrl    = '';
@@ -204,7 +206,7 @@ export class MisMetodosPagoComponent implements OnInit {
   ngOnInit(): void {
     this.tasaService.load();
     this.loadSaldo();
-    // Cargar tarjetas guardadas
+    this.accountsService.getActive().subscribe({ next: (a) => { this.accounts = a; } });
     try {
       const raw = localStorage.getItem(this.STORAGE_TDC);
       if (raw) { const parsed = JSON.parse(raw); this.tarjetas = Array.isArray(parsed) ? parsed : []; }
@@ -214,15 +216,9 @@ export class MisMetodosPagoComponent implements OnInit {
   private loadSaldo(): void {
     const uid = this.user?.id;
     if (!uid) { this.loadingSaldo = false; return; }
-    this.http.get<any>(`${environment.apiUrl}/payments?clientId=${uid}`)
-      .pipe(map(r => Array.isArray(r) ? r : (r?.data ?? [])))
+    this.http.get<any>(`${environment.apiUrl}/payments/wallet-balance/${uid}`)
       .subscribe({
-        next: (pagos: any[]) => {
-          this.saldoNudos = pagos
-            .filter(p => p.status === 'VERIFIED')
-            .reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0);
-          this.loadingSaldo = false;
-        },
+        next: (r) => { this.saldoNudos = Number(r?.balance ?? r?.data?.balance ?? 0); this.loadingSaldo = false; },
         error: () => { this.loadingSaldo = false; },
       });
   }
@@ -317,7 +313,7 @@ export class MisMetodosPagoComponent implements OnInit {
     });
   }
 
-  openModal(acc: typeof MARITIMO_ACCOUNTS[0]): void {
+  openModal(acc: PaymentAccount): void {
     this.selectedAccount = acc;
     this.nudos      = null;
     this.referencia = '';
@@ -346,7 +342,7 @@ export class MisMetodosPagoComponent implements OnInit {
       clientId:      uid,
       amount:        this.nudos,               // nudos = unidades a acreditar
       currency:      this.selectedAccount.currency === 'BS' ? 'VES' : 'USD',
-      method:        this.selectedAccount.apiValue,
+      method:        this.selectedAccount.method,
       referenceType: 'WALLET_TOPUP',
       referenceId:   uid,
       notes: `Recarga de ${this.nudos} nudos via ${this.selectedAccount.label} · Monto: ${this.montoLabel}`,

@@ -1,0 +1,281 @@
+<div class="mx-auto max-w-3xl space-y-6 pb-12">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-24 gap-4">
+    <div class="text-5xl animate-bounce">⚓</div>
+    <p class="text-gray-500 dark:text-gray-400">Cargando reserva...</p>
+  </div>
+
+  <!-- Error fatal -->
+  <div *ngIf="!loading && errorMsg && !booking"
+    class="rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900/30 dark:bg-red-500/10">
+    <p class="text-red-600 dark:text-red-400">{{ errorMsg }}</p>
+    <a routerLink="/mis-reservas" class="mt-3 inline-block text-sm font-semibold text-brand-500 hover:underline">← Mis reservas</a>
+  </div>
+
+  <ng-container *ngIf="!loading && booking">
+
+    <!-- ─── CONFIRMACIÓN FINAL ─────────────────────────────────────────────── -->
+    <ng-container *ngIf="done && createdPago">
+      <div class="rounded-2xl border border-green-200 bg-green-50 p-8 text-center dark:border-green-900/30 dark:bg-green-500/5">
+        <div class="text-5xl mb-4">🎉</div>
+        <h2 class="text-xl font-bold text-green-800 dark:text-green-300 mb-2">¡Pago registrado!</h2>
+        <p class="text-sm text-green-700 dark:text-green-400 mb-1">
+          Tu pago de <strong>{{ pagoDisplay(createdPago) }}</strong> fue enviado correctamente.
+        </p>
+        <p class="text-xs text-green-600 dark:text-green-500 mb-6">Será verificado por el equipo en breve.</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <a [routerLink]="['/mis-reservas', bookingId]"
+            class="rounded-xl border border-green-300 px-5 py-2.5 text-sm font-semibold text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-400">
+            Ver detalle de reserva →
+          </a>
+          <a routerLink="/mis-reservas"
+            class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600">
+            Mis Reservas
+          </a>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ─── FORMULARIO ────────────────────────────────────────────────────── -->
+    <ng-container *ngIf="!done">
+
+      <!-- Header -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">💳 Pagar Reserva</h1>
+            <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+              {{ booking.departurePoint?.name ?? '—' }} → {{ booking.destination?.name ?? '—' }} · #{{ booking.id }}
+            </p>
+          </div>
+          <a routerLink="/mis-reservas"
+            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+            ← Volver
+          </a>
+        </div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="mb-3 text-xs font-bold uppercase tracking-widest text-gray-400">Resumen</p>
+        <div class="space-y-1.5 text-sm">
+          <div class="flex justify-between text-gray-600 dark:text-gray-400">
+            <span>Embarcación</span><span>{{ booking.vessel?.name ?? '—' }}</span>
+          </div>
+          <div class="flex justify-between text-gray-600 dark:text-gray-400">
+            <span>Fecha</span><span>{{ booking.tripDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="flex justify-between text-gray-600 dark:text-gray-400">
+            <span>Pasajeros</span><span>{{ booking.passengers }}</span>
+          </div>
+          <div class="flex justify-between border-t border-gray-100 pt-2 font-bold text-gray-800 dark:border-gray-700 dark:text-white/90">
+            <span>Total</span>
+            <span class="text-lg text-brand-600 dark:text-brand-400">${{ booking.totalPrice | number:'1.2-2' }}</span>
+          </div>
+          <div class="text-right text-xs text-gray-400">{{ tasaService.formatBs(booking.totalPrice) }}</div>
+        </div>
+      </div>
+
+      <!-- Métodos de pago -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">Selecciona cómo pagar</p>
+        <div class="space-y-3">
+
+          <!-- Saldo / Nudos -->
+          <button type="button" (click)="selectMethod('wallet')"
+            class="w-full flex items-center gap-4 rounded-xl border px-4 py-3.5 text-left transition-all"
+            [ngClass]="isWallet
+              ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
+              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-100 text-xl dark:bg-teal-500/15">⚓</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-800 dark:text-white/90 text-sm">Saldo de Nudos</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <ng-container *ngIf="loadingWallet">Cargando saldo…</ng-container>
+                <ng-container *ngIf="!loadingWallet">
+                  <span [class.text-green-600]="hasEnoughBalance" [class.text-red-500]="!hasEnoughBalance" class="dark:text-inherit font-medium">
+                    {{ walletBalance | number:'1.2-2' }} nudos disponibles
+                  </span>
+                  <span *ngIf="!hasEnoughBalance" class="ml-1 text-red-400">(saldo insuficiente)</span>
+                </ng-container>
+              </p>
+            </div>
+            <div *ngIf="isWallet" class="h-5 w-5 flex-shrink-0 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs">✓</div>
+          </button>
+
+          <!-- Tarjetas guardadas -->
+          <button *ngIf="savedCards.length > 0" type="button" (click)="selectMethod('tdc')"
+            class="w-full flex items-center gap-4 rounded-xl border px-4 py-3.5 text-left transition-all"
+            [ngClass]="isTdc
+              ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
+              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-xl dark:bg-indigo-500/15">💳</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-800 dark:text-white/90 text-sm">Tarjeta guardada</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ savedCards.length }} tarjeta{{ savedCards.length !== 1 ? 's' : '' }} en tu cuenta</p>
+            </div>
+            <div *ngIf="isTdc" class="h-5 w-5 flex-shrink-0 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs">✓</div>
+          </button>
+
+          <!-- Backend payment accounts -->
+          <button *ngFor="let acc of accounts" type="button" (click)="selectMethod(acc.id.toString())"
+            class="w-full flex items-center gap-4 rounded-xl border px-4 py-3.5 text-left transition-all"
+            [ngClass]="selectedAccountId === acc.id.toString()
+              ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
+              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100 text-xl dark:bg-gray-800">{{ acc.icon }}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-800 dark:text-white/90 text-sm">{{ acc.label }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ acc.description }}</p>
+            </div>
+            <div *ngIf="selectedAccountId === acc.id.toString()" class="h-5 w-5 flex-shrink-0 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs">✓</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── Detalles según método seleccionado ─────────────────────────── -->
+
+      <!-- Instrucciones de cuenta normal -->
+      <div *ngIf="selectedAccount"
+        class="rounded-2xl border border-blue-100 bg-blue-50 p-5 dark:border-blue-900/30 dark:bg-blue-500/5">
+        <p class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
+          Realiza el pago de <strong>{{ displayAmount }}</strong> a:
+        </p>
+        <dl class="space-y-1">
+          <div *ngFor="let f of selectedAccount.fields" class="flex gap-2 text-sm">
+            <dt class="w-28 flex-shrink-0 font-medium text-blue-700 dark:text-blue-400">{{ f.label }}:</dt>
+            <dd class="text-blue-800 dark:text-blue-300">{{ f.value }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Selección de tarjeta guardada -->
+      <div *ngIf="isTdc && savedCards.length > 0"
+        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="mb-3 text-xs font-bold uppercase tracking-widest text-gray-400">Selecciona una tarjeta</p>
+        <div class="space-y-2">
+          <label *ngFor="let card of savedCards"
+            class="flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-all"
+            [ngClass]="selectedCardId === card.id
+              ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
+              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+            <input type="radio" name="savedCard" [value]="card.id" [(ngModel)]="selectedCardId"
+              class="sr-only" />
+            <span class="text-xl">💳</span>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ maskedCard(card.numero) }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ card.titular }} · Vence {{ card.vencimiento }}</p>
+            </div>
+            <div *ngIf="selectedCardId === card.id" class="h-5 w-5 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs">✓</div>
+          </label>
+        </div>
+        <p class="mt-3 text-xs text-gray-400">
+          Cargo de <strong>${{ booking.totalPrice | number:'1.2-2' }} USD</strong> a la tarjeta seleccionada.
+        </p>
+      </div>
+
+      <!-- Mensaje de saldo -->
+      <div *ngIf="isWallet"
+        class="rounded-2xl p-5"
+        [ngClass]="hasEnoughBalance
+          ? 'border border-teal-200 bg-teal-50 dark:border-teal-900/30 dark:bg-teal-500/5'
+          : 'border border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-500/5'">
+        <div *ngIf="hasEnoughBalance">
+          <p class="text-sm font-semibold text-teal-800 dark:text-teal-300">✓ Saldo suficiente</p>
+          <p class="text-sm text-teal-700 dark:text-teal-400 mt-1">
+            Se descontarán <strong>${{ booking.totalPrice | number:'1.2-2' }}</strong> de tu saldo de
+            <strong>{{ walletBalance | number:'1.2-2' }} nudos</strong>.
+          </p>
+          <p class="text-xs text-teal-600 dark:text-teal-500 mt-1">
+            Saldo restante: {{ (walletBalance - totalUsd) | number:'1.2-2' }} nudos
+          </p>
+        </div>
+        <div *ngIf="!hasEnoughBalance">
+          <p class="text-sm font-semibold text-red-700 dark:text-red-400">✗ Saldo insuficiente</p>
+          <p class="text-sm text-red-600 dark:text-red-400 mt-1">
+            Necesitas <strong>${{ booking.totalPrice | number:'1.2-2' }}</strong> pero solo tienes
+            <strong>{{ walletBalance | number:'1.2-2' }} nudos</strong>.
+          </p>
+          <a routerLink="/mis-metodos-pago"
+            class="mt-2 inline-block text-xs font-semibold text-brand-500 hover:underline">
+            + Recargar saldo →
+          </a>
+        </div>
+      </div>
+
+      <!-- Formulario extra (referencia / comprobante) para métodos que lo requieren -->
+      <form *ngIf="selectedAccount" [formGroup]="payForm" class="space-y-4">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">Datos del pago</p>
+          <div class="space-y-4">
+
+            <!-- Moneda + Monto -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-600 dark:text-gray-400">Moneda</label>
+                <select formControlName="currency"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
+                  <option value="USD">USD</option>
+                  <option value="BS">Bolívares (REF)</option>
+                  <option value="USDT">USDT</option>
+                </select>
+              </div>
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-600 dark:text-gray-400">Monto</label>
+                <input type="number" formControlName="amount" step="0.01"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+              </div>
+            </div>
+
+            <!-- Nota de pago en exceso -->
+            <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-700 dark:bg-amber-500/5 dark:border-amber-800/30 dark:text-amber-400">
+              💡 Si pagas más de <strong>${{ booking.totalPrice | number:'1.2-2' }} USD</strong>, el excedente se abonará automáticamente a tu saldo de nudos una vez verificado el pago.
+            </div>
+
+            <!-- Referencia -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-600 dark:text-gray-400">N° de referencia</label>
+              <input type="text" formControlName="transactionRef" placeholder="Número de confirmación de la transferencia"
+                class="h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+            </div>
+
+            <!-- Comprobante -->
+            <div *ngIf="selectedAccount.method !== 'CASH'">
+              <label class="mb-1.5 block text-sm font-medium text-gray-600 dark:text-gray-400">Comprobante (opcional)</label>
+              <app-image-upload (uploaded)="onProofUploaded($event)" />
+            </div>
+
+            <!-- Notas -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-600 dark:text-gray-400">Notas (opcional)</label>
+              <textarea formControlName="notes" rows="2" placeholder="Alguna observación..."
+                class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"></textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Error -->
+      <div *ngIf="errorMsg"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+        {{ errorMsg }}
+      </div>
+
+      <!-- Submit -->
+      <div class="flex gap-3 justify-end">
+        <a routerLink="/mis-reservas"
+          class="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+          Cancelar
+        </a>
+        <button type="button" (click)="registrarPago()"
+          [disabled]="submitting || !canSubmit()"
+          class="rounded-xl bg-brand-500 px-7 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+          {{ submitting ? 'Procesando...' : 'Confirmar pago' }}
+        </button>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+</div>
