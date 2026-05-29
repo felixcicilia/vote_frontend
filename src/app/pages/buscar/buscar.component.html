@@ -26,10 +26,15 @@
             </label>
             <select [(ngModel)]="salidaId" [disabled]="loadingPuntos"
               class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white cursor-pointer">
-              <option [ngValue]="null">Cualquier muelle</option>
-              <option *ngFor="let p of muelles" [ngValue]="p.id">{{ p.icon ?? '⚓' }} {{ p.name }}</option>
+              <option [ngValue]="null">Cualquier punto de salida</option>
+              <optgroup label="Muelles">
+                <option *ngFor="let p of muelles" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
+              </optgroup>
+              <optgroup label="Islas">
+                <option *ngFor="let p of islasPuntos" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
+              </optgroup>
             </select>
-            <p class="mt-1 text-xs text-gray-400">{{ salidaSel ? salidaSel.city + ', ' + salidaSel.state : 'Puerto de embarque' }}</p>
+            <p class="mt-1 text-xs text-gray-400">{{ salidaSel ? salidaSel.city + ', ' + salidaSel.state : 'Muelle o isla de embarque' }}</p>
           </div>
 
           <!-- Llega a -->
@@ -40,9 +45,14 @@
             <select [(ngModel)]="llegadaId" [disabled]="loadingPuntos"
               class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white cursor-pointer">
               <option [ngValue]="null">Cualquier destino</option>
-              <option *ngFor="let p of islas" [ngValue]="p.id">{{ p.icon ?? '🏝️' }} {{ p.name }}</option>
+              <optgroup label="Muelles">
+                <option *ngFor="let p of muelles" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
+              </optgroup>
+              <optgroup label="Islas">
+                <option *ngFor="let p of islasPuntos" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
+              </optgroup>
             </select>
-            <p class="mt-1 text-xs text-gray-400">{{ llegadaSel ? llegadaSel.city + ', ' + llegadaSel.state : 'Isla o cayo destino' }}</p>
+            <p class="mt-1 text-xs text-gray-400">{{ llegadaSel ? llegadaSel.city + ', ' + llegadaSel.state : 'Muelle o isla destino' }}</p>
           </div>
 
           <!-- Fecha -->
@@ -81,13 +91,13 @@
       <!-- Stats rápidos -->
       <div class="mt-6 flex flex-wrap justify-center gap-6 text-center">
         <div class="text-white/70">
-          <span class="text-2xl font-black text-white">{{ islas.length }}</span>
-          <span class="ml-1 text-sm">destinos</span>
+          <span class="text-2xl font-black text-white">{{ islasPuntos.length }}</span>
+          <span class="ml-1 text-sm">islas</span>
         </div>
         <div class="text-white/30">|</div>
         <div class="text-white/70">
           <span class="text-2xl font-black text-white">{{ muelles.length }}</span>
-          <span class="ml-1 text-sm">puertos de salida</span>
+          <span class="ml-1 text-sm">muelles</span>
         </div>
         <div class="text-white/30">|</div>
         <div class="text-white/70">
@@ -98,62 +108,86 @@
     </div>
   </div>
 
-  <!-- ══════════════════════ DESTINOS POPULARES ══════════════════════ -->
-  <div *ngIf="!buscado && islas.length > 0">
+  <!-- ══════════════════════ PUNTOS DISPONIBLES ══════════════════════ -->
+  <div *ngIf="!buscado && puntos.length > 0">
     <div class="mb-5 flex items-center justify-between">
       <div>
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">🏝️ Destinos disponibles</h2>
-        <p class="mt-0.5 text-sm text-gray-500">Haz click en un destino para buscarlo directamente</p>
+        <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">📍 Destinos y muelles disponibles</h2>
+        <p class="mt-0.5 text-sm text-gray-500">Haz click en cualquier punto para usarlo como destino</p>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-      <button *ngFor="let isla of islas" (click)="elegirDestino(isla)"
-        class="group relative overflow-hidden rounded-2xl border-2 text-left transition-all hover:shadow-xl"
-        [class.border-brand-400]="llegadaId === isla.id"
-        [class.border-transparent]="llegadaId !== isla.id">
 
-        <!-- Con foto: tarjeta estilo "destination card" -->
-        <ng-container *ngIf="isla.photoUrl; else sinFoto">
-          <div class="relative h-36 w-full sm:h-44">
-            <img [src]="imageUrl(isla.photoUrl)" [alt]="isla.name"
-              class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            <!-- Overlay gradiente -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <!-- Nombre sobre la foto -->
-            <div class="absolute bottom-0 left-0 right-0 p-3">
-              <p class="text-sm font-bold text-white leading-tight">{{ isla.name }}</p>
-              <p class="text-[10px] text-white/70">{{ isla.city }}, {{ isla.state }}</p>
+    <!-- Islas -->
+    <div *ngIf="islasPuntos.length > 0" class="mb-6">
+      <h3 class="mb-3 text-sm font-bold uppercase tracking-widest text-gray-400">🏝️ Islas y cayos</h3>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <button *ngFor="let punto of islasPuntos" (click)="elegirDestino(punto)"
+          class="group relative overflow-hidden rounded-2xl border-2 text-left transition-all hover:shadow-xl"
+          [class.border-brand-400]="llegadaId === punto.id"
+          [class.border-transparent]="llegadaId !== punto.id">
+
+          <ng-container *ngIf="punto.photoUrl; else sinFotoIsla">
+            <div class="relative h-36 w-full sm:h-44">
+              <img [src]="imageUrl(punto.photoUrl)" [alt]="punto.name"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-3">
+                <p class="text-sm font-bold text-white leading-tight">{{ punto.name }}</p>
+                <p class="text-[10px] text-white/70">{{ punto.city }}, {{ punto.state }}</p>
+              </div>
+              <span *ngIf="llegadaId === punto.id"
+                class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                ✓ Destino
+              </span>
+              <div *ngIf="llegadaId === punto.id"
+                class="absolute inset-0 ring-2 ring-inset ring-brand-400 rounded-2xl"></div>
             </div>
-            <!-- Badge seleccionado -->
-            <span *ngIf="llegadaId === isla.id"
-              class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">
-              ✓ Seleccionado
-            </span>
-            <!-- Overlay seleccionado -->
-            <div *ngIf="llegadaId === isla.id"
-              class="absolute inset-0 ring-2 ring-inset ring-brand-400 rounded-2xl"></div>
-          </div>
-        </ng-container>
+          </ng-container>
 
-        <!-- Sin foto: tarjeta original con emoji -->
-        <ng-template #sinFoto>
-          <div class="p-5"
-            [class.bg-brand-50]="llegadaId === isla.id"
-            [class.dark:bg-brand-500/10]="llegadaId === isla.id"
-            [class.bg-white]="llegadaId !== isla.id"
-            [class.dark:bg-white/[0.03]]="llegadaId !== isla.id">
-            <div class="mb-3 text-4xl">{{ isla.icon ?? '🏝️' }}</div>
-            <p class="font-bold text-gray-800 dark:text-white/90 group-hover:text-brand-600 transition-colors">{{ isla.name }}</p>
-            <p class="mt-0.5 text-xs text-gray-400">{{ isla.city }}, {{ isla.state }}</p>
-            <span *ngIf="llegadaId === isla.id"
-              class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white">
-              ✓ Seleccionado
-            </span>
-          </div>
-        </ng-template>
-
-      </button>
+          <ng-template #sinFotoIsla>
+            <div class="p-5"
+              [class.bg-brand-50]="llegadaId === punto.id"
+              [class.dark:bg-brand-500/10]="llegadaId === punto.id"
+              [class.bg-white]="llegadaId !== punto.id"
+              [class.dark:bg-white/[0.03]]="llegadaId !== punto.id">
+              <div class="mb-3 text-4xl">{{ puntoIcon(punto) }}</div>
+              <p class="font-bold text-gray-800 dark:text-white/90 group-hover:text-brand-600 transition-colors">{{ punto.name }}</p>
+              <p class="mt-0.5 text-xs text-gray-400">{{ punto.city }}, {{ punto.state }}</p>
+              <span *ngIf="llegadaId === punto.id"
+                class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                ✓ Destino
+              </span>
+            </div>
+          </ng-template>
+        </button>
+      </div>
     </div>
+
+    <!-- Muelles -->
+    <div *ngIf="muelles.length > 0">
+      <h3 class="mb-3 text-sm font-bold uppercase tracking-widest text-gray-400">⚓ Muelles y puertos</h3>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <button *ngFor="let punto of muelles" (click)="elegirDestino(punto)"
+          class="group relative overflow-hidden rounded-2xl border-2 text-left transition-all hover:shadow-xl"
+          [class.border-brand-400]="llegadaId === punto.id"
+          [class.border-transparent]="llegadaId !== punto.id">
+          <div class="p-5"
+            [class.bg-brand-50]="llegadaId === punto.id"
+            [class.dark:bg-brand-500/10]="llegadaId === punto.id"
+            [class.bg-white]="llegadaId !== punto.id"
+            [class.dark:bg-white/[0.03]]="llegadaId !== punto.id">
+            <div class="mb-3 text-4xl">{{ puntoIcon(punto) }}</div>
+            <p class="font-bold text-gray-800 dark:text-white/90 group-hover:text-brand-600 transition-colors">{{ punto.name }}</p>
+            <p class="mt-0.5 text-xs text-gray-400">{{ punto.city }}, {{ punto.state }}</p>
+            <span *ngIf="llegadaId === punto.id"
+              class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white">
+              ✓ Destino
+            </span>
+          </div>
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <!-- ══════════════════════ CÓMO FUNCIONA ══════════════════════ -->

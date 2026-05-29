@@ -38,6 +38,8 @@ type NavItem = {
 })
 export class AppSidebarComponent {
   // ─── Items visibles para CLIENTE ────────────────────────────────────────────
+  // Modelo 1: Excursión colectiva a isla  (como Uber — varios clientes, un proveedor)
+  // Modelo 2: Charter privado             (como Airbnb — cliente reserva toda la embarcación)
   private clienteItems: NavItem[] = [
     {
       icon: `<i class="fas fa-home fa-lg"></i>`,
@@ -49,20 +51,21 @@ export class AppSidebarComponent {
       name: "Mi Dashboard",
       path: "/mi-dashboard",
     },
+    // ── Modelo 1 ────────────────────────────────────────────────────────────
     {
-      icon: `<i class="fas fa-search fa-lg"></i>`,
-      name: "Buscar viaje",
+      icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
+      name: "Excursiones a isla",
       path: "/buscar",
     },
+    // ── Modelo 2 ────────────────────────────────────────────────────────────
     {
-      icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Charter privado",
-      subItems: [
-        { name: "Buscar yate / catamarán", path: "/alquileres" },
-      ],
+      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
+      name: "Alquilar embarcación",
+      path: "/alquileres",
     },
+    // ── Mis reservas ────────────────────────────────────────────────────────
     {
-      icon: `<i class="fas fa-ticket fa-lg"></i>`,
+      icon: `<i class="fas fa-calendar-check fa-lg"></i>`,
       name: "Mis reservas",
       path: "/mis-reservas",
     },
@@ -72,14 +75,29 @@ export class AppSidebarComponent {
       path: "/pagos",
     },
     {
-      icon: `<i class="fas fa-credit-card fa-lg"></i>`,
-      name: "Métodos de pago",
+      icon: `<i class="fas fa-wallet fa-lg"></i>`,
+      name: "Mi billetera",
       path: "/mis-metodos-pago",
     },
     {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Mis reseñas",
       path: "/resenas",
+    },
+    {
+      icon: `<i class="fas fa-circle-question fa-lg"></i>`,
+      name: "FAQ",
+      path: "/faq",
+    },
+    {
+      icon: `<i class="fas fa-comments fa-lg"></i>`,
+      name: "Mensajes",
+      path: "/mensajes",
+    },
+    {
+      icon: `<i class="fas fa-headset fa-lg"></i>`,
+      name: "Soporte",
+      path: "/soporte/tickets",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
@@ -89,6 +107,8 @@ export class AppSidebarComponent {
   ];
 
   // ─── Items visibles para PROVEEDOR ──────────────────────────────────────────
+  // El proveedor es el dueño de la embarcación.
+  // Gestiona su flota, define sus horarios de excursión y atiende las reservas recibidas.
   private proveedorItems: NavItem[] = [
     {
       icon: `<i class="fas fa-home fa-lg"></i>`,
@@ -97,18 +117,32 @@ export class AppSidebarComponent {
     },
     {
       icon: `<i class="fas fa-chart-line fa-lg"></i>`,
-      name: "Mi Dashboard",
+      name: "Mi negocio",
       path: "/mi-negocio",
+    },
+    // ── Mi flota ────────────────────────────────────────────────────────────
+    {
+      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
+      name: "Mis embarcaciones",
+      path: "/mi-charter/yates",
+    },
+    {
+      icon: `<i class="fas fa-calendar-days fa-lg"></i>`,
+      name: "Mis horarios",
+      path: "/mi-charter/itinerario",
+    },
+    // ── Reservas recibidas ──────────────────────────────────────────────────
+    {
+      icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
+      name: "Excursiones recibidas",
+      path: "/reservas-isla",
     },
     {
       icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Mi Charter",
-      subItems: [
-        { name: "Mis embarcaciones", path: "/mi-charter/yates" },
-        { name: "Mi itinerario", path: "/mi-charter/itinerario" },
-        { name: "Reservas recibidas", path: "/mi-charter/reservas" },
-      ],
+      name: "Charters contratados",
+      path: "/mi-charter/reservas",
     },
+    // ── Mi cuenta ───────────────────────────────────────────────────────────
     {
       icon: `<i class="fas fa-university fa-lg"></i>`,
       name: "Datos bancarios",
@@ -118,6 +152,11 @@ export class AppSidebarComponent {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Reseñas",
       path: "/resenas",
+    },
+    {
+      icon: `<i class="fas fa-comments fa-lg"></i>`,
+      name: "Mensajes",
+      path: "/mensajes",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
@@ -134,27 +173,19 @@ export class AppSidebarComponent {
       path: "/dashboard",
     },
     {
-      icon: `<i class="fas fa-taxi fa-lg"></i>`,
-      name: "Viajes Taxi",
-      subItems: [{ name: "Gestión de viajes", path: "/viajes-taxi" }],
+      icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
+      name: "Excursiones",
+      path: "/reservas-isla",
     },
     {
-      icon: `<i class="fas fa-ship fa-lg"></i>`,
-      name: "Terminal",
-      subItems: [
-        { name: "Viajes programados", path: "/viajes" },
-        { name: "Tickets emitidos", path: "/tickets" },
-      ],
-    },
-    {
-      icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Alquileres",
-      subItems: [{ name: "Lista de alquileres", path: "/alquileres" }],
+      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
+      name: "Charters",
+      path: "/alquileres",
     },
     {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
-      name: "Pagos",
-      subItems: [{ name: "Verificar pagos", path: "/pagos" }],
+      name: "Verificar pagos",
+      path: "/pagos",
     },
     {
       icon: `<i class="fas fa-coins fa-lg"></i>`,
@@ -168,7 +199,9 @@ export class AppSidebarComponent {
     },
   ];
 
-  // ─── MONITOREO: Items operacionales para ADMINISTRADOR y MASTER ─────────────
+  // ─── OPERACIONES: Items del día a día para ADMINISTRADOR y MASTER ─────────────
+  // El master/admin es el soporte de la empresa:
+  // aprueba pagos, aprueba proveedores, aprueba embarcaciones, monitorea todo.
   navItems: NavItem[] = [
     {
       icon: `<i class="fas fa-dashboard fa-lg"></i>`,
@@ -181,38 +214,46 @@ export class AppSidebarComponent {
       path: "/finanzas",
       masterOnly: true,
     },
-    {
-      icon: `<i class="fas fa-taxi fa-lg"></i>`,
-      name: "Viajes Taxi",
-      subItems: [{ name: "Todos los viajes", path: "/viajes-taxi" }],
-    },
-    {
-      icon: `<i class="fas fa-ship fa-lg"></i>`,
-      name: "Terminal",
-      subItems: [
-        { name: "Viajes programados", path: "/viajes" },
-        { name: "Tickets emitidos", path: "/tickets" },
-      ],
-    },
+    // ── Modelo 1: Excursiones a isla ────────────────────────────────────────
     {
       icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
-      name: "Reservas de isla",
+      name: "Excursiones",
       path: "/reservas-isla",
     },
+    // ── Modelo 2: Charters privados ─────────────────────────────────────────
     {
-      icon: `<i class="fas fa-anchor fa-lg"></i>`,
-      name: "Alquileres",
-      subItems: [{ name: "Todos los alquileres", path: "/alquileres" }],
+      icon: `<i class="fas fa-sailboat fa-lg"></i>`,
+      name: "Charters",
+      path: "/alquileres",
     },
+    // ── Pagos y verificaciones ──────────────────────────────────────────────
     {
       icon: `<i class="fas fa-money-bill-transfer fa-lg"></i>`,
       name: "Pagos",
-      subItems: [{ name: "Lista de pagos", path: "/pagos" }],
+      path: "/pagos",
     },
     {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Reseñas",
-      subItems: [{ name: "Todas las reseñas", path: "/resenas" }],
+      path: "/resenas",
+    },
+    {
+      icon: `<i class="fas fa-headset fa-lg"></i>`,
+      name: "Soporte",
+      subItems: [
+        { name: "Tickets", path: "/soporte/tickets" },
+        { name: "Chat / Mensajes", path: "/mensajes" },
+      ],
+    },
+    {
+      icon: `<i class="fas fa-circle-question fa-lg"></i>`,
+      name: "FAQ",
+      path: "/faq",
+    },
+    {
+      icon: `<i class="fas fa-comments fa-lg"></i>`,
+      name: "Mensajes",
+      path: "/mensajes",
     },
     {
       icon: `<i class="fas fa-bell fa-lg"></i>`,
@@ -221,29 +262,16 @@ export class AppSidebarComponent {
     },
   ];
 
-  // ─── ADMINISTRACIÓN: Catálogo y sistema para ADMINISTRADOR y MASTER ──────────
+  // ─── ADMINISTRACIÓN: Catálogo y configuración del sistema ────────────────────
   othersItems: NavItem[] = [
+    // ── Aprobaciones ────────────────────────────────────────────────────────
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
       name: "Embarcaciones",
       subItems: [
         { name: "Todas las embarcaciones", path: "/embarcaciones" },
-        { name: "Verificar pendientes", path: "/embarcaciones/verificar" },
+        { name: "Pendientes de aprobación", path: "/embarcaciones/verificar" },
       ],
-    },
-    {
-      icon: `<i class="fas fa-route fa-lg"></i>`,
-      name: "Rutas y horarios",
-      subItems: [
-        { name: "Rutas", path: "/rutas" },
-        { name: "Horarios", path: "/horarios" },
-        { name: "Muelles", path: "/muelles" },
-      ],
-    },
-    {
-      icon: `<i class="fas fa-map-pin fa-lg"></i>`,
-      name: "Puntos de salida",
-      path: "/puntos-salida",
     },
     {
       icon: `<i class="fas fa-users fa-lg"></i>`,
@@ -252,6 +280,12 @@ export class AppSidebarComponent {
         { name: "Lista de usuarios", path: "/usuarios" },
         { name: "Nuevo usuario", path: "/usuarios/crear" },
       ],
+    },
+    // ── Configuración ────────────────────────────────────────────────────────
+    {
+      icon: `<i class="fas fa-map-pin fa-lg"></i>`,
+      name: "Puntos de salida",
+      path: "/puntos-salida",
     },
     {
       icon: `<i class="fas fa-credit-card fa-lg"></i>`,

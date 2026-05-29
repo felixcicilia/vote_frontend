@@ -1,0 +1,155 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">❓ Preguntas frecuentes</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {{ isMaster ? 'Gestiona las preguntas y respuestas del sistema' : 'Encuentra respuestas rápidas a tus dudas' }}
+      </p>
+    </div>
+    <button *ngIf="isMaster" (click)="openCreate()"
+      class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 shadow-md transition">
+      + Nueva FAQ
+    </button>
+  </div>
+
+  <!-- Buscador + filtro -->
+  <div class="flex flex-col gap-3 sm:flex-row">
+    <input [(ngModel)]="search" placeholder="Buscar pregunta…"
+      class="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+    <select [(ngModel)]="filterCat"
+      class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+      <option value="">Todas las categorías</option>
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+  </div>
+
+  <!-- Skeleton -->
+  <div *ngIf="loading" class="space-y-3">
+    <div *ngFor="let _ of [1,2,3,4]" class="h-16 animate-pulse rounded-2xl bg-gray-100 dark:bg-white/[0.04]"></div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="!loading && filtered.length === 0"
+    class="rounded-2xl border border-dashed border-gray-200 p-14 text-center dark:border-gray-700">
+    <div class="mb-3 text-5xl">🔍</div>
+    <p class="text-gray-500 dark:text-gray-400">
+      {{ search ? 'No hay FAQs que coincidan con tu búsqueda.' : 'Aún no hay preguntas frecuentes.' }}
+    </p>
+  </div>
+
+  <!-- Lista agrupada por categoría -->
+  <div *ngIf="!loading && filtered.length > 0" class="space-y-6">
+    <ng-container *ngFor="let cat of categories">
+      <ng-container *ngIf="byCat(cat) as catFaqs">
+        <div *ngIf="catFaqs.length > 0">
+          <h3 class="mb-3 text-xs font-bold uppercase tracking-widest text-gray-400">{{ cat }}</h3>
+          <div class="space-y-2">
+            <div *ngFor="let f of catFaqs"
+              class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
+              [class.opacity-50]="!f.isActive && isMaster">
+              <!-- Pregunta -->
+              <button (click)="toggle(f.id)"
+                class="flex w-full items-center justify-between gap-4 px-6 py-4 text-left transition hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                <span class="font-semibold text-gray-800 dark:text-white/90">{{ f.question }}</span>
+                <div class="flex flex-shrink-0 items-center gap-2">
+                  <span *ngIf="isMaster && !f.isActive"
+                    class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-400 dark:bg-gray-700">
+                    Inactiva
+                  </span>
+                  <span class="text-gray-400 transition-transform duration-200 text-xl"
+                    [class.rotate-180]="openId === f.id">
+                    ↓
+                  </span>
+                </div>
+              </button>
+              <!-- Respuesta -->
+              <div *ngIf="openId === f.id" class="border-t border-gray-100 dark:border-gray-800">
+                <p class="px-6 py-4 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                  {{ f.answer }}
+                </p>
+                <!-- Acciones master -->
+                <div *ngIf="isMaster" class="flex gap-2 border-t border-gray-100 px-6 py-3 dark:border-gray-800">
+                  <button (click)="openEdit(f)"
+                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 transition">
+                    ✏️ Editar
+                  </button>
+                  <button (click)="toggleActive(f)"
+                    class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
+                    [ngClass]="f.isActive
+                      ? 'border-amber-200 text-amber-600 hover:bg-amber-50 dark:border-amber-500/20'
+                      : 'border-green-200 text-green-600 hover:bg-green-50 dark:border-green-500/20'">
+                    {{ f.isActive ? '🙈 Desactivar' : '👁️ Activar' }}
+                  </button>
+                  <button (click)="delete(f)"
+                    class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition dark:border-red-500/20">
+                    🗑️ Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+
+  <!-- Modal crear/editar (MASTER) -->
+  <div *ngIf="showForm && isMaster"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    (click)="showForm = false">
+    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900"
+      (click)="$event.stopPropagation()">
+      <h2 class="mb-5 text-lg font-bold text-gray-800 dark:text-white/90">
+        {{ editTarget ? 'Editar FAQ' : 'Nueva FAQ' }}
+      </h2>
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1 block text-xs font-semibold text-gray-500">Pregunta *</label>
+          <input [(ngModel)]="form.question" placeholder="¿Cómo puedo…?"
+            class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-semibold text-gray-500">Respuesta *</label>
+          <textarea [(ngModel)]="form.answer" rows="4" placeholder="Escribe la respuesta completa…"
+            class="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="mb-1 block text-xs font-semibold text-gray-500">Categoría</label>
+            <select [(ngModel)]="form.category"
+              class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+              <option value="General">General</option>
+              <option value="Pagos">Pagos</option>
+              <option value="Reservas">Reservas</option>
+              <option value="Embarcaciones">Embarcaciones</option>
+              <option value="Cuenta">Cuenta</option>
+              <option value="Proveedores">Proveedores</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-semibold text-gray-500">Orden</label>
+            <input type="number" [(ngModel)]="form.sortOrder" min="0"
+              class="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          </div>
+        </div>
+        <label class="flex cursor-pointer items-center gap-3">
+          <input type="checkbox" [(ngModel)]="form.isActive" class="h-4 w-4 rounded accent-brand-500" />
+          <span class="text-sm text-gray-700 dark:text-gray-300">Visible para los usuarios</span>
+        </label>
+      </div>
+      <div class="mt-6 flex gap-3">
+        <button (click)="save()" [disabled]="saving || !form.question.trim() || !form.answer.trim()"
+          class="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+          {{ saving ? 'Guardando…' : (editTarget ? 'Guardar cambios' : 'Crear FAQ') }}
+        </button>
+        <button (click)="showForm = false"
+          class="rounded-xl border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 transition">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

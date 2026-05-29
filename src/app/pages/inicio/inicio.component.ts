@@ -4,16 +4,14 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../auth-pages/services/auth.service';
-import { ViajesService } from '../viajes/services/viajes.service';
-import { TicketsService } from '../tickets/services/tickets.service';
 import { EmbarcacionesService } from '../embarcaciones/services/embarcaciones.service';
-import { MuellesService } from '../muelles/services/muelles.service';
-import { Viaje } from '../viajes/models/viaje.model';
-import { Ticket } from '../tickets/models/ticket.model';
+import { IslandTripsService } from '../buscar/services/island-trips.service';
+import { AlquileresService } from '../alquileres/services/alquileres.service';
+import { TasaService } from '../../shared/services/tasa.service';
 import { Embarcacion } from '../embarcaciones/models/embarcacion.model';
-import { Muelle } from '../muelles/models/muelle.model';
+import { IslandBooking } from '../buscar/models/island-trip.model';
+import { Alquiler } from '../alquileres/models/alquiler.model';
 import { environment } from '../../../environments/environment';
-import { MapaMuellesComponent } from '../../shared/components/mapa-muelles/mapa-muelles.component';
 
 export interface Noticia {
   id: number;
@@ -58,28 +56,23 @@ const NOTICIAS_MOCK: Noticia[] = [
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, MapaMuellesComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './inicio.component.html',
 })
 export class InicioComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly viajesService = inject(ViajesService);
-  private readonly ticketsService = inject(TicketsService);
   private readonly embarcacionesService = inject(EmbarcacionesService);
-  private readonly muellesService = inject(MuellesService);
+  private readonly islandService = inject(IslandTripsService);
+  private readonly alquileresService = inject(AlquileresService);
+  readonly tasaService = inject(TasaService);
 
-  // Shared
   loading = true;
 
-  // Client state
-  misTickets: Ticket[] = [];
-  muelles: Muelle[] = [];
+  // Cliente
+  misExcursiones: IslandBooking[] = [];
+  misCharters: Alquiler[] = [];
   yatesYCatamaranes: Embarcacion[] = [];
-  todasEmbarcaciones: Embarcacion[] = [];
-  searchOrigen = '';
-  searchDestino = '';
-  searchFecha = this.hoy();
 
   @ViewChild('ofertasTrack') ofertasTrack?: ElementRef<HTMLDivElement>;
 
@@ -89,11 +82,7 @@ export class InicioComponent implements OnInit, OnDestroy {
     el.scrollBy({ left: dir * 280, behavior: 'smooth' });
   }
 
-  // Provider state
-  misEmbarcaciones: Embarcacion[] = [];
-  misReservas: Ticket[] = [];
-
-  // ── Slider de noticias ────────────────────────────────────────────────────
+  // Slider de noticias
   readonly noticias: Noticia[] = NOTICIAS_MOCK;
   readonly slideActual = signal(0);
   private sliderInterval?: ReturnType<typeof setInterval>;
@@ -102,19 +91,26 @@ export class InicioComponent implements OnInit, OnDestroy {
   get role() { return this.auth.role(); }
   get isCliente() { return this.role === 'CLIENTE'; }
   get isProveedor() { return this.role === 'PROVEEDOR'; }
-  get isAdmin() { return this.role === 'MASTER' || this.role === 'ADMINISTRADOR'; }
+
+  get excursionesPendientesPago(): IslandBooking[] {
+    return this.misExcursiones.filter(b => b.status === 'PENDING');
+  }
+  get excursionesProximas(): IslandBooking[] {
+    const hoy = this.hoy();
+    return this.misExcursiones
+      .filter(b => b.status === 'CONFIRMED' && b.tripDate >= hoy)
+      .sort((a, b) => a.tripDate.localeCompare(b.tripDate))
+      .slice(0, 3);
+  }
 
   ngOnInit(): void {
+    this.tasaService.load();
     if (this.isCliente) this.loadCliente();
-    else if (this.isProveedor) this.loadProveedor();
     else { this.loading = false; }
-
     this.startSlider();
   }
 
-  ngOnDestroy(): void {
-    clearInterval(this.sliderInterval);
-  }
+  ngOnDestroy(): void { clearInterval(this.sliderInterval); }
 
   private startSlider(): void {
     this.sliderInterval = setInterval(() => {
@@ -133,54 +129,31 @@ export class InicioComponent implements OnInit, OnDestroy {
 
   private loadCliente(): void {
     const userId = this.user?.id;
-    const muelles$ = this.muellesService.getAll(true);
-    const tickets$ = userId ? this.ticketsService.getAll({ clientId: userId }) : null;
-
-    muelles$.subscribe({ next: (m) => { this.muelles = m; } });
 
     this.embarcacionesService.getAll().subscribe({
       next: (emb) => {
-        const active = emb.filter(e => e.status === 'ACTIVE');
-        this.todasEmbarcaciones = active;
-        this.yatesYCatamaranes = active.filter(e => e.type === 'YATE' || e.type === 'CATAMARAN');
+        this.yatesYCatamaranes = emb
+          .filter(e => (e.type === 'YATE' || e.type === 'CATAMARAN') && e.verificationStatus === 'APPROVED')
+          .slice(0, 10);
       },
     });
 
-    if (tickets$) {
-      tickets$.subscribe({
-        next: (t) => { this.misTickets = t.slice(0, 5); this.loading = false; },
-        error: () => { this.loading = false; },
-      });
-    } else {
-      this.loading = false;
-    }
-  }
+    if (!userId) { this.loading = false; return; }
 
-  private loadProveedor(): void {
-    this.embarcacionesService.getAll().subscribe({
-      next: (emb) => {
-        this.misEmbarcaciones = emb;
-        if (emb.length > 0) {
-          this.ticketsService.getAll({ vesselId: emb[0].id }).subscribe({
-            next: (t) => { this.misReservas = t.slice(0, 10); this.loading = false; },
-            error: () => { this.loading = false; },
-          });
-        } else {
-          this.loading = false;
-        }
+    this.islandService.getBookings({ clientId: userId }).subscribe({
+      next: (b) => {
+        this.misExcursiones = b
+          .filter(x => x.status !== 'CANCELLED')
+          .sort((x, y) => (y.createdAt ?? '').localeCompare(x.createdAt ?? ''))
+          .slice(0, 6);
+        this.loading = false;
       },
       error: () => { this.loading = false; },
     });
-  }
 
-  buscar(): void {
-    if (!this.searchOrigen || !this.searchDestino || !this.searchFecha) return;
-    this.router.navigate(['/buscar'], {
-      queryParams: {
-        origen: this.searchOrigen,
-        destino: this.searchDestino,
-        fecha: this.searchFecha,
-      },
+    this.alquileresService.getByClient(userId).subscribe({
+      next: (a) => { this.misCharters = a.filter(x => x.status !== 'CANCELLED').slice(0, 3); },
+      error: () => {},
     });
   }
 
@@ -188,27 +161,6 @@ export class InicioComponent implements OnInit, OnDestroy {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     return `${environment.apiUrl.replace('/api', '')}${url}`;
-  }
-
-  ticketStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      CONFIRMED: 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400',
-      PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
-      USED: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-      CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400',
-    };
-    return map[status] ?? 'bg-gray-100 text-gray-600';
-  }
-
-  ticketStatusLabel(status: string): string {
-    const map: Record<string, string> = {
-      CONFIRMED: 'Confirmado', PENDING: 'Pendiente', USED: 'Usado', CANCELLED: 'Cancelado',
-    };
-    return map[status] ?? status;
-  }
-
-  countByStatus(status: string): number {
-    return this.misReservas.filter(r => r.status === status).length;
   }
 
   private hoy(): string {

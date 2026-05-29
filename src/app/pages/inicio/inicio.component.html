@@ -137,280 +137,86 @@
     </div>
   </div>
 
-  <!-- ══ MAPA MARINO ══ -->
-  <div class="mb-6 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
-      <div>
-        <h2 class="font-bold text-gray-800 dark:text-white/90">Muelles y embarcaciones</h2>
-        <p class="text-xs text-gray-400 mt-0.5">
-          ⚓ {{ muelles.length }} muelles &nbsp;·&nbsp;
-          🚤 {{ todasEmbarcaciones.length }} embarcaciones activas
-        </p>
-      </div>
-      <div class="flex items-center gap-4 text-xs text-gray-400">
-        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-full bg-blue-600"></span> Muelle</span>
-        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-lg bg-sky-400"></span> Yate / Catamarán</span>
-        <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-lg bg-orange-400"></span> Lancha</span>
-        <a routerLink="/buscar" class="ml-2 font-semibold text-blue-500 hover:text-blue-600">Buscar viaje →</a>
-      </div>
+  <!-- ══ ALERTA: PAGO PENDIENTE ══ -->
+  <div *ngIf="!loading && excursionesPendientesPago.length > 0"
+    class="mb-6 flex items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/5">
+    <span class="text-2xl">⏳</span>
+    <div class="flex-1">
+      <p class="font-bold text-amber-800 dark:text-amber-300">
+        Tienes {{ excursionesPendientesPago.length }} reserva{{ excursionesPendientesPago.length > 1 ? 's' : '' }} pendiente{{ excursionesPendientesPago.length > 1 ? 's' : '' }} de pago
+      </p>
+      <p class="text-sm text-amber-700 dark:text-amber-400">Completa el pago para confirmar tu lugar.</p>
     </div>
-    <div style="height:460px;">
-      <iframe
-        src="https://maps.google.com/maps?q=10.97,-63.85&t=k&z=10&output=embed&hl=es"
-        width="100%" height="100%"
-        style="border:0;display:block;"
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        allowfullscreen>
-      </iframe>
+    <a [routerLink]="['/pagar-reserva']" [queryParams]="{ bookingId: excursionesPendientesPago[0].id }"
+      class="flex-shrink-0 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-amber-600 transition-colors shadow">
+      Pagar ahora →
+    </a>
+  </div>
+
+  <!-- ══ PRÓXIMAS EXCURSIONES ══ -->
+  <div *ngIf="!loading && excursionesProximas.length > 0" class="mb-6">
+    <h2 class="mb-3 text-base font-bold text-gray-800 dark:text-white/90">📅 Próximas excursiones confirmadas</h2>
+    <div class="grid gap-3 sm:grid-cols-3">
+      <div *ngFor="let b of excursionesProximas"
+        class="flex items-start gap-4 rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-500/20 dark:bg-green-500/5">
+        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-green-500 text-xl text-white">🏝️</div>
+        <div class="min-w-0 flex-1">
+          <p class="font-bold text-green-900 dark:text-green-300 truncate">{{ b.destination?.name ?? b.vessel?.name }}</p>
+          <p class="text-xs text-green-700 dark:text-green-400 mt-0.5">{{ b.tripDate }} · {{ b.outboundSlot?.departureTime }}</p>
+          <p class="text-xs text-green-600 dark:text-green-500">{{ b.passengers }} pax · {{ b.vessel?.name }}</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ══ MIS ÚLTIMAS RESERVAS ══ -->
+  <!-- ══ MIS EXCURSIONES RECIENTES ══ -->
   <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
-      <h2 class="font-bold text-gray-800 dark:text-white/90">Mis últimas reservas</h2>
+      <h2 class="font-bold text-gray-800 dark:text-white/90">Mis excursiones</h2>
       <a routerLink="/mis-reservas" class="text-sm font-medium text-brand-500 hover:text-brand-600">Ver todas →</a>
     </div>
-
     <div *ngIf="loading" class="p-8 text-center text-sm text-gray-400">Cargando...</div>
-
-    <div *ngIf="!loading && misTickets.length === 0" class="p-10 text-center">
-      <div class="text-5xl mb-3">🎫</div>
-      <p class="text-gray-500 dark:text-gray-400">Aún no tienes reservas.</p>
-      <a routerLink="/buscar" class="mt-3 inline-block rounded-lg bg-brand-500 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-600">
-        Buscar viaje
+    <div *ngIf="!loading && misExcursiones.length === 0" class="p-10 text-center">
+      <div class="text-5xl mb-3">🏝️</div>
+      <p class="text-gray-500 dark:text-gray-400">Aún no tienes excursiones reservadas.</p>
+      <a routerLink="/buscar" class="mt-3 inline-block rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 shadow-md">
+        Buscar excursión →
       </a>
     </div>
-
-    <div *ngIf="!loading && misTickets.length > 0" class="divide-y divide-gray-100 dark:divide-gray-800">
-      <div *ngFor="let t of misTickets"
+    <div *ngIf="!loading && misExcursiones.length > 0" class="divide-y divide-gray-100 dark:divide-gray-800">
+      <div *ngFor="let b of misExcursiones"
         class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-2xl dark:bg-blue-500/10">🚤</div>
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-2xl dark:bg-blue-500/10">🏝️</div>
         <div class="flex-1 min-w-0">
           <p class="font-semibold text-gray-800 dark:text-white/90 truncate">
-            {{ t.trip?.schedule?.route?.originPier?.name ?? '—' }} →
-            {{ t.trip?.schedule?.route?.destinationPier?.name ?? '—' }}
+            {{ b.departurePoint?.name ?? '—' }} → {{ b.destination?.name ?? '—' }}
           </p>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ t.trip?.departureDate | date:'dd MMM yyyy' }} · {{ t.trip?.departureTime }} · {{ t.seats }} {{ t.seats === 1 ? 'pasajero' : 'pasajeros' }}
+            {{ b.tripDate }} · {{ b.outboundSlot?.departureTime }} · {{ b.passengers }} pax
           </p>
+          <p class="text-xs text-gray-400">{{ b.vessel?.name }}</p>
         </div>
-        <div class="flex flex-col items-end gap-1">
-          <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="ticketStatusClass(t.status)">
-            {{ ticketStatusLabel(t.status) }}
+        <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-bold"
+            [ngClass]="{
+              'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400': b.status === 'PENDING',
+              'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400': b.status === 'CONFIRMED',
+              'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400': b.status === 'ACTIVE',
+              'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400': b.status === 'COMPLETED'
+            }">
+            {{ b.status === 'PENDING' ? 'Pendiente de pago' : b.status === 'CONFIRMED' ? 'Confirmada ✓' : b.status === 'ACTIVE' ? 'En curso 🚢' : 'Completada' }}
           </span>
-          <span class="text-sm font-bold text-gray-800 dark:text-white/90">${{ t.totalPrice | number:'1.2-2' }}</span>
+          <span class="text-sm font-bold text-gray-700 dark:text-white/80">${{ b.totalPrice | number:'1.2-2' }}</span>
         </div>
-        <a [routerLink]="['/tickets', t.id]"
-          class="ml-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 dark:border-gray-700 dark:text-gray-400 transition-colors">
+        <a *ngIf="b.status === 'PENDING'" [routerLink]="['/pagar-reserva']" [queryParams]="{ bookingId: b.id }"
+          class="ml-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 transition-colors">
+          Pagar
+        </a>
+        <a *ngIf="b.status !== 'PENDING'" [routerLink]="['/mis-reservas', b.id]"
+          class="ml-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 dark:border-gray-700 dark:text-gray-400 transition-colors">
           Ver
         </a>
       </div>
-    </div>
-  </div>
-</ng-container>
-
-<!-- ─── PROVEEDOR ───────────────────────────────────────────────── -->
-<ng-container *ngIf="isProveedor">
-  <!-- Header bienvenida -->
-  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 p-8 shadow-xl mb-6">
-    <div class="absolute inset-0 opacity-5" style="background-image: url('https://images.unsplash.com/photo-1569154941061-e231b4aa8eda?w=1200&q=80'); background-size: cover;"></div>
-    <div class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <p class="text-slate-400 text-sm font-medium mb-1">Panel de proveedor</p>
-        <h1 class="text-2xl font-bold text-white">Bienvenido, {{ user?.firstName }} 👋</h1>
-        <p class="mt-1 text-slate-300">Gestiona tus embarcaciones y visualiza tus reservas</p>
-      </div>
-      <div class="flex gap-3">
-        <a routerLink="/embarcaciones/crear"
-          class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-white hover:bg-brand-600 transition-colors shadow-lg">
-          <span>+</span> Nueva embarcación
-        </a>
-        <a routerLink="/mi-negocio"
-          class="inline-flex items-center rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-colors">
-          Mi negocio →
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats rápidos -->
-  <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Embarcaciones</p>
-      <h3 class="mt-2 text-3xl font-bold text-gray-800 dark:text-white/90">{{ misEmbarcaciones.length }}</h3>
-    </div>
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Reservas totales</p>
-      <h3 class="mt-2 text-3xl font-bold text-gray-800 dark:text-white/90">{{ misReservas.length }}</h3>
-    </div>
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Confirmadas</p>
-      <h3 class="mt-2 text-3xl font-bold text-green-600">
-        {{ countByStatus('CONFIRMED') }}
-      </h3>
-    </div>
-    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-      <p class="text-sm text-gray-500 dark:text-gray-400">Pendientes</p>
-      <h3 class="mt-2 text-3xl font-bold text-yellow-600">
-        {{ countByStatus('PENDING') }}
-      </h3>
-    </div>
-  </div>
-
-  <!-- Mis embarcaciones (productos) -->
-  <div class="mb-6">
-    <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">Mis embarcaciones</h2>
-      <a routerLink="/embarcaciones" class="text-sm text-brand-500 hover:text-brand-600">Ver todas →</a>
-    </div>
-
-    <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-400 dark:border-gray-800 dark:bg-white/[0.03]">Cargando...</div>
-
-    <div *ngIf="!loading && misEmbarcaciones.length === 0"
-      class="rounded-2xl border border-dashed border-gray-300 p-10 text-center dark:border-gray-700">
-      <div class="text-5xl mb-3">⛵</div>
-      <p class="text-gray-500 mb-4">Aún no tienes embarcaciones registradas.</p>
-      <a routerLink="/embarcaciones/crear"
-        class="inline-flex rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600">
-        + Registrar embarcación
-      </a>
-    </div>
-
-    <div *ngIf="!loading && misEmbarcaciones.length > 0"
-      class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      <div *ngFor="let emb of misEmbarcaciones.slice(0,6)"
-        class="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow dark:border-gray-800 dark:bg-white/[0.03]">
-        <!-- Foto -->
-        <div class="relative h-44 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
-          <img *ngIf="emb.photos?.[0]" [src]="imageUrl(emb.photos![0])" [alt]="emb.name"
-            class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          <div *ngIf="!emb.photos?.[0]" class="flex h-full items-center justify-center text-5xl opacity-30">⛵</div>
-          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-            <span class="text-xs font-semibold text-white">{{ emb.type }}</span>
-          </div>
-        </div>
-        <div class="p-4">
-          <div class="flex items-start justify-between">
-            <div>
-              <h4 class="font-bold text-gray-800 dark:text-white/90">{{ emb.name }}</h4>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Capacidad: {{ emb.capacity }} personas</p>
-            </div>
-            <span *ngIf="emb.pricePerDay"
-              class="text-sm font-bold text-brand-600 dark:text-brand-400">${{ emb.pricePerDay }}/día</span>
-          </div>
-          <div class="mt-4 flex gap-2">
-            <a [routerLink]="['/mi-negocio']" [queryParams]="{embarcacion: emb.id}"
-              class="flex-1 rounded-lg bg-brand-50 py-2 text-center text-xs font-semibold text-brand-600 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 transition-colors">
-              Ver reservas
-            </a>
-            <a [routerLink]="['/embarcaciones/editar', emb.id]"
-              class="flex-1 rounded-lg border border-gray-200 py-2 text-center text-xs font-semibold text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 transition-colors">
-              Editar
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Últimas reservas (booking.com style) -->
-  <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
-      <h2 class="font-bold text-gray-800 dark:text-white/90">Últimas reservas</h2>
-      <a routerLink="/mi-negocio" class="text-sm text-brand-500 hover:text-brand-600">Ver todas →</a>
-    </div>
-
-    <div *ngIf="loading" class="p-8 text-center text-sm text-gray-400">Cargando...</div>
-
-    <div *ngIf="!loading && misReservas.length === 0" class="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-      Sin reservas aún.
-    </div>
-
-    <div *ngIf="!loading && misReservas.length > 0" class="overflow-x-auto">
-      <table class="min-w-full">
-        <thead>
-          <tr class="border-b border-gray-100 dark:border-gray-800">
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Cliente</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Ruta</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Fecha</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Puestos</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Total</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Estado</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-          <tr *ngFor="let t of misReservas" class="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
-                  {{ t.client?.firstName?.charAt(0) }}{{ t.client?.lastName?.charAt(0) }}
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ t.client?.firstName }} {{ t.client?.lastName }}</p>
-                  <p class="text-xs text-gray-400">{{ t.client?.email }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 text-sm text-gray-700 dark:text-gray-300">
-              {{ t.trip?.schedule?.route?.originPier?.name ?? '—' }} → {{ t.trip?.schedule?.route?.destinationPier?.name ?? '—' }}
-            </td>
-            <td class="px-5 py-3.5 text-sm text-gray-700 dark:text-gray-300">
-              {{ t.trip?.departureDate | date:'dd/MM/yyyy' }}<br/>
-              <span class="text-xs text-gray-400">{{ t.trip?.departureTime }}</span>
-            </td>
-            <td class="px-5 py-3.5 text-sm font-semibold text-gray-800 dark:text-white/90 text-center">{{ t.seats }}</td>
-            <td class="px-5 py-3.5 text-sm font-bold text-gray-800 dark:text-white/90">${{ t.totalPrice | number:'1.2-2' }}</td>
-            <td class="px-5 py-3.5">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="ticketStatusClass(t.status)">
-                {{ ticketStatusLabel(t.status) }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</ng-container>
-
-<!-- ─── ADMIN / MASTER / EMPLEADO ─────────────────────────────── -->
-<ng-container *ngIf="isAdmin || (!isCliente && !isProveedor)">
-  <div class="space-y-6">
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-700 to-slate-900 p-8 shadow-xl">
-      <div class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p class="text-slate-400 text-sm font-medium mb-1">Panel de administración</p>
-          <h1 class="text-2xl font-bold text-white">Bienvenido, {{ user?.firstName }} 👋</h1>
-          <p class="mt-1 text-slate-300">Gestiona todos los aspectos de la plataforma MARITIMO</p>
-        </div>
-        <div class="flex flex-wrap gap-3">
-          <a routerLink="/viajes" class="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20">🚢 Viajes</a>
-          <a routerLink="/tickets" class="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20">🎫 Tickets</a>
-          <a routerLink="/pagos" class="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20">💳 Pagos</a>
-          <a routerLink="/usuarios" class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-600">👥 Usuarios</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Accesos rápidos por categoría -->
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <a routerLink="/embarcaciones" class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm hover:shadow-md hover:border-brand-300 transition-all dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-4xl">⛵</span>
-        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Embarcaciones</span>
-      </a>
-      <a routerLink="/muelles" class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm hover:shadow-md hover:border-brand-300 transition-all dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-4xl">⚓</span>
-        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Muelles</span>
-      </a>
-      <a routerLink="/rutas" class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm hover:shadow-md hover:border-brand-300 transition-all dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-4xl">🗺️</span>
-        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Rutas</span>
-      </a>
-      <a routerLink="/horarios" class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm hover:shadow-md hover:border-brand-300 transition-all dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-4xl">🕐</span>
-        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Horarios</span>
-      </a>
     </div>
   </div>
 </ng-container>

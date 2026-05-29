@@ -3,6 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IslandTripsService } from '../buscar/services/island-trips.service';
 import { IslandBooking, IslandBookingStatus } from '../buscar/models/island-trip.model';
+import { AuthService } from '../auth-pages/services/auth.service';
 
 @Component({
   selector: 'app-lista-reservas-isla',
@@ -11,7 +12,12 @@ import { IslandBooking, IslandBookingStatus } from '../buscar/models/island-trip
   templateUrl: './lista-reservas-isla.component.html',
 })
 export class ListaReservasIslaComponent implements OnInit {
-  private readonly service = inject(IslandTripsService);
+  private readonly service  = inject(IslandTripsService);
+  private readonly auth     = inject(AuthService);
+
+  get isProveedor(): boolean { return this.auth.role() === 'PROVEEDOR'; }
+  get pageTitle(): string { return this.isProveedor ? 'Mis reservas de excursión' : 'Reservas de isla'; }
+  get pageSubtitle(): string { return this.isProveedor ? 'Reservas recibidas para tus embarcaciones.' : 'Gestiona las reservas de viajes a islas y cayos.'; }
 
   loading = true;
   bookings: IslandBooking[] = [];
@@ -47,7 +53,9 @@ export class ListaReservasIslaComponent implements OnInit {
   readonly statuses: (IslandBookingStatus | 'ALL')[] = ['ALL', 'PENDING', 'CONFIRMED', 'ACTIVE', 'COMPLETED', 'CANCELLED'];
 
   ngOnInit(): void {
-    this.service.getBookings({}).subscribe({
+    const user = this.auth.user();
+    const params = this.isProveedor && user?.id ? { providerId: user.id } : {};
+    this.service.getBookings(params).subscribe({
       next: (b) => { this.bookings = b; this.loading = false; },
       error: () => { this.loading = false; },
     });
@@ -55,15 +63,28 @@ export class ListaReservasIslaComponent implements OnInit {
 
   updateStatus(booking: IslandBooking, status: IslandBookingStatus): void {
     this.service.updateBooking(booking.id, { status }).subscribe({
-      next: (updated) => { this.bookings = this.bookings.map(b => b.id === updated.id ? updated : b); },
+      next: () => {
+        const idx = this.bookings.findIndex(b => b.id === booking.id);
+        if (idx !== -1) this.bookings[idx] = { ...this.bookings[idx], status };
+      },
+      error: (err) => {
+        const msg = err?.error?.message;
+        alert('Error: ' + (typeof msg === 'string' ? msg : 'No se pudo actualizar el estado'));
+      },
     });
   }
 
   cancel(booking: IslandBooking): void {
-    const reason = prompt('Motivo de cancelación:');
-    if (reason === null) return;
-    this.service.updateBooking(booking.id, { status: 'CANCELLED', cancellationReason: reason }).subscribe({
-      next: (updated) => { this.bookings = this.bookings.map(b => b.id === updated.id ? updated : b); },
+    const reason = prompt('Motivo de cancelación (opcional):') ?? '';
+    this.service.updateBooking(booking.id, { status: 'CANCELLED', cancellationReason: reason || undefined }).subscribe({
+      next: () => {
+        const idx = this.bookings.findIndex(b => b.id === booking.id);
+        if (idx !== -1) this.bookings[idx] = { ...this.bookings[idx], status: 'CANCELLED', cancellationReason: reason || null };
+      },
+      error: (err) => {
+        const msg = err?.error?.message;
+        alert('Error: ' + (typeof msg === 'string' ? msg : 'No se pudo cancelar'));
+      },
     });
   }
 

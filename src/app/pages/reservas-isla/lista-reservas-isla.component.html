@@ -3,8 +3,8 @@
   <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Reservas de isla</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Gestiona las reservas de viajes a islas y cayos.</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">{{ pageTitle }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ pageSubtitle }}</p>
       </div>
     </div>
   </div>
@@ -73,12 +73,12 @@
             <td class="px-5 py-4">
               <div class="flex items-center justify-end gap-1.5">
                 <button *ngIf="b.status === 'PENDING'" (click)="updateStatus(b, 'CONFIRMED')"
-                  class="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">Confirmar</button>
+                  class="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">✓ Confirmar pago</button>
                 <button *ngIf="b.status === 'CONFIRMED'" (click)="updateStatus(b, 'ACTIVE')"
-                  class="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50">Activar</button>
+                  class="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50">🚢 Iniciar viaje</button>
                 <button *ngIf="b.status === 'ACTIVE'" (click)="updateStatus(b, 'COMPLETED')"
-                  class="rounded-lg border border-green-200 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50">Completar</button>
-                <button *ngIf="b.status !== 'CANCELLED' && b.status !== 'COMPLETED'" (click)="cancel(b)"
+                  class="rounded-lg border border-green-200 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50">🏁 Completar</button>
+                <button *ngIf="b.status === 'PENDING' || b.status === 'CONFIRMED'" (click)="cancel(b)"
                   class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">Cancelar</button>
               </div>
             </td>

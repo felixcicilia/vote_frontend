@@ -1,7 +1,7 @@
 import {
   __spreadProps,
   __spreadValues
-} from "./chunk-3OV72XIM.js";
+} from "./chunk-XWLXMCJQ.js";
 
 // node_modules/swiper/shared/ssr-window.esm.mjs
 function isObject(obj) {

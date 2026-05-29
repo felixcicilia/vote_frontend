@@ -1,0 +1,151 @@
+<div class="flex h-[calc(100vh-140px)] gap-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+
+  <!-- ── Sidebar: lista de conversaciones ──────────────────────────────────── -->
+  <div class="flex w-72 flex-shrink-0 flex-col border-r border-gray-100 dark:border-gray-800">
+
+    <!-- Cabecera -->
+    <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <h1 class="font-bold text-gray-800 dark:text-white/90">💬 Mensajes</h1>
+      <p class="mt-0.5 text-xs text-gray-400">{{ conversations.length }} conversación{{ conversations.length !== 1 ? 'es' : '' }}</p>
+    </div>
+
+    <!-- Botón nueva conversación de soporte -->
+    <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+      <button (click)="openSupport()"
+        class="w-full rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold text-white hover:bg-brand-600 transition">
+        🎧 Contactar soporte
+      </button>
+    </div>
+
+    <!-- Skeleton -->
+    <div *ngIf="loading" class="flex-1 space-y-2 p-4">
+      <div *ngFor="let _ of [1,2,3]" class="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-white/[0.04]"></div>
+    </div>
+
+    <!-- Sin conversaciones -->
+    <div *ngIf="!loading && conversations.length === 0"
+      class="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+      <div class="text-4xl">💬</div>
+      <p class="text-sm text-gray-400">Sin conversaciones todavía.</p>
+    </div>
+
+    <!-- Lista -->
+    <div class="flex-1 overflow-y-auto">
+      <button *ngFor="let c of conversations"
+        (click)="selectConv(c)"
+        class="flex w-full items-start gap-3 border-b border-gray-50 px-4 py-3.5 text-left transition hover:bg-gray-50 dark:border-gray-800/50 dark:hover:bg-white/[0.02]"
+        [class.bg-brand-50]="selected?.id === c.id"
+        [class.dark:bg-brand-500/10]="selected?.id === c.id">
+
+        <!-- Icono tipo -->
+        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-lg"
+          [ngClass]="c.type === 'SUPPORT' ? 'bg-brand-100 dark:bg-brand-500/20' : c.type === 'BOOKING' ? 'bg-blue-100 dark:bg-blue-500/20' : 'bg-gray-100 dark:bg-white/[0.06]'">
+          {{ convIcon(c) }}
+        </div>
+
+        <!-- Info -->
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-semibold text-gray-800 dark:text-white/90">{{ convTitle(c) }}</p>
+          <p *ngIf="c.lastMessage" class="mt-0.5 truncate text-xs text-gray-400">{{ c.lastMessage }}</p>
+          <p *ngIf="!c.lastMessage" class="mt-0.5 text-xs text-gray-400 italic">Sin mensajes</p>
+        </div>
+
+        <!-- Badge tipo -->
+        <span class="mt-1 flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase"
+          [ngClass]="c.type === 'SUPPORT' ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300' :
+                     c.type === 'BOOKING' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' :
+                     'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'">
+          {{ c.type }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Panel principal: chat ──────────────────────────────────────────────── -->
+  <div class="flex flex-1 flex-col">
+
+    <!-- Sin conversación seleccionada -->
+    <div *ngIf="!selected" class="flex flex-1 flex-col items-center justify-center gap-4 p-10 text-center">
+      <div class="text-6xl">💬</div>
+      <p class="font-semibold text-gray-700 dark:text-gray-300">Selecciona una conversación</p>
+      <p class="text-sm text-gray-400">o pulsa "Contactar soporte" para abrir un nuevo chat</p>
+    </div>
+
+    <!-- Conversación activa -->
+    <ng-container *ngIf="selected">
+
+      <!-- Header -->
+      <div class="flex items-center gap-4 border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div class="flex h-10 w-10 items-center justify-center rounded-full text-xl"
+          [ngClass]="selected.type === 'SUPPORT' ? 'bg-brand-100 dark:bg-brand-500/20' :
+                     selected.type === 'BOOKING' ? 'bg-blue-100 dark:bg-blue-500/20' :
+                     'bg-gray-100 dark:bg-white/[0.06]'">
+          {{ convIcon(selected) }}
+        </div>
+        <div>
+          <p class="font-bold text-gray-800 dark:text-white/90">{{ convTitle(selected) }}</p>
+          <p class="text-xs text-gray-400">{{ convSubtitle(selected) }}</p>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
+        <div *ngIf="loadingMsgs" class="flex flex-1 items-center justify-center">
+          <p class="text-sm text-gray-400 animate-pulse">Cargando mensajes…</p>
+        </div>
+
+        <div *ngIf="!loadingMsgs && messages.length === 0"
+          class="flex flex-1 items-center justify-center">
+          <p class="text-center text-sm text-gray-400">Sin mensajes aún. ¡Sé el primero en escribir!</p>
+        </div>
+
+        <div *ngFor="let m of messages"
+          class="flex gap-2"
+          [class.flex-row-reverse]="isOwnMsg(m)">
+
+          <!-- Avatar -->
+          <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+            [ngClass]="isOwnMsg(m)
+              ? 'bg-brand-500 text-white'
+              : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+            {{ isOwnMsg(m) ? (user?.firstName?.charAt(0) ?? 'T') : (m.sender?.firstName?.charAt(0) ?? '?') }}
+          </div>
+
+          <!-- Burbuja -->
+          <div class="max-w-[70%]">
+            <div class="rounded-2xl px-4 py-2.5 text-sm"
+              [ngClass]="isOwnMsg(m)
+                ? 'rounded-tr-sm bg-brand-500 text-white'
+                : 'rounded-tl-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-white/90'">
+              {{ m.content }}
+            </div>
+            <p class="mt-1 text-[10px] text-gray-400"
+              [class.text-right]="isOwnMsg(m)">
+              {{ senderName(m) }} · {{ m.createdAt | date:'HH:mm' }}
+            </p>
+          </div>
+        </div>
+
+        <div #msgsEnd></div>
+      </div>
+
+      <!-- Input -->
+      <div class="border-t border-gray-100 p-4 dark:border-gray-800">
+        <div class="flex gap-3">
+          <textarea [(ngModel)]="input"
+            rows="2"
+            placeholder="Escribe tu mensaje…"
+            (keydown.enter)="onEnter($event)"
+            class="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+          </textarea>
+          <button (click)="send()" [disabled]="!input.trim()"
+            class="self-end rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-40 transition">
+            →
+          </button>
+        </div>
+        <p class="mt-1 text-[10px] text-gray-400">Enter para enviar · Shift+Enter para nueva línea</p>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

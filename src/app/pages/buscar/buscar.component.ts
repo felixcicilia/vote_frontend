@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
 
 import { IslandTripsService } from './services/island-trips.service';
 import { TasaService } from '../../shared/services/tasa.service';
@@ -28,8 +27,7 @@ export class BuscarComponent implements OnInit {
   readonly tasaService = inject(TasaService);
   private readonly router = inject(Router);
 
-  muelles: PuertoSalida[] = [];
-  islas: PuertoSalida[] = [];
+  puntos: PuertoSalida[] = [];
 
   loading = false;
   loadingPuntos = true;
@@ -46,20 +44,19 @@ export class BuscarComponent implements OnInit {
   readonly today = new Date().toISOString().split('T')[0];
   amenityIcon = amenityIcon;
 
-  get salidaSel(): PuertoSalida | null { return this.muelles.find(p => p.id === this.salidaId) ?? null; }
-  get llegadaSel(): PuertoSalida | null { return this.islas.find(p => p.id === this.llegadaId) ?? null; }
+  get salidaSel(): PuertoSalida | null { return this.puntos.find(p => p.id === this.salidaId) ?? null; }
+  get llegadaSel(): PuertoSalida | null { return this.puntos.find(p => p.id === this.llegadaId) ?? null; }
+  get muelles(): PuertoSalida[] { return this.puntos.filter(p => p.locationType === 'MUELLE'); }
+  get islasPuntos(): PuertoSalida[] { return this.puntos.filter(p => p.locationType === 'ISLA'); }
+
+  puntoIcon(p: PuertoSalida): string {
+    return p.icon ?? (p.locationType === 'ISLA' ? '🏝️' : '⚓');
+  }
 
   ngOnInit(): void {
     this.tasaService.load();
-    forkJoin({
-      muelles: this.tripsService.getMuelles(),
-      islas: this.tripsService.getPuertos(true),
-    }).subscribe({
-      next: ({ muelles, islas }) => {
-        this.muelles = muelles;
-        this.islas = islas;
-        this.loadingPuntos = false;
-      },
+    this.tripsService.getPuertos(true).subscribe({
+      next: (puntos) => { this.puntos = puntos; this.loadingPuntos = false; },
       error: () => { this.loadingPuntos = false; },
     });
   }
@@ -119,8 +116,8 @@ export class BuscarComponent implements OnInit {
     });
   }
 
-  elegirDestino(isla: PuertoSalida): void {
-    this.llegadaId = isla.id;
+  elegirDestino(punto: PuertoSalida): void {
+    this.llegadaId = punto.id;
     const el = document.getElementById('search-form');
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }

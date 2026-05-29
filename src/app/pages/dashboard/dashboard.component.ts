@@ -1,129 +1,74 @@
-import { Component, OnInit, inject } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { forkJoin } from "rxjs";
-
-import {
-  DashboardCashFlow,
-  DashboardExchangeRate,
-  DashboardInventoryItem,
-  DashboardRecentSale,
-  DashboardService,
-  DashboardSummary,
-} from "./dashboard.service";
-import { environment } from "../../../environments/environment";
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { DashboardService, DashboardStats } from './dashboard.service';
 
 @Component({
-  selector: "app-dashboard",
+  selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: "./dashboard.component.html",
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  private readonly dashboardService = inject(DashboardService);
-  private readonly baseUrl = "https://backend.brisa.com";
+  private readonly service = inject(DashboardService);
 
-  loading = false;
-  errorMessage = "";
+  loading   = false;
+  errorMsg  = '';
+  stats: DashboardStats | null = null;
 
-  today = this.formatDate(new Date());
+  today = this.toDateStr(new Date());
+  filters = { startDate: this.today, endDate: this.today };
 
-  filters = {
-    startDate: this.today,
-    endDate: this.today,
-  };
+  ngOnInit(): void { this.load(); }
 
-  summary: DashboardSummary | null = null;
-  recentSales: DashboardRecentSale[] = [];
-  exchangeRate: DashboardExchangeRate | null = null;
-  inventory: DashboardInventoryItem[] = [];
-  cashFlow: DashboardCashFlow | null = null;
-
-  ngOnInit(): void {
-    this.loadDashboard();
-  }
-
-  loadDashboard(): void {
+  load(): void {
     this.loading = true;
-    this.errorMessage = "";
-
-    const { startDate, endDate } = this.filters;
-
-    forkJoin({
-      summary: this.dashboardService.getSummary(startDate, endDate),
-      recentSales: this.dashboardService.getRecentSales(startDate, endDate, 10),
-      exchangeRate: this.dashboardService.getExchangeRate(endDate),
-      inventory: this.dashboardService.getInventory(startDate, endDate),
-      cashFlow: this.dashboardService.getCashFlow(startDate, endDate),
-    }).subscribe({
-      next: ({ summary, recentSales, exchangeRate, inventory, cashFlow }) => {
-        this.summary = summary;
-        this.recentSales = recentSales;
-        this.exchangeRate = exchangeRate;
-        this.inventory = inventory;
-        this.cashFlow = cashFlow;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error("Error cargando dashboard:", error);
-        this.errorMessage = "No se pudo cargar la información del dashboard.";
-        this.loading = false;
-      },
+    this.errorMsg = '';
+    this.service.getStats(this.filters.startDate, this.filters.endDate).subscribe({
+      next:  (s) => { this.stats = s; this.loading = false; },
+      error: ()  => { this.errorMsg = 'No se pudo cargar el dashboard.'; this.loading = false; },
     });
   }
 
-  getProductImage(url?: string): string {
-    if (!url || url.trim() === "") {
-      return "assets/images/placeholder-product.png";
-    }
-
-    // Si ya viene completa
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-
-    return `${this.baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+  statusLabel(s: string): string {
+    const m: Record<string, string> = {
+      PENDING: 'Pendiente', CONFIRMED: 'Confirmado', ACTIVE: 'En curso',
+      COMPLETED: 'Completado', CANCELLED: 'Cancelado',
+      VERIFIED: 'Verificado', REJECTED: 'Rechazado',
+    };
+    return m[s] ?? s;
   }
 
-  trackBySale(_: number, sale: DashboardRecentSale): number {
-    return sale.id;
+  statusClass(s: string): string {
+    const m: Record<string, string> = {
+      PENDING:   'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-400',
+      CONFIRMED: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400',
+      ACTIVE:    'bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400',
+      COMPLETED: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400',
+      CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400',
+      VERIFIED:  'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400',
+      REJECTED:  'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400',
+    };
+    return m[s] ?? 'bg-gray-100 text-gray-600';
   }
 
-  trackByInventory(_: number, item: DashboardInventoryItem): number {
-    return item.id;
+  methodLabel(m: string): string {
+    const map: Record<string, string> = {
+      ZELLE: 'Zelle', BINANCE: 'Binance', PAGO_MOVIL: 'Pago Móvil',
+      CARD: 'Tarjeta', CASH: 'Efectivo', WALLET: 'Saldo', TRANSFERENCIA: 'Transferencia',
+    };
+    return map[m] ?? m;
   }
 
-  formatMoney(
-    value: number | string | null | undefined,
-    currency = "USD",
-  ): string {
-    const numericValue = Number(value ?? 0);
-
-    return new Intl.NumberFormat("es-VE", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-    }).format(numericValue);
+  refTypeLabel(t: string): string {
+    const map: Record<string, string> = {
+      ISLAND_BOOKING: '🏝️ Excursión', WALLET_TOPUP: '⚓ Recarga', RENTAL: '⛵ Charter',
+    };
+    return map[t] ?? t;
   }
 
-  formatDateTime(value: string | null | undefined): string {
-    if (!value) return "-";
-
-    return new Intl.DateTimeFormat("es-VE", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(new Date(value));
-  }
-
-  isLowStock(stock: number, stockMinimo: number): boolean {
-    return stock <= stockMinimo;
-  }
-
-  private formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, "0");
-    const day = `${date.getDate()}`.padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
+  private toDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 }

@@ -53,7 +53,14 @@ export class LoginComponent {
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigate(["/inicio"]);
+        const role = this.authService.role();
+        if (role === 'MASTER' || role === 'ADMINISTRADOR') {
+          this.router.navigate(['/dashboard']);
+        } else if (role === 'PROVEEDOR') {
+          this.router.navigate(['/mi-negocio']);
+        } else {
+          this.router.navigate(['/inicio']);
+        }
       },
       error: (error) => {
         this.loading.set(false);

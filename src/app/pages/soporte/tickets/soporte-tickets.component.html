@@ -1,0 +1,199 @@
+<div class="space-y-5">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">🎫 Tickets de soporte</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {{ isMaster ? 'Gestiona las solicitudes de clientes' : 'Tus solicitudes de ayuda' }}
+      </p>
+    </div>
+    <button *ngIf="isClient" (click)="showForm = !showForm"
+      class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 shadow-md transition">
+      + Nuevo ticket
+    </button>
+  </div>
+
+  <!-- Formulario nuevo ticket (CLIENTE) -->
+  <div *ngIf="showForm && isClient"
+    class="rounded-2xl border border-brand-200 bg-brand-50 p-6 dark:border-brand-500/20 dark:bg-brand-500/5">
+    <h2 class="mb-4 font-bold text-gray-800 dark:text-white/90">Nuevo ticket de soporte</h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="mb-1 block text-xs font-semibold text-gray-500">Asunto *</label>
+        <input [(ngModel)]="newSubject" placeholder="¿En qué podemos ayudarte?"
+          class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-semibold text-gray-500">Prioridad</label>
+        <select [(ngModel)]="newPriority"
+          class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+          <option value="LOW">🟢 Baja</option>
+          <option value="MEDIUM">🟡 Media</option>
+          <option value="HIGH">🔴 Alta</option>
+        </select>
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-semibold text-gray-500">Categoría</label>
+        <select [(ngModel)]="newCategory"
+          class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+          <option value="">General</option>
+          <option value="Pagos">Pagos</option>
+          <option value="Reservas">Reservas</option>
+          <option value="Embarcaciones">Embarcaciones</option>
+          <option value="Cuenta">Cuenta</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="mb-1 block text-xs font-semibold text-gray-500">Descripción *</label>
+        <textarea [(ngModel)]="newDesc" rows="4" placeholder="Describe tu problema con detalle..."
+          class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white resize-none"></textarea>
+      </div>
+    </div>
+    <div class="mt-4 flex gap-3">
+      <button (click)="createTicket()" [disabled]="submitting || !newSubject.trim() || !newDesc.trim()"
+        class="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+        {{ submitting ? 'Enviando…' : 'Enviar ticket' }}
+      </button>
+      <button (click)="showForm = false"
+        class="rounded-xl border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 transition">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="flex flex-wrap gap-2">
+    <button (click)="filterStatus = ''"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition"
+      [ngClass]="filterStatus === '' ? 'bg-gray-800 text-white dark:bg-white dark:text-gray-900' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-400'">
+      Todos ({{ tickets.length }})
+    </button>
+    <button *ngFor="let s of ['OPEN','IN_PROGRESS','RESOLVED','CLOSED']" (click)="filterStatus = s"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition"
+      [ngClass]="filterStatus === s ? 'bg-gray-800 text-white dark:bg-white dark:text-gray-900' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-400'">
+      {{ statusLabel(s) }} ({{ countByStatus(s) }})
+    </button>
+  </div>
+
+  <!-- Lista de tickets -->
+  <div class="grid gap-3 lg:grid-cols-2">
+
+    <div *ngIf="loading" class="col-span-2 py-16 text-center text-gray-400">Cargando tickets…</div>
+
+    <div *ngIf="!loading && filtered.length === 0" class="col-span-2 rounded-2xl border border-dashed border-gray-200 p-14 text-center dark:border-gray-700">
+      <div class="mb-3 text-5xl">🎫</div>
+      <p class="text-gray-500 dark:text-gray-400">{{ filterStatus ? 'Sin tickets con ese estado.' : 'No hay tickets todavía.' }}</p>
+    </div>
+
+    <div *ngFor="let t of filtered"
+      (click)="open(t)"
+      class="cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:border-brand-300 hover:shadow-md transition-all dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-500/40"
+      [class.border-brand-400]="selected?.id === t.id"
+      [class.dark:border-brand-400]="selected?.id === t.id">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold text-gray-400">#{{ t.id }}</span>
+            <span class="rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="priorityClass(t.priority)">
+              {{ priorityLabel(t.priority) }}
+            </span>
+            <span *ngIf="t.category" class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 dark:bg-white/[0.06]">{{ t.category }}</span>
+          </div>
+          <p class="font-semibold text-gray-800 dark:text-white/90 truncate">{{ t.subject }}</p>
+          <p *ngIf="isMaster" class="mt-0.5 text-xs text-gray-400">{{ t.client?.firstName }} {{ t.client?.lastName }} · {{ t.client?.email }}</p>
+          <p class="mt-1 text-xs text-gray-400 line-clamp-1">{{ t.description }}</p>
+        </div>
+        <span class="flex-shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold" [ngClass]="statusClass(t.status)">
+          {{ statusLabel(t.status) }}
+        </span>
+      </div>
+      <p class="mt-3 text-[10px] text-gray-400">{{ t.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+  </div>
+
+  <!-- Detalle del ticket (panel lateral / modal) -->
+  <div *ngIf="selected"
+    class="fixed inset-0 z-50 flex items-start justify-end bg-black/30 backdrop-blur-sm p-4"
+    (click)="close()">
+    <div class="relative h-full w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gray-900"
+      (click)="$event.stopPropagation()">
+
+      <!-- Cabecera -->
+      <div class="sticky top-0 z-10 flex items-start justify-between border-b border-gray-100 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">#{{ selected.id }} · {{ selected.category }}</p>
+          <h2 class="font-bold text-gray-800 dark:text-white/90">{{ selected.subject }}</h2>
+          <p *ngIf="isMaster" class="text-xs text-gray-400 mt-0.5">
+            {{ selected.client?.firstName }} {{ selected.client?.lastName }}
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Estado (solo master) -->
+          <select *ngIf="isMaster" [value]="selected.status" (change)="updateStatus($any($event.target).value)"
+            class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+            <option value="OPEN">Abierto</option>
+            <option value="IN_PROGRESS">En proceso</option>
+            <option value="RESOLVED">Resuelto</option>
+            <option value="CLOSED">Cerrado</option>
+          </select>
+          <button (click)="close()" class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800">✕</button>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Descripción</p>
+        <p class="text-sm text-gray-700 dark:text-gray-300">{{ selected.description }}</p>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="flex flex-col gap-3 px-6 py-4">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Conversación</p>
+
+        <div *ngIf="!selected.messages?.length" class="py-6 text-center text-sm text-gray-400">
+          Sin mensajes aún. Sé el primero en responder.
+        </div>
+
+        <div *ngFor="let m of selected.messages"
+          class="flex gap-3"
+          [class.flex-row-reverse]="m.isFromSupport">
+          <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+            [ngClass]="m.isFromSupport ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+            {{ m.isFromSupport ? '🎧' : (m.author?.firstName?.charAt(0) ?? '?') }}
+          </div>
+          <div class="max-w-[75%]">
+            <div class="rounded-2xl px-4 py-2.5 text-sm"
+              [ngClass]="m.isFromSupport
+                ? 'rounded-tr-sm bg-brand-500 text-white'
+                : 'rounded-tl-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-white/90'">
+              {{ m.message }}
+            </div>
+            <p class="mt-1 text-[10px] text-gray-400"
+              [class.text-right]="m.isFromSupport">
+              {{ m.author?.firstName }} · {{ m.createdAt | date:'dd/MM HH:mm' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reply box -->
+      <div *ngIf="selected.status !== 'CLOSED'"
+        class="sticky bottom-0 border-t border-gray-100 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="flex gap-3">
+          <textarea [(ngModel)]="reply" rows="2" placeholder="Escribe tu respuesta…"
+            class="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            (keydown.enter)="onEnter($event)"></textarea>
+          <button (click)="sendReply()" [disabled]="sending || !reply.trim()"
+            class="self-end rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-40 transition">
+            {{ sending ? '…' : '→' }}
+          </button>
+        </div>
+        <p class="mt-1.5 text-[10px] text-gray-400">Enter para enviar · Shift+Enter para nueva línea</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>

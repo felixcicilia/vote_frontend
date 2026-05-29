@@ -98,6 +98,37 @@ export const routes: Routes = [
         title: "Dashboard | MARITIMO",
       },
 
+      // ── Soporte ───────────────────────────────────────────────────────────────
+      {
+        path: "soporte/tickets",
+        loadComponent: () =>
+          import("./pages/soporte/tickets/soporte-tickets.component").then(
+            (m) => m.SoporteTicketsComponent,
+          ),
+        title: "Tickets de soporte | MARITIMO",
+      },
+      { path: "soporte/chat", redirectTo: "/mensajes", pathMatch: "full" },
+
+      // ── FAQ ───────────────────────────────────────────────────────────────────
+      {
+        path: "faq",
+        loadComponent: () =>
+          import("./pages/faq/faq.component").then(
+            (m) => m.FaqComponent,
+          ),
+        title: "Preguntas frecuentes | MARITIMO",
+      },
+
+      // ── Mensajes / Chat general ───────────────────────────────────────────────
+      {
+        path: "mensajes",
+        loadComponent: () =>
+          import("./pages/mensajes/mensajes.component").then(
+            (m) => m.MensajesComponent,
+          ),
+        title: "Mensajes | MARITIMO",
+      },
+
       // ── Mis Reservas (cliente) ────────────────────────────────────────────────
       {
         path: "mis-reservas",

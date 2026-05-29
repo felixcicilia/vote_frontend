@@ -1,0 +1,186 @@
+<!-- ── CLIENTE: ventana de chat con soporte ── -->
+<ng-container *ngIf="isClient">
+  <div class="mx-auto max-w-lg">
+
+    <!-- Estado: conectando -->
+    <div *ngIf="!connected" class="flex flex-col items-center justify-center gap-4 py-20">
+      <div class="text-5xl animate-pulse">💬</div>
+      <p class="text-gray-500 dark:text-gray-400">Conectando con soporte…</p>
+    </div>
+
+    <!-- Chat cerrado -->
+    <div *ngIf="connected && chatClosed" class="rounded-2xl border border-gray-200 bg-white p-10 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="text-5xl mb-3">✅</div>
+      <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">Chat finalizado</h2>
+      <p class="mt-2 text-sm text-gray-500">El agente ha cerrado esta sesión. ¿Necesitas más ayuda? Abre un nuevo chat.</p>
+    </div>
+
+    <!-- Chat activo -->
+    <div *ngIf="connected && !chatClosed"
+      class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-white/[0.03]">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3 border-b border-gray-100 bg-brand-500 px-5 py-4 dark:border-gray-800">
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-xl">🎧</div>
+        <div>
+          <p class="font-bold text-white">Soporte MARITIMO</p>
+          <p class="text-xs text-white/70">● En línea</p>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="flex h-96 flex-col gap-3 overflow-y-auto p-5">
+        <div *ngIf="clientMessages.length === 0" class="flex-1 flex items-center justify-center">
+          <p class="text-center text-sm text-gray-400">¡Hola! ¿En qué podemos ayudarte hoy? 👋</p>
+        </div>
+        <div *ngFor="let m of clientMessages"
+          class="flex gap-2"
+          [class.flex-row-reverse]="!m.isFromSupport">
+          <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold"
+            [ngClass]="m.isFromSupport ? 'bg-brand-100 text-brand-700' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+            {{ m.isFromSupport ? '🎧' : user?.firstName?.charAt(0) }}
+          </div>
+          <div class="max-w-[75%]">
+            <div class="rounded-2xl px-4 py-2.5 text-sm"
+              [ngClass]="m.isFromSupport
+                ? 'rounded-tl-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-white/90'
+                : 'rounded-tr-sm bg-brand-500 text-white'">
+              {{ m.message }}
+            </div>
+            <p class="mt-1 text-[10px] text-gray-400" [class.text-right]="!m.isFromSupport">
+              {{ m.timestamp | date:'HH:mm' }}
+            </p>
+          </div>
+        </div>
+        <div #messagesEnd></div>
+      </div>
+
+      <!-- Input -->
+      <div class="border-t border-gray-100 p-4 dark:border-gray-800">
+        <div class="flex gap-3">
+          <input [(ngModel)]="clientInput" placeholder="Escribe tu mensaje…"
+            (keydown.enter)="sendClientMsg()"
+            class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+          <button (click)="sendClientMsg()" [disabled]="!clientInput.trim()"
+            class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-40 transition">
+            →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── MASTER / AGENTE: panel de chats activos ── -->
+<ng-container *ngIf="isMaster">
+  <div class="flex h-[calc(100vh-160px)] gap-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+
+    <!-- Sidebar: lista de sesiones -->
+    <div class="w-72 flex-shrink-0 border-r border-gray-100 dark:border-gray-800">
+      <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+        <h2 class="font-bold text-gray-800 dark:text-white/90">💬 Chat en vivo</h2>
+        <div class="mt-1 flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full" [ngClass]="agentReady ? 'bg-green-500' : 'bg-gray-300'"></span>
+          <span class="text-xs text-gray-400">{{ agentReady ? 'Agente en línea' : 'Conectando…' }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="sessions.length === 0" class="p-6 text-center text-sm text-gray-400">
+        Sin chats activos.<br />Esperando clientes…
+      </div>
+
+      <div class="overflow-y-auto">
+        <button *ngFor="let s of sessions"
+          (click)="selectSession(s)"
+          class="flex w-full items-center gap-3 border-b border-gray-50 px-5 py-3.5 text-left transition hover:bg-gray-50 dark:border-gray-800/50 dark:hover:bg-white/[0.03]"
+          [class.bg-brand-50]="activeSession?.userId === s.userId"
+          [class.dark:bg-brand-500/10]="activeSession?.userId === s.userId">
+          <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+            {{ s.userName.charAt(0) }}
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-gray-800 dark:text-white/90 truncate">{{ s.userName }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ s.lastMsg ?? 'Nuevo chat' }}</p>
+          </div>
+          <span *ngIf="s.unread > 0"
+            class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+            {{ s.unread }}
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel: chat activo -->
+    <div class="flex flex-1 flex-col">
+
+      <!-- Sin sesión seleccionada -->
+      <div *ngIf="!activeSession" class="flex flex-1 flex-col items-center justify-center gap-3 text-center p-10">
+        <div class="text-6xl">💬</div>
+        <p class="font-semibold text-gray-700 dark:text-gray-300">Selecciona un chat de la lista</p>
+        <p class="text-sm text-gray-400">Los clientes que soliciten ayuda aparecerán a la izquierda</p>
+      </div>
+
+      <!-- Sesión activa -->
+      <ng-container *ngIf="activeSession">
+
+        <!-- Header de la sesión -->
+        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+              {{ activeSession.userName.charAt(0) }}
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800 dark:text-white/90">{{ activeSession.userName }}</p>
+              <p class="text-xs text-green-500">● En línea</p>
+            </div>
+          </div>
+          <button (click)="closeSession(activeSession)"
+            class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition dark:border-red-500/20 dark:hover:bg-red-500/10">
+            Cerrar chat
+          </button>
+        </div>
+
+        <!-- Mensajes -->
+        <div class="flex flex-1 flex-col gap-3 overflow-y-auto p-6">
+          <div *ngIf="activeMessages.length === 0" class="flex-1 flex items-center justify-center">
+            <p class="text-sm text-gray-400">El cliente acaba de conectar. Salúdale 👋</p>
+          </div>
+          <div *ngFor="let m of activeMessages"
+            class="flex gap-2"
+            [class.flex-row-reverse]="m.isFromSupport">
+            <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold"
+              [ngClass]="m.isFromSupport ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+              {{ m.isFromSupport ? '🎧' : m.userName.charAt(0) }}
+            </div>
+            <div class="max-w-[70%]">
+              <div class="rounded-2xl px-4 py-2.5 text-sm"
+                [ngClass]="m.isFromSupport
+                  ? 'rounded-tr-sm bg-brand-500 text-white'
+                  : 'rounded-tl-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-white/90'">
+                {{ m.message }}
+              </div>
+              <p class="mt-1 text-[10px] text-gray-400" [class.text-right]="m.isFromSupport">
+                {{ m.timestamp | date:'HH:mm' }}
+              </p>
+            </div>
+          </div>
+          <div #messagesEnd></div>
+        </div>
+
+        <!-- Input agente -->
+        <div class="border-t border-gray-100 p-5 dark:border-gray-800">
+          <div class="flex gap-3">
+            <input [(ngModel)]="agentInput" placeholder="Responde al cliente…"
+              (keydown.enter)="sendAgentMsg()"
+              class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            <button (click)="sendAgentMsg()" [disabled]="!agentInput.trim()"
+              class="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-40 transition">
+              Enviar →
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+</ng-container>
