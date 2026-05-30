@@ -227,8 +227,9 @@
             <!-- Fecha -->
             <div>
               <label class="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">📅 Fecha del viaje</label>
-              <input type="date" [(ngModel)]="fecha" [min]="today" (ngModelChange)="onFechaChange()"
-                class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+              <app-date-picker id="lancha-fecha" placeholder="dd/mm/aaaa"
+                [defaultDate]="fecha || today" [minDate]="today"
+                (dateChange)="fecha = $event.dateStr; onFechaChange()" />
             </div>
 
             <!-- Pasajeros -->

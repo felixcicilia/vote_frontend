@@ -36,6 +36,16 @@
           </button>
         </ng-container>
 
+        <!-- Reseñar (solo completados) -->
+        <button *ngIf="alquiler?.status === 'COMPLETED' && !alreadyReviewed && isCliente"
+          (click)="reviewOpen = true"
+          class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition dark:border-amber-700/40 dark:bg-amber-500/10 dark:text-amber-400">
+          ⭐ Reseñar
+        </button>
+        <span *ngIf="alquiler?.status === 'COMPLETED' && alreadyReviewed && isCliente"
+          class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium px-2">
+          ✅ Ya reseñaste
+        </span>
         <button (click)="chatOpen = true"
           class="inline-flex items-center gap-2 rounded-lg bg-brand-500 hover:bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors">
           <i class="fas fa-comment-dots"></i> Chat
@@ -397,6 +407,17 @@
   [title]="chatTitle"
   (closeChat)="chatOpen = false">
 </app-reservation-chat>
+
+<!-- Modal reseña -->
+<app-review-modal
+  *ngIf="reviewOpen && alquiler"
+  referenceType="RENTAL"
+  [referenceId]="alquiler.id"
+  [vesselId]="alquiler.vessel?.id"
+  [title]="(alquiler.destination?.name ?? alquiler.vessel?.name ?? 'Charter') + ' · Charter #' + alquiler.id"
+  (cerrar)="reviewOpen = false"
+  (enviada)="onReviewSent()">
+</app-review-modal>
 
 <!-- Modal de pago -->
 <app-pago-charter-modal

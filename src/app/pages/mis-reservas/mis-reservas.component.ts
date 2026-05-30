@@ -3,14 +3,18 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 import { AuthService } from '../auth-pages/services/auth.service';
 import { IslandTripsService } from '../buscar/services/island-trips.service';
 import { AlquileresService } from '../alquileres/services/alquileres.service';
 import { TasaService } from '../../shared/services/tasa.service';
+import { environment } from '../../../environments/environment';
 import { IslandBooking } from '../buscar/models/island-trip.model';
 import { Alquiler } from '../alquileres/models/alquiler.model';
 import { ReservationChatComponent } from '../../shared/components/reservation-chat/reservation-chat.component';
+import { ReviewModalComponent } from '../../shared/components/review-modal/review-modal.component';
+import { ResenasService } from '../resenas/services/resenas.service';
 
 export type ReservaType = 'ISLAND' | 'CHARTER';
 
@@ -35,14 +39,22 @@ export interface ReservaRow {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReservationChatComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ReservationChatComponent, ReviewModalComponent],
   templateUrl: './mis-reservas.component.html',
 })
 export class MisReservasComponent implements OnInit {
   readonly auth        = inject(AuthService);
   readonly tasaService = inject(TasaService);
-  private readonly islandService    = inject(IslandTripsService);
+  private readonly islandService     = inject(IslandTripsService);
   private readonly alquileresService = inject(AlquileresService);
+  private readonly http              = inject(HttpClient);
+  private readonly resenasService    = inject(ResenasService);
+
+  unreadCounts: Record<string, number> = {}; // key = `${type}_${id}`
+
+  // Reseñas
+  reviewRow: ReservaRow | null = null;
+  reviewedIds = new Set<string>(); // key = `${type}_${id}`
 
   rows: ReservaRow[] = [];
   filtered: ReservaRow[] = [];
@@ -115,6 +127,8 @@ export class MisReservasComponent implements OnInit {
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
         this.applyFilter();
         this.loading = false;
+        this.loadUnreadCounts(bRows.map(r => r.id), cRows.map(r => r.id), id);
+        this.loadReviewedIds(id);
       },
       error: () => { this.loading = false; },
     });
@@ -156,8 +170,74 @@ export class MisReservasComponent implements OnInit {
   }
 
   // Chat
-  openChat(r: ReservaRow, e: Event): void { e.stopPropagation(); this.chatRow = r; }
+  openChat(r: ReservaRow, e: Event): void {
+    e.stopPropagation();
+    this.chatRow = r;
+    // Limpia el badge al abrir el chat
+    const key = `${r.type}_${r.id}`;
+    this.unreadCounts = { ...this.unreadCounts, [key]: 0 };
+  }
   closeChat(): void { this.chatRow = null; }
+
+  onUnreadChange(r: ReservaRow, count: number): void {
+    const key = `${r.type}_${r.id}`;
+    this.unreadCounts = { ...this.unreadCounts, [key]: count };
+  }
+
+  unreadFor(r: ReservaRow): number {
+    return this.unreadCounts[`${r.type}_${r.id}`] ?? 0;
+  }
+
+  openReview(r: ReservaRow, e: Event): void { e.stopPropagation(); this.reviewRow = r; }
+
+  onReviewSent(): void {
+    if (this.reviewRow) {
+      this.reviewedIds.add(`${this.reviewRow.type}_${this.reviewRow.id}`);
+    }
+    this.reviewRow = null;
+  }
+
+  hasReviewed(r: ReservaRow): boolean {
+    return this.reviewedIds.has(`${r.type}_${r.id}`);
+  }
+
+  reviewRefType(r: ReservaRow): 'ISLAND_BOOKING' | 'RENTAL' {
+    return r.type === 'ISLAND' ? 'ISLAND_BOOKING' : 'RENTAL';
+  }
+
+  private loadReviewedIds(userId: number): void {
+    // Carga reseñas previas del cliente para marcar qué ya reseñó
+    this.resenasService.getAll().subscribe({
+      next: (resenas) => {
+        resenas
+          .filter(r => r.reviewer?.id === userId)
+          .forEach(r => {
+            const type = r.referenceType === 'ISLAND_BOOKING' ? 'ISLAND' : 'CHARTER';
+            this.reviewedIds.add(`${type}_${r.referenceId}`);
+          });
+      },
+    });
+  }
+
+  private loadUnreadCounts(islandIds: number[], charterIds: number[], userId: number): void {
+    const base = `${environment.apiUrl}/chat/booking-unread`;
+    if (islandIds.length) {
+      this.http.get<Record<number, number>>(`${base}?ids=${islandIds.join(',')}&type=ISLAND`)
+        .subscribe({ next: (counts) => {
+          Object.entries(counts).forEach(([id, c]) => {
+            this.unreadCounts[`ISLAND_${id}`] = c;
+          });
+        }});
+    }
+    if (charterIds.length) {
+      this.http.get<Record<number, number>>(`${base}?ids=${charterIds.join(',')}&type=CHARTER`)
+        .subscribe({ next: (counts) => {
+          Object.entries(counts).forEach(([id, c]) => {
+            this.unreadCounts[`CHARTER_${id}`] = c;
+          });
+        }});
+    }
+  }
   get currentUserId(): number { return this.user?.id ?? 0; }
 
   // Helpers

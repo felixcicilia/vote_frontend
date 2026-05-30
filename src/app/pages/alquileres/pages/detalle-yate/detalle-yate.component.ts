@@ -12,11 +12,12 @@ import { Embarcacion } from '../../../embarcaciones/models/embarcacion.model';
 import { Destino } from '../../models/destino.model';
 import { AMENITIES, AmenityDef } from '../../data/amenities';
 import { environment } from '../../../../../environments/environment';
+import { DatePickerComponent } from '../../../../shared/components/form/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-detalle-yate',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DatePickerComponent],
   templateUrl: './detalle-yate.component.html',
 })
 export class DetalleYateComponent implements OnInit {

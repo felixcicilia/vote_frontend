@@ -179,11 +179,26 @@
                   <i class="fas fa-credit-card text-[10px]"></i> Pagar
                 </a>
 
+                <!-- Reseñar (solo completadas) -->
+                <button *ngIf="r.status === 'COMPLETED' && !hasReviewed(r)"
+                  (click)="openReview(r, $event)"
+                  class="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition dark:border-amber-700/40 dark:bg-amber-500/10 dark:text-amber-400">
+                  ⭐ Reseñar
+                </button>
+                <span *ngIf="r.status === 'COMPLETED' && hasReviewed(r)"
+                  class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
+                  ✅ Reseñado
+                </span>
+
                 <!-- Chat -->
                 <button (click)="openChat(r, $event)"
                   class="relative inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-400 hover:text-brand-600 dark:border-gray-700 dark:text-gray-300 transition">
                   <i class="fas fa-comment-dots text-xs"></i>
                   <span class="hidden sm:inline">Chat</span>
+                  <span *ngIf="unreadFor(r) > 0"
+                    class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                    {{ unreadFor(r) > 9 ? '9+' : unreadFor(r) }}
+                  </span>
                 </button>
 
                 <!-- Ver detalle -->
@@ -234,6 +249,16 @@
 </div>
 
 <!-- Chat panel -->
+<!-- Modal reseña -->
+<app-review-modal
+  *ngIf="reviewRow"
+  [referenceType]="reviewRefType(reviewRow)"
+  [referenceId]="reviewRow.id"
+  [title]="reviewRow.destino + ' · ' + reviewRow.embarcacion"
+  (cerrar)="reviewRow = null"
+  (enviada)="onReviewSent()">
+</app-review-modal>
+
 <app-reservation-chat
   *ngIf="chatRow"
   [bookingId]="chatRow.id"
@@ -242,5 +267,6 @@
   [providerUserId]="0"
   [title]="chatRow.destino"
   [providerName]="chatRow.providerName || ''"
-  (closeChat)="closeChat()">
+  (closeChat)="closeChat()"
+  (unreadChange)="onUnreadChange(chatRow, $event)">
 </app-reservation-chat>

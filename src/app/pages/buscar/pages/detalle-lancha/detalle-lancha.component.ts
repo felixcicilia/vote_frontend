@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { DatePickerComponent } from '../../../../shared/components/form/date-picker/date-picker.component';
 import { HttpClient } from '@angular/common/http';
 
 import { IslandTripsService } from '../../services/island-trips.service';
@@ -24,7 +25,7 @@ interface SlotAvailability {
 @Component({
   selector: 'app-detalle-lancha',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DatePickerComponent],
   templateUrl: './detalle-lancha.component.html',
 })
 export class DetalleLanchaComponent implements OnInit {
@@ -49,7 +50,7 @@ export class DetalleLanchaComponent implements OnInit {
   // Parámetros heredados del buscador
   llegadaId: number | null = null;
   salidaId: number | null  = null;
-  fecha = '';
+  fecha = new Date().toISOString().split('T')[0];
   passengers = 2;
 
   // Disponibilidad por slotId

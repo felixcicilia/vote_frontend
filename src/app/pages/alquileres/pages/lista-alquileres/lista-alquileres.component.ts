@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, HostListener, inject } from '@angular/core';
+import { DatePickerComponent } from '../../../../shared/components/form/date-picker/date-picker.component';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
@@ -18,7 +19,7 @@ import { amenityLabel, amenityIcon } from '../../data/amenities';
 @Component({
   selector: 'app-lista-alquileres',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DatePickerComponent],
   templateUrl: './lista-alquileres.component.html',
 })
 export class ListaAlquileresComponent implements OnInit {
@@ -41,7 +42,7 @@ export class ListaAlquileresComponent implements OnInit {
   buscado = false;
 
   destinoId = '';
-  startDate = '';
+  startDate = new Date().toISOString().split('T')[0];
   endDate = '';
   adults = 2;
   children = 0;

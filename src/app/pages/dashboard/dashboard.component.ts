@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { DashboardService, DashboardStats } from './dashboard.service';
+import { DatePickerComponent } from '../../shared/components/form/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DatePickerComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {

@@ -1,0 +1,126 @@
+<!-- Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+     (click)="done ? cerrar.emit() : null">
+
+  <div class="relative w-full max-w-md rounded-2xl bg-white shadow-2xl dark:bg-slate-900"
+       (click)="$event.stopPropagation()">
+
+    <!-- ── Confirmación enviada ── -->
+    <ng-container *ngIf="done">
+      <div class="p-8 text-center">
+        <div class="text-5xl mb-4">🌟</div>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">¡Gracias por tu reseña!</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Tu opinión ayuda a mejorar la experiencia de todos.</p>
+        <button (click)="cerrar.emit()"
+          class="w-full rounded-xl bg-brand-500 py-3 text-sm font-bold text-white hover:bg-brand-600 transition">
+          Cerrar
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- ── Formulario ── -->
+    <ng-container *ngIf="!done">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-slate-700">
+        <div>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">⭐ Califica tu experiencia</h2>
+          <p class="text-xs text-gray-400 mt-0.5 truncate max-w-[280px]">{{ title }}</p>
+        </div>
+        <button (click)="cerrar.emit()"
+          class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="space-y-6 p-6">
+
+        <!-- Estrellas -->
+        <div class="flex flex-col items-center gap-3">
+          <div class="flex items-center gap-1" (mouseleave)="onMouseLeave()">
+            <button *ngFor="let star of stars"
+              type="button"
+              class="relative w-12 h-12 focus:outline-none transition-transform hover:scale-110"
+              (mousemove)="onMouseMove(star, $event)"
+              (click)="onClick(star, $event)">
+
+              <!-- Estrella vacía (fondo) -->
+              <svg class="absolute inset-0 w-full h-full text-gray-200 dark:text-gray-700" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+
+              <!-- Mitad izquierda (half fill) — clipPath al 50% -->
+              <svg *ngIf="fill(star, activeValue()) === 'half'"
+                class="absolute inset-0 w-full h-full text-amber-400" viewBox="0 0 24 24">
+                <defs>
+                  <clipPath [id]="'half-clip-' + star">
+                    <rect x="0" y="0" width="12" height="24"/>
+                  </clipPath>
+                </defs>
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+                      fill="currentColor" [attr.clip-path]="'url(#half-clip-' + star + ')'"/>
+              </svg>
+
+              <!-- Estrella llena -->
+              <svg *ngIf="fill(star, activeValue()) === 'full'"
+                class="absolute inset-0 w-full h-full text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Valor numérico y etiqueta -->
+          <div class="text-center">
+            <span class="text-3xl font-black text-amber-500">{{ activeValue() || '—' }}</span>
+            <span *ngIf="activeValue()" class="text-sm text-gray-400 ml-1">/ 5</span>
+            <p class="text-sm font-semibold mt-0.5"
+               [ngClass]="activeValue() >= 4 ? 'text-green-600' : activeValue() >= 3 ? 'text-amber-600' : activeValue() ? 'text-red-500' : 'text-gray-400'">
+              {{ ratingLabel() }}
+            </p>
+          </div>
+
+          <!-- Pasos rápidos -->
+          <div class="flex flex-wrap justify-center gap-1.5">
+            <button *ngFor="let s of steps" type="button"
+              (click)="rating = s"
+              class="rounded-full px-2.5 py-0.5 text-xs font-semibold transition"
+              [ngClass]="rating === s
+                ? 'bg-amber-400 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-700 dark:bg-gray-800 dark:text-gray-400'">
+              {{ s }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Comentario -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+            Comentario <span class="font-normal text-gray-400">(opcional)</span>
+          </label>
+          <textarea [(ngModel)]="comment" rows="3"
+            placeholder="Cuéntanos cómo fue tu experiencia..."
+            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:border-gray-700 dark:bg-slate-800 dark:text-white resize-none"></textarea>
+        </div>
+
+        <!-- Error -->
+        <p *ngIf="errorMsg" class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          {{ errorMsg }}
+        </p>
+
+        <!-- Botones -->
+        <div class="flex gap-3">
+          <button (click)="cerrar.emit()" [disabled]="loading"
+            class="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 transition">
+            Cancelar
+          </button>
+          <button (click)="enviar()" [disabled]="loading || !rating"
+            class="flex-1 rounded-xl bg-amber-400 hover:bg-amber-500 py-3 text-sm font-black text-white shadow-lg disabled:opacity-40 transition">
+            {{ loading ? 'Enviando...' : '⭐ Enviar reseña' }}
+          </button>
+        </div>
+
+      </div>
+    </ng-container>
+
+  </div>
+</div>

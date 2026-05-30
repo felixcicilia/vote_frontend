@@ -12,25 +12,62 @@
   </div>
 
   <!-- Header -->
-  <div class="flex items-center gap-3 px-4 py-3 bg-brand-600 text-white flex-shrink-0"
-       [class.rounded-t-2xl]="true" [class.md:rounded-2xl]="false">
+  <div class="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+       [ngClass]="convStatus === 'CLOSED'
+         ? 'bg-gray-500 text-white'
+         : 'bg-brand-600 text-white'">
     <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-base">
-      {{ bookingType === 'CHARTER' ? '⚓' : '🏝️' }}
+      {{ convStatus === 'CLOSED' ? '🔒' : (bookingType === 'CHARTER' ? '⚓' : '🏝️') }}
     </div>
     <div class="flex-1 min-w-0">
       <p class="font-semibold text-sm truncate leading-tight">
         {{ title || ('Reserva #' + bookingId) }}
+        <span *ngIf="convStatus === 'CLOSED'" class="ml-1 text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">Cerrado</span>
       </p>
       <p class="text-[11px] opacity-70 leading-tight">
         {{ providerName ? providerName : (bookingType === 'CHARTER' ? 'el proveedor' : 'el operador') }}
       </p>
     </div>
+
+    <!-- Botón finalizar (solo si OPEN) -->
+    <button *ngIf="convStatus === 'OPEN' && conv"
+            (click)="confirmClose = true"
+            title="Finalizar conversación"
+            class="p-1.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0 opacity-80 hover:opacity-100">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+      </svg>
+    </button>
+
+    <!-- Botón cerrar panel -->
     <button class="p-1.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
             (click)="closeChat.emit()">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </button>
+  </div>
+
+  <!-- Diálogo confirmación finalizar -->
+  <div *ngIf="confirmClose"
+       class="absolute inset-0 z-10 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div class="mx-4 w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-2xl text-center">
+      <div class="text-4xl mb-3">🔒</div>
+      <h3 class="text-base font-bold text-gray-800 dark:text-white mb-2">¿Finalizar conversación?</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
+        Nadie podrá enviar más mensajes hasta que alguien la reanude.
+      </p>
+      <div class="flex gap-3">
+        <button (click)="confirmClose = false"
+          class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 transition">
+          Cancelar
+        </button>
+        <button (click)="setConvStatus('CLOSED')"
+          class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 py-2.5 text-sm font-bold text-white transition">
+          Sí, finalizar
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Messages -->
@@ -71,11 +108,7 @@
 
         <!-- Avatar other -->
         <div *ngIf="!isOwn(msg)"
-             class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center self-end text-[10px] font-bold"
-             [class.bg-brand-100]="true"
-             [class.text-brand-700]="true"
-             [class.dark:bg-brand-500/20]="true"
-             [class.dark:text-brand-400]="true">
+             class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center self-end text-[10px] font-bold bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-400">
           {{ (msg.sender?.firstName?.[0] ?? '?') | uppercase }}
         </div>
 
@@ -104,17 +137,30 @@
       </div>
     </ng-container>
 
+    <!-- Aviso de sesión finalizada (dentro del área de mensajes, al final) -->
+    <div *ngIf="convStatus === 'CLOSED'" class="flex flex-col items-center py-6 px-4">
+      <div class="w-full max-w-[260px] rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md p-5 text-center">
+        <div class="text-3xl mb-2">🔒</div>
+        <p class="text-sm font-semibold text-gray-700 dark:text-white mb-1">Esta sesión ha finalizado</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">¿Deseas reanudarla?</p>
+        <button (click)="setConvStatus('OPEN')"
+          class="w-full rounded-xl bg-brand-500 hover:bg-brand-600 py-2 text-sm font-bold text-white transition">
+          Reanudar conversación
+        </button>
+      </div>
+    </div>
+
     <div #msgsEnd></div>
   </div>
 
-  <!-- Input -->
+  <!-- Input (siempre visible — si está cerrado, al enviar se reanuda automáticamente) -->
   <div class="px-3 py-2.5 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 flex-shrink-0">
     <div class="flex gap-2 items-end">
       <textarea
         [(ngModel)]="input"
         (keydown.enter)="onEnter($event)"
         rows="1"
-        placeholder="Escribe un mensaje..."
+        [placeholder]="convStatus === 'CLOSED' ? 'Escribe para reanudar la conversación...' : 'Escribe un mensaje...'"
         class="flex-1 resize-none rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-400/30 max-h-24 overflow-y-auto"
       ></textarea>
       <button
@@ -126,7 +172,9 @@
         </svg>
       </button>
     </div>
-    <p class="text-[9px] text-gray-400 mt-1 text-center">Enter para enviar · Shift+Enter nueva línea</p>
+    <p class="text-[9px] text-gray-400 mt-1 text-center">
+      {{ convStatus === 'CLOSED' ? 'Escribe un mensaje para reanudar automáticamente' : 'Enter para enviar · Shift+Enter nueva línea' }}
+    </p>
   </div>
 
 </div>

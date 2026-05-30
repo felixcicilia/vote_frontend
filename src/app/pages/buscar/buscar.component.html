@@ -64,9 +64,10 @@
             <label class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
               <span>📅</span> Fecha del viaje
             </label>
-            <input type="date" [(ngModel)]="fecha" [min]="today"
-              class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white" />
-            <p class="mt-2 text-xs text-gray-400">Selecciona cuándo viajas</p>
+            <app-date-picker id="buscar-fecha" placeholder="dd/mm/aaaa"
+              [defaultDate]="fecha || today" [minDate]="today"
+              (dateChange)="fecha = $event.dateStr" class="mt-2 block" />
+            <p class="mt-1 text-xs text-gray-400">Selecciona cuándo viajas</p>
           </div>
 
           <!-- Pasajeros + botón -->

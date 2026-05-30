@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { DatePickerComponent } from '../../../../shared/components/form/date-picker/date-picker.component';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -17,7 +18,7 @@ import { environment } from '../../../../../environments/environment';
 @Component({
   selector: 'app-crear-alquiler',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DatePickerComponent],
   templateUrl: './crear-alquiler.component.html',
 })
 export class CrearAlquilerComponent implements OnInit {

@@ -240,8 +240,8 @@
                   ✓ Período finalizado
                 </p>
               </ng-container>
-              <p *ngIf="r.status === 'CONFIRMED' && !hasStarted(r)" class="mt-1 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                ⏳ Inicia el {{ r.startDate }}
+              <p *ngIf="r.status === 'PENDING'" class="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+                💳 Pago recibido — pendiente aprobación
               </p>
             </td>
 
@@ -268,15 +268,11 @@
                       class="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50">✗</button>
                   </div>
                 </ng-container>
-                <!-- CONFIRMED: solo puede cancelar (el cliente debe pagar) -->
+                <!-- CONFIRMED: reserva aprobada, pago ya recibido -->
                 <ng-container *ngIf="r.status === 'CONFIRMED'">
-                  <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                    ⏳ Esperando pago
+                  <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                    ✅ Aprobada — inicia {{ r.startDate | date:'dd/MM' }}
                   </span>
-                  <button (click)="changeStatus(r, 'CANCELLED')" [disabled]="updatingId === r.id"
-                    class="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50">
-                    ✗ Cancelar
-                  </button>
                 </ng-container>
                 <!-- PAID: el cliente pagó, viaje inicia automáticamente -->
                 <ng-container *ngIf="r.status === 'PAID'">

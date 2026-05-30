@@ -65,6 +65,8 @@ export class ReservationChatComponent implements OnInit, OnDestroy, AfterViewChe
   input = '';
   messages: ChatMsg[] = [];
   conv: Conversation | null = null;
+  convStatus: 'OPEN' | 'CLOSED' = 'OPEN';
+  confirmClose = false; // muestra el diálogo de confirmación
 
   get user() { return this.auth.user(); }
 
@@ -94,10 +96,27 @@ export class ReservationChatComponent implements OnInit, OnDestroy, AfterViewChe
     }).subscribe({
       next: (conv) => {
         this.conv = conv;
+        this.convStatus = (conv as any).status ?? 'OPEN';
         this.connectSocket(conv.id);
       },
       error: () => { this.loading = false; },
     });
+  }
+
+  setConvStatus(status: 'OPEN' | 'CLOSED'): void {
+    if (!this.conv || !this.user) return;
+    // Actualiza localmente de inmediato para respuesta instantánea
+    this.convStatus = status;
+    this.confirmClose = false;
+    this.cdr.detectChanges();
+    // Notifica al servidor y a los demás participantes
+    this.socket.emit('conv:set-status', {
+      conversationId: this.conv.id,
+      status,
+      userId: this.user.id,
+    });
+    // También persiste vía HTTP como respaldo
+    this.http.patch(`${this.base}/conversations/${this.conv.id}/status`, { status }).subscribe();
   }
 
   private connectSocket(convId: number): void {
@@ -132,10 +151,21 @@ export class ReservationChatComponent implements OnInit, OnDestroy, AfterViewChe
     this.socket.on('conv:read', () => {
       this.cdr.detectChanges();
     });
+
+    this.socket.on('conv:status-changed', (data: { conversationId: number; status: 'OPEN' | 'CLOSED' }) => {
+      if (data.conversationId === convId) {
+        this.convStatus = data.status;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   send(): void {
     if (!this.input.trim() || !this.conv || !this.user) return;
+    // Si el chat está cerrado, lo reanuda automáticamente antes de enviar
+    if (this.convStatus === 'CLOSED') {
+      this.setConvStatus('OPEN');
+    }
     this.socket.emit('conv:send', {
       conversationId: this.conv.id,
       senderId: this.user.id,

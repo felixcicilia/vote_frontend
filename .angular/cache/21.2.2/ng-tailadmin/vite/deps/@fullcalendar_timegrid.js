@@ -57,7 +57,7 @@ import {
   wholeDivideDurations,
   y
 } from "./chunk-LW3THO4T.js";
-import "./chunk-XWLXMCJQ.js";
+import "./chunk-CX3I3NQG.js";
 
 // node_modules/@fullcalendar/timegrid/internal.js
 var AllDaySplitter = class extends Splitter {

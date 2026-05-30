@@ -159,8 +159,9 @@
               <label class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 <span>📅</span> Llegada
               </label>
-              <input type="date" [(ngModel)]="startDate" [min]="today"
-                class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white" />
+              <app-date-picker id="alq-start" placeholder="dd/mm/aaaa"
+                [defaultDate]="startDate || today" [minDate]="today"
+                (dateChange)="startDate = $event.dateStr" class="mt-2 block" />
               <p class="mt-1 text-xs text-gray-400">Fecha de inicio</p>
             </div>
 
@@ -169,8 +170,9 @@
               <label class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 <span>📅</span> Salida
               </label>
-              <input type="date" [(ngModel)]="endDate" [min]="startDate || today"
-                class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white" />
+              <app-date-picker id="alq-end" placeholder="dd/mm/aaaa"
+                [defaultDate]="endDate" [minDate]="startDate || today"
+                (dateChange)="endDate = $event.dateStr" class="mt-2 block" />
               <p class="mt-1 text-xs text-gray-400">
                 {{ days > 0 ? (days + (days === 1 ? ' noche' : ' noches')) : 'Fecha de fin' }}
               </p>

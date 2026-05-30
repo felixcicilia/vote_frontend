@@ -6,21 +6,24 @@ import { AlquileresService } from '../../services/alquileres.service';
 import { AuthService } from '../../../auth-pages/services/auth.service';
 import { ReservationChatComponent } from '../../../../shared/components/reservation-chat/reservation-chat.component';
 import { PagoCharterModalComponent } from '../../../../shared/components/pago-charter-modal/pago-charter-modal.component';
+import { ReviewModalComponent } from '../../../../shared/components/review-modal/review-modal.component';
 import { PagosService } from '../../../pagos/services/pagos.service';
+import { ResenasService } from '../../../resenas/services/resenas.service';
 import { environment } from '../../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-detalle-alquiler',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReservationChatComponent, PagoCharterModalComponent],
+  imports: [CommonModule, RouterModule, ReservationChatComponent, PagoCharterModalComponent, ReviewModalComponent],
   templateUrl: './detalle-alquiler.component.html',
 })
 export class DetalleAlquilerComponent implements OnInit {
   private readonly service = inject(AlquileresService);
   private readonly route   = inject(ActivatedRoute);
   private readonly http    = inject(HttpClient);
-  private readonly pagosService = inject(PagosService);
+  private readonly pagosService  = inject(PagosService);
+  private readonly resenasService = inject(ResenasService);
   readonly auth            = inject(AuthService);
 
   loading = false;
@@ -29,6 +32,8 @@ export class DetalleAlquilerComponent implements OnInit {
   alquiler: Alquiler | null = null;
   chatOpen = false;
   pagoModalOpen = false;
+  reviewOpen = false;
+  alreadyReviewed = false;
   pagos: any[] = [];
   loadingPagos = false;
 
@@ -58,6 +63,10 @@ export class DetalleAlquilerComponent implements OnInit {
       next: (a) => {
         this.alquiler = a;
         this.loading = false;
+        if (a.status === 'COMPLETED') {
+          const uid = this.auth.user()?.id;
+          if (uid) this.resenasService.hasReviewed(uid, 'RENTAL', id).subscribe(e => this.alreadyReviewed = e);
+        }
         this.loadingPagos = true;
         this.pagosService.getByReference('RENTAL', id).subscribe({
           next: (p) => { this.pagos = p; this.loadingPagos = false; },
@@ -96,6 +105,8 @@ export class DetalleAlquilerComponent implements OnInit {
       error: () => { this.updating = false; },
     });
   }
+
+  onReviewSent(): void { this.alreadyReviewed = true; this.reviewOpen = false; }
 
   onPagado(): void {
     // Avanzar estado a PAID y recargar el detalle

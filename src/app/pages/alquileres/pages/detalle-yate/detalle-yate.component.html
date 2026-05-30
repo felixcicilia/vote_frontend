@@ -143,14 +143,16 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">📅 Llegada</label>
-                  <input type="date" formControlName="startDate" [min]="today"
-                    class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+                  <app-date-picker id="yate-start" placeholder="dd/mm/aaaa"
+                    [defaultDate]="f.startDate.value || ''" [minDate]="today"
+                    (dateChange)="f.startDate.setValue($event.dateStr); f.startDate.markAsTouched()" />
                   <p *ngIf="f.startDate.touched && f.startDate.invalid" class="mt-1 text-[10px] text-red-500">Requerido</p>
                 </div>
                 <div>
                   <label class="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">📅 Salida</label>
-                  <input type="date" formControlName="endDate" [min]="f.startDate.value || today"
-                    class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+                  <app-date-picker id="yate-end" placeholder="dd/mm/aaaa"
+                    [defaultDate]="f.endDate.value || ''" [minDate]="f.startDate.value || today"
+                    (dateChange)="f.endDate.setValue($event.dateStr); f.endDate.markAsTouched()" />
                   <p *ngIf="f.endDate.touched && f.endDate.invalid" class="mt-1 text-[10px] text-red-500">Requerido</p>
                 </div>
               </div>

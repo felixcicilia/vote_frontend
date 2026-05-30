@@ -5,26 +5,31 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { IslandTripsService } from '../../buscar/services/island-trips.service';
 import { AuthService } from '../../auth-pages/services/auth.service';
 import { TasaService } from '../../../shared/services/tasa.service';
+import { ResenasService } from '../../resenas/services/resenas.service';
 import { IslandBooking } from '../../buscar/models/island-trip.model';
 import { ReservationChatComponent } from '../../../shared/components/reservation-chat/reservation-chat.component';
+import { ReviewModalComponent } from '../../../shared/components/review-modal/review-modal.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-detalle-reserva',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReservationChatComponent],
+  imports: [CommonModule, RouterModule, ReservationChatComponent, ReviewModalComponent],
   templateUrl: './detalle-reserva.component.html',
 })
 export class DetalleReservaComponent implements OnInit {
   private readonly route   = inject(ActivatedRoute);
   private readonly service = inject(IslandTripsService);
   private readonly auth    = inject(AuthService);
+  private readonly resenas = inject(ResenasService);
   readonly tasaService     = inject(TasaService);
 
   booking: IslandBooking | null = null;
   loading = true;
   error = '';
   chatOpen = false;
+  reviewOpen = false;
+  alreadyReviewed = false;
 
   get currentUserId(): number { return this.auth.user()?.id ?? 0; }
   get chatTitle(): string {
@@ -35,10 +40,24 @@ export class DetalleReservaComponent implements OnInit {
     this.tasaService.load();
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.service.getBookingById(id).subscribe({
-      next: (b) => { this.booking = b; this.loading = false; },
+      next: (b) => {
+        this.booking = b;
+        this.loading = false;
+        if (b.status === 'COMPLETED') this.checkReview(b.id);
+      },
       error: () => { this.error = 'No se pudo cargar la reserva.'; this.loading = false; },
     });
   }
+
+  private checkReview(bookingId: number): void {
+    const uid = this.auth.user()?.id;
+    if (!uid) return;
+    this.resenas.hasReviewed(uid, 'ISLAND_BOOKING', bookingId).subscribe({
+      next: (exists) => { this.alreadyReviewed = exists; },
+    });
+  }
+
+  onReviewSent(): void { this.alreadyReviewed = true; this.reviewOpen = false; }
 
   imageUrl(url?: string | null): string {
     if (!url) return '';

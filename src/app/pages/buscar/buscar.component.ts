@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { DatePickerComponent } from '../../shared/components/form/date-picker/date-picker.component';
 
 import { IslandTripsService } from './services/island-trips.service';
 import { BuscarStateService } from './services/buscar-state.service';
@@ -20,7 +21,7 @@ interface VesselGroup {
 @Component({
   selector: 'app-buscar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DatePickerComponent],
   templateUrl: './buscar.component.html',
 })
 export class BuscarComponent implements OnInit {
@@ -38,7 +39,7 @@ export class BuscarComponent implements OnInit {
   // Filtros
   salidaId: number | null = null;
   llegadaId: number | null = null;
-  fecha = '';
+  fecha = new Date().toISOString().split('T')[0];
   passengers = 2;
 
   vesselGroups: VesselGroup[] = [];

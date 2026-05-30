@@ -29,7 +29,16 @@
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Reserva #{{ b.id }}</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Reseñar (solo completadas) -->
+          <button *ngIf="b.status === 'COMPLETED' && !alreadyReviewed" (click)="reviewOpen = true"
+            class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition dark:border-amber-700/40 dark:bg-amber-500/10 dark:text-amber-400">
+            ⭐ Reseñar
+          </button>
+          <span *ngIf="b.status === 'COMPLETED' && alreadyReviewed"
+            class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium px-2">
+            ✅ Ya reseñaste
+          </span>
           <button (click)="chatOpen = true"
             class="inline-flex items-center gap-2 rounded-lg bg-brand-500 hover:bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors">
             <i class="fas fa-comment-dots"></i> Chat
@@ -168,3 +177,13 @@
   [title]="chatTitle"
   (closeChat)="chatOpen = false">
 </app-reservation-chat>
+
+<app-review-modal
+  *ngIf="reviewOpen && booking"
+  referenceType="ISLAND_BOOKING"
+  [referenceId]="booking.id"
+  [vesselId]="booking.vessel?.id"
+  [title]="(booking.destination?.name ?? 'Excursión') + ' · ' + (booking.vessel?.name ?? '')"
+  (cerrar)="reviewOpen = false"
+  (enviada)="onReviewSent()">
+</app-review-modal>

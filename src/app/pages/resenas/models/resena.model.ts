@@ -1,4 +1,4 @@
-export type ReviewReferenceType = 'TAXI_TRIP' | 'TICKET' | 'RENTAL';
+export type ReviewReferenceType = 'TAXI_TRIP' | 'TICKET' | 'RENTAL' | 'ISLAND_BOOKING';
 
 export interface Resena {
   id: number;
