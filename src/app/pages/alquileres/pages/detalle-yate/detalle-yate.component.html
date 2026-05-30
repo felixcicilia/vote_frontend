@@ -171,7 +171,8 @@
                       class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:hover:bg-slate-700">−</button>
                     <span class="font-bold text-gray-800 dark:text-white">{{ f.adults.value }}</span>
                     <button type="button" (click)="f.adults.setValue((f.adults.value ?? 1) + 1)"
-                      class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-700">+</button>
+                      [disabled]="totalPassengers >= (vessel.capacity ?? 0)"
+                      class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:hover:bg-slate-700">+</button>
                   </div>
                 </div>
                 <div>
@@ -182,7 +183,8 @@
                       class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:hover:bg-slate-700">−</button>
                     <span class="font-bold text-gray-800 dark:text-white">{{ f.children.value }}</span>
                     <button type="button" (click)="f.children.setValue((f.children.value ?? 0) + 1)"
-                      class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-700">+</button>
+                      [disabled]="totalPassengers >= (vessel.capacity ?? 0)"
+                      class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 dark:hover:bg-slate-700">+</button>
                   </div>
                 </div>
               </div>

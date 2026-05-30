@@ -46,11 +46,6 @@ export class AppSidebarComponent {
       name: "Inicio",
       path: "/inicio",
     },
-    {
-      icon: `<i class="fas fa-chart-pie fa-lg"></i>`,
-      name: "Mi Dashboard",
-      path: "/mi-dashboard",
-    },
     // ── Modelo 1 ────────────────────────────────────────────────────────────
     {
       icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
@@ -115,11 +110,6 @@ export class AppSidebarComponent {
       name: "Inicio",
       path: "/inicio",
     },
-    {
-      icon: `<i class="fas fa-chart-line fa-lg"></i>`,
-      name: "Mi negocio",
-      path: "/mi-negocio",
-    },
     // ── Mi flota ────────────────────────────────────────────────────────────
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
@@ -130,6 +120,11 @@ export class AppSidebarComponent {
       icon: `<i class="fas fa-calendar-days fa-lg"></i>`,
       name: "Mis horarios",
       path: "/mi-charter/itinerario",
+    },
+    {
+      icon: `<i class="fas fa-calendar-alt fa-lg"></i>`,
+      name: "Calendario",
+      path: "/mi-charter/calendario",
     },
     // ── Reservas recibidas ──────────────────────────────────────────────────
     {
@@ -143,6 +138,16 @@ export class AppSidebarComponent {
       path: "/mi-charter/reservas",
     },
     // ── Mi cuenta ───────────────────────────────────────────────────────────
+    {
+      icon: `<i class="fas fa-chart-bar fa-lg"></i>`,
+      name: "Estadísticas",
+      path: "/mi-charter/estadisticas",
+    },
+    {
+      icon: `<i class="fas fa-id-card fa-lg"></i>`,
+      name: "Mis capitanes",
+      path: "/mis-capitanes",
+    },
     {
       icon: `<i class="fas fa-university fa-lg"></i>`,
       name: "Datos bancarios",
@@ -268,10 +273,12 @@ export class AppSidebarComponent {
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
       name: "Embarcaciones",
-      subItems: [
-        { name: "Todas las embarcaciones", path: "/embarcaciones" },
-        { name: "Pendientes de aprobación", path: "/embarcaciones/verificar" },
-      ],
+      path: "/embarcaciones",
+    },
+    {
+      icon: `<i class="fas fa-id-card fa-lg"></i>`,
+      name: "Capitanes",
+      path: "/mis-capitanes",
     },
     {
       icon: `<i class="fas fa-users fa-lg"></i>`,
@@ -281,11 +288,16 @@ export class AppSidebarComponent {
         { name: "Nuevo usuario", path: "/usuarios/crear" },
       ],
     },
-    // ── Configuración ────────────────────────────────────────────────────────
+    // ── Configuración excursiones ────────────────────────────────────────────
     {
       icon: `<i class="fas fa-map-pin fa-lg"></i>`,
       name: "Puntos de salida",
       path: "/puntos-salida",
+    },
+    {
+      icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
+      name: "Destinos / Islas",
+      path: "/destinos",
     },
     {
       icon: `<i class="fas fa-credit-card fa-lg"></i>`,

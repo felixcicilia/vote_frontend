@@ -3,24 +3,33 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
 import { IslandTripsService } from '../../buscar/services/island-trips.service';
+import { AuthService } from '../../auth-pages/services/auth.service';
 import { TasaService } from '../../../shared/services/tasa.service';
 import { IslandBooking } from '../../buscar/models/island-trip.model';
+import { ReservationChatComponent } from '../../../shared/components/reservation-chat/reservation-chat.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-detalle-reserva',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ReservationChatComponent],
   templateUrl: './detalle-reserva.component.html',
 })
 export class DetalleReservaComponent implements OnInit {
   private readonly route   = inject(ActivatedRoute);
   private readonly service = inject(IslandTripsService);
+  private readonly auth    = inject(AuthService);
   readonly tasaService     = inject(TasaService);
 
   booking: IslandBooking | null = null;
   loading = true;
   error = '';
+  chatOpen = false;
+
+  get currentUserId(): number { return this.auth.user()?.id ?? 0; }
+  get chatTitle(): string {
+    return this.booking?.destination?.name ?? `Excursión #${this.booking?.id}`;
+  }
 
   ngOnInit(): void {
     this.tasaService.load();

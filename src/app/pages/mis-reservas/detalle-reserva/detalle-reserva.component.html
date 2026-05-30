@@ -29,10 +29,16 @@
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Reserva #{{ b.id }}</p>
         </div>
-        <a routerLink="/mis-reservas"
-          class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
-          ← Volver
-        </a>
+        <div class="flex items-center gap-2">
+          <button (click)="chatOpen = true"
+            class="inline-flex items-center gap-2 rounded-lg bg-brand-500 hover:bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors">
+            <i class="fas fa-comment-dots"></i> Chat
+          </button>
+          <a routerLink="/mis-reservas"
+            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+            ← Volver
+          </a>
+        </div>
       </div>
     </div>
 
@@ -152,3 +158,13 @@
   </ng-container>
 
 </div>
+
+<app-reservation-chat
+  *ngIf="chatOpen && booking"
+  [bookingId]="booking.id"
+  bookingType="ISLAND"
+  [clientUserId]="currentUserId"
+  [providerUserId]="0"
+  [title]="chatTitle"
+  (closeChat)="chatOpen = false">
+</app-reservation-chat>

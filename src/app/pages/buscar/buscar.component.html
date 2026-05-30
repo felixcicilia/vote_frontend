@@ -19,7 +19,7 @@
       <div id="search-form" class="mx-auto max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-800">
         <div class="grid grid-cols-1 divide-y divide-gray-100 dark:divide-slate-700 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
 
-          <!-- Sale desde -->
+          <!-- Sale desde (todos los puntos) -->
           <div class="group p-5 transition hover:bg-blue-50/50 dark:hover:bg-blue-900/10">
             <label class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
               <span>⚓</span> Sale desde
@@ -27,17 +27,19 @@
             <select [(ngModel)]="salidaId" [disabled]="loadingPuntos"
               class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white cursor-pointer">
               <option [ngValue]="null">Cualquier punto de salida</option>
-              <optgroup label="Muelles">
+              <optgroup *ngIf="muelles.length" label="Muelles">
                 <option *ngFor="let p of muelles" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
               </optgroup>
-              <optgroup label="Islas">
+              <optgroup *ngIf="islasPuntos.length" label="Islas">
                 <option *ngFor="let p of islasPuntos" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
               </optgroup>
             </select>
-            <p class="mt-1 text-xs text-gray-400">{{ salidaSel ? salidaSel.city + ', ' + salidaSel.state : 'Muelle o isla de embarque' }}</p>
+            <p class="mt-1 text-xs text-gray-400">
+              {{ salidaSel ? salidaSel.city + ', ' + salidaSel.state : 'Muelle o isla de embarque' }}
+            </p>
           </div>
 
-          <!-- Llega a -->
+          <!-- Llega a (todos los puntos) -->
           <div class="group p-5 transition hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10">
             <label class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
               <span>🏝️</span> Llega a
@@ -45,14 +47,16 @@
             <select [(ngModel)]="llegadaId" [disabled]="loadingPuntos"
               class="mt-2 w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none dark:text-white cursor-pointer">
               <option [ngValue]="null">Cualquier destino</option>
-              <optgroup label="Muelles">
-                <option *ngFor="let p of muelles" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
-              </optgroup>
-              <optgroup label="Islas">
+              <optgroup *ngIf="islasPuntos.length" label="Islas">
                 <option *ngFor="let p of islasPuntos" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
               </optgroup>
+              <optgroup *ngIf="muelles.length" label="Muelles">
+                <option *ngFor="let p of muelles" [ngValue]="p.id">{{ puntoIcon(p) }} {{ p.name }}</option>
+              </optgroup>
             </select>
-            <p class="mt-1 text-xs text-gray-400">{{ llegadaSel ? llegadaSel.city + ', ' + llegadaSel.state : 'Muelle o isla destino' }}</p>
+            <p class="mt-1 text-xs text-gray-400">
+              {{ llegadaSel ? llegadaSel.city + ', ' + llegadaSel.state : 'Muelle o isla destino' }}
+            </p>
           </div>
 
           <!-- Fecha -->

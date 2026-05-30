@@ -1,0 +1,132 @@
+<!-- Mobile backdrop only -->
+<div class="fixed inset-0 z-[100000] bg-black/50 md:hidden" (click)="closeChat.emit()"></div>
+
+<!-- Panel -->
+<div class="fixed z-[100001] flex flex-col shadow-2xl overflow-hidden
+            bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl bg-white dark:bg-gray-900
+            md:top-4 md:bottom-4 md:right-4 md:left-auto md:h-auto md:w-[380px] md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-700">
+
+  <!-- Drag handle (mobile only) -->
+  <div class="flex justify-center pt-2 pb-1 md:hidden">
+    <div class="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 px-4 py-3 bg-brand-600 text-white flex-shrink-0"
+       [class.rounded-t-2xl]="true" [class.md:rounded-2xl]="false">
+    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-base">
+      {{ bookingType === 'CHARTER' ? '⚓' : '🏝️' }}
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold text-sm truncate leading-tight">
+        {{ title || ('Reserva #' + bookingId) }}
+      </p>
+      <p class="text-[11px] opacity-70 leading-tight">
+        {{ providerName ? providerName : (bookingType === 'CHARTER' ? 'el proveedor' : 'el operador') }}
+      </p>
+    </div>
+    <button class="p-1.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
+            (click)="closeChat.emit()">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div class="flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-gray-50 dark:bg-gray-900/50"
+       style="min-height: 0;">
+
+    <!-- Loading -->
+    <ng-container *ngIf="loading">
+      <div class="flex flex-col gap-3 py-4 animate-pulse">
+        <div *ngFor="let i of [1,2,3]" class="flex gap-2" [class.flex-row-reverse]="i % 2 === 0">
+          <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-white/10 flex-shrink-0"></div>
+          <div class="flex-1 max-w-[60%] space-y-1">
+            <div class="h-3 bg-gray-200 dark:bg-white/10 rounded w-16"></div>
+            <div class="h-8 bg-gray-200 dark:bg-white/10 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Empty -->
+    <ng-container *ngIf="!loading && messages.length === 0">
+      <div class="flex flex-col items-center justify-center h-full min-h-[200px] text-center py-8 text-gray-400">
+        <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mb-3 text-2xl">
+          💬
+        </div>
+        <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">Sin mensajes aún</p>
+        <p class="text-xs mt-1 text-gray-400">Escribe el primer mensaje</p>
+      </div>
+    </ng-container>
+
+    <!-- Messages list -->
+    <ng-container *ngIf="!loading && messages.length > 0">
+      <div *ngFor="let msg of messages; let first = first"
+           class="flex gap-2"
+           [class.justify-end]="isOwn(msg)"
+           [class.justify-start]="!isOwn(msg)"
+           [class.mt-3]="!first">
+
+        <!-- Avatar other -->
+        <div *ngIf="!isOwn(msg)"
+             class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center self-end text-[10px] font-bold"
+             [class.bg-brand-100]="true"
+             [class.text-brand-700]="true"
+             [class.dark:bg-brand-500/20]="true"
+             [class.dark:text-brand-400]="true">
+          {{ (msg.sender?.firstName?.[0] ?? '?') | uppercase }}
+        </div>
+
+        <!-- Bubble -->
+        <div class="max-w-[72%]">
+          <p *ngIf="!isOwn(msg)" class="text-[10px] text-gray-400 mb-0.5 ml-1">
+            {{ senderName(msg) }}
+          </p>
+          <div class="px-3 py-2 text-sm leading-relaxed break-words"
+               [ngClass]="isOwn(msg)
+                 ? 'bg-brand-500 text-white rounded-2xl rounded-br-sm shadow-sm'
+                 : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-2xl rounded-bl-sm shadow-sm border border-gray-100 dark:border-gray-700'">
+            {{ msg.content }}
+          </div>
+          <p class="text-[9px] text-gray-400 mt-0.5 px-1"
+             [class.text-right]="isOwn(msg)">
+            {{ formatTime(msg.createdAt) }}
+          </p>
+        </div>
+
+        <!-- Avatar own -->
+        <div *ngIf="isOwn(msg)"
+             class="w-6 h-6 rounded-full bg-brand-500 flex-shrink-0 flex items-center justify-center self-end text-[10px] font-bold text-white">
+          {{ (user?.firstName?.[0] ?? 'Y') | uppercase }}
+        </div>
+      </div>
+    </ng-container>
+
+    <div #msgsEnd></div>
+  </div>
+
+  <!-- Input -->
+  <div class="px-3 py-2.5 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 flex-shrink-0">
+    <div class="flex gap-2 items-end">
+      <textarea
+        [(ngModel)]="input"
+        (keydown.enter)="onEnter($event)"
+        rows="1"
+        placeholder="Escribe un mensaje..."
+        class="flex-1 resize-none rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-400/30 max-h-24 overflow-y-auto"
+      ></textarea>
+      <button
+        (click)="send()"
+        [disabled]="!input.trim() || !conv"
+        class="flex-shrink-0 w-9 h-9 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all shadow-sm">
+        <svg class="w-4 h-4 rotate-90" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+        </svg>
+      </button>
+    </div>
+    <p class="text-[9px] text-gray-400 mt-1 text-center">Enter para enviar · Shift+Enter nueva línea</p>
+  </div>
+
+</div>

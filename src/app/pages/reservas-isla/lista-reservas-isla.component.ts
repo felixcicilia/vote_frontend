@@ -1,23 +1,36 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { IslandTripsService } from '../buscar/services/island-trips.service';
 import { IslandBooking, IslandBookingStatus } from '../buscar/models/island-trip.model';
 import { AuthService } from '../auth-pages/services/auth.service';
+import { ReservationChatComponent } from '../../shared/components/reservation-chat/reservation-chat.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-lista-reservas-isla',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, ReservationChatComponent],
   templateUrl: './lista-reservas-isla.component.html',
 })
 export class ListaReservasIslaComponent implements OnInit {
   private readonly service  = inject(IslandTripsService);
   private readonly auth     = inject(AuthService);
+  private readonly router   = inject(Router);
+  private readonly http     = inject(HttpClient);
 
   get isProveedor(): boolean { return this.auth.role() === 'PROVEEDOR'; }
-  get pageTitle(): string { return this.isProveedor ? 'Mis reservas de excursión' : 'Reservas de isla'; }
-  get pageSubtitle(): string { return this.isProveedor ? 'Reservas recibidas para tus embarcaciones.' : 'Gestiona las reservas de viajes a islas y cayos.'; }
+  get isMaster(): boolean { const r = this.auth.role(); return r === 'MASTER' || r === 'ADMINISTRADOR'; }
+  get pageTitle(): string {
+    if (this.isMaster) return 'Excursiones a isla';
+    return this.isProveedor ? 'Mis reservas de excursión' : 'Reservas de isla';
+  }
+  get pageSubtitle(): string {
+    if (this.isMaster) return 'Seguimiento de todos los viajes a isla y cayos.';
+    return this.isProveedor ? 'Reservas recibidas para tus embarcaciones.' : 'Gestiona las reservas de viajes a islas y cayos.';
+  }
 
   loading = true;
   bookings: IslandBooking[] = [];
@@ -25,6 +38,10 @@ export class ListaReservasIslaComponent implements OnInit {
   search = '';
   page = 1;
   readonly limit = 10;
+
+  // Chat
+  chatOpenId: number | null = null;
+  unreadCounts: Record<number, number> = {};
 
   get filtered(): IslandBooking[] {
     const term = this.search.trim().toLowerCase();
@@ -54,9 +71,13 @@ export class ListaReservasIslaComponent implements OnInit {
 
   ngOnInit(): void {
     const user = this.auth.user();
-    const params = this.isProveedor && user?.id ? { providerId: user.id } : {};
+    const params = (!this.isMaster && this.isProveedor && user?.id) ? { providerId: user.id } : {};
     this.service.getBookings(params).subscribe({
-      next: (b) => { this.bookings = b; this.loading = false; },
+      next: (b) => {
+        this.bookings = b;
+        this.loading = false;
+        this.loadUnreadCounts(b.map(x => x.id));
+      },
       error: () => { this.loading = false; },
     });
   }
@@ -88,6 +109,10 @@ export class ListaReservasIslaComponent implements OnInit {
     });
   }
 
+  verDetalle(b: IslandBooking): void {
+    this.router.navigate(['/reservas-isla', b.id]);
+  }
+
   count(status: IslandBookingStatus | 'ALL'): number {
     if (status === 'ALL') return this.bookings.length;
     return this.bookings.filter(b => b.status === status).length;
@@ -110,5 +135,37 @@ export class ListaReservasIslaComponent implements OnInit {
       CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400',
     };
     return map[s] ?? 'bg-gray-100 text-gray-600';
+  }
+
+  // ── Chat ──────────────────────────────────────────────────────────────────
+  openChat(b: IslandBooking, event: Event): void {
+    event.stopPropagation();
+    this.chatOpenId = b.id;
+  }
+
+  closeChat(): void { this.chatOpenId = null; }
+
+  chatTitle(b: IslandBooking): string {
+    return b.client ? `${b.client.firstName} ${b.client.lastName}` : `Excursión #${b.id}`;
+  }
+
+  get currentUserId(): number { return this.auth.user()?.id ?? 0; }
+
+  clientUserIdFor(b: IslandBooking): number { return b.client?.id ?? 0; }
+
+  providerUserIdFor(b: IslandBooking): number {
+    return (b as any).vessel?.providerProfile?.userId ?? (b as any).providerId ?? 0;
+  }
+
+  onUnreadChange(bookingId: number, count: number): void {
+    this.unreadCounts = { ...this.unreadCounts, [bookingId]: count };
+  }
+
+  private loadUnreadCounts(ids: number[]): void {
+    if (!ids.length) return;
+    if (!this.auth.user()?.id) return;
+    this.http.get<Record<number, number>>(
+      `${environment.apiUrl}/chat/booking-unread?ids=${ids.join(',')}&type=ISLAND`,
+    ).subscribe({ next: (counts) => { this.unreadCounts = counts; } });
   }
 }

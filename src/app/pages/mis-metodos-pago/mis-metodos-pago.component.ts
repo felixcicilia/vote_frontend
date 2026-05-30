@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 import { AuthService } from '../auth-pages/services/auth.service';
 import { TasaService } from '../../shared/services/tasa.service';
@@ -92,6 +93,7 @@ export const MARITIMO_ACCOUNTS = [
 export class MisMetodosPagoComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly accountsService = inject(PaymentAccountsService);
   readonly tasaService  = inject(TasaService);
 
@@ -351,11 +353,16 @@ export class MisMetodosPagoComponent implements OnInit {
     if (this.proofUrl)   dto.proofImageUrl  = this.proofUrl;
 
     this.http.post<any>(`${environment.apiUrl}/payments`, dto).subscribe({
-      next: () => {
+      next: (res) => {
         this.submitting = false;
-        this.reportSent.set(true);
         this.showModal.set(false);
-        this.loadSaldo();       // refresca saldo por si ya estaba verificado
+        this.loadSaldo();
+        const pagoId = res?.data?.id ?? res?.id;
+        if (pagoId) {
+          this.router.navigate(['/pagos', pagoId]);
+        } else {
+          this.reportSent.set(true);
+        }
       },
       error: (err) => {
         const msg = err?.error?.message;

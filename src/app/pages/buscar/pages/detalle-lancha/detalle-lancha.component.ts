@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import { IslandTripsService } from '../../services/island-trips.service';
 import { EmbarcacionesService } from '../../../embarcaciones/services/embarcaciones.service';
@@ -12,6 +13,14 @@ import { PuertoSalida, VesselSlot } from '../../models/island-trip.model';
 import { AMENITIES } from '../../../alquileres/data/amenities';
 import { environment } from '../../../../../environments/environment';
 
+interface SlotAvailability {
+  slotId: number;
+  tripDate: string;
+  maxPassengers: number;
+  booked: number;
+  available: number;
+}
+
 @Component({
   selector: 'app-detalle-lancha',
   standalone: true,
@@ -21,6 +30,7 @@ import { environment } from '../../../../../environments/environment';
 export class DetalleLanchaComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
   private readonly router       = inject(Router);
+  private readonly http         = inject(HttpClient);
   private readonly tripsService = inject(IslandTripsService);
   private readonly embService   = inject(EmbarcacionesService);
   readonly authService = inject(AuthService);
@@ -41,6 +51,9 @@ export class DetalleLanchaComponent implements OnInit {
   salidaId: number | null  = null;
   fecha = '';
   passengers = 2;
+
+  // Disponibilidad por slotId
+  availability: Map<number, SlotAvailability> = new Map();
 
   get tripType(): 'IDA' | 'IDA_VUELTA' {
     return this.selectedRegreso ? 'IDA_VUELTA' : 'IDA';
@@ -70,9 +83,32 @@ export class DetalleLanchaComponent implements OnInit {
   }
 
   get maxPassengers(): number {
-    const cap = this.vessel?.capacity ?? 999;
-    const slotMax = this.selectedIda?.maxPassengers ?? cap;
-    return Math.min(cap, slotMax);
+    if (!this.selectedIda) return this.vessel?.capacity ?? 99;
+    const avail = this.availability.get(this.selectedIda.id);
+    if (avail) return avail.available;
+    const cap = this.vessel?.capacity ?? 99;
+    return Math.min(cap, this.selectedIda.maxPassengers ?? cap);
+  }
+
+  slotAvailable(slot: VesselSlot): number {
+    const avail = this.availability.get(slot.id);
+    if (avail) return avail.available;
+    const cap = this.vessel?.capacity ?? 99;
+    return slot.maxPassengers ?? cap;
+  }
+
+  slotIsFull(slot: VesselSlot): boolean {
+    return this.slotAvailable(slot) <= 0;
+  }
+
+  private loadAvailability(): void {
+    if (!this.fecha) return;
+    const allSlots = [...this.idaSlots, ...this.regresoSlots];
+    allSlots.forEach(slot => {
+      this.http.get<SlotAvailability>(
+        `${environment.apiUrl}/island-bookings/availability?slotId=${slot.id}&date=${this.fecha}`
+      ).subscribe({ next: (a) => { this.availability = new Map(this.availability).set(slot.id, a); } });
+    });
   }
 
   private nowHHMM(): string {
@@ -106,8 +142,9 @@ export class DetalleLanchaComponent implements OnInit {
   }
 
   get canBook(): boolean {
-    if (!this.selectedIda) return false;
-    if (!this.fecha) return false;
+    if (!this.selectedIda || !this.fecha) return false;
+    if (this.slotIsFull(this.selectedIda)) return false;
+    if (this.passengers > this.maxPassengers) return false;
     return true;
   }
 
@@ -135,8 +172,16 @@ export class DetalleLanchaComponent implements OnInit {
       next: (slots) => {
         this.idaSlots     = slots.filter(s => s.direction === 'IDA').sort((a, b) => a.departureTime.localeCompare(b.departureTime));
         this.regresoSlots = slots.filter(s => s.direction === 'REGRESO').sort((a, b) => a.departureTime.localeCompare(b.departureTime));
+        this.loadAvailability();
       },
     });
+  }
+
+  onFechaChange(): void {
+    this.availability = new Map();
+    this.selectedIda = null;
+    this.selectedRegreso = null;
+    this.loadAvailability();
   }
 
   selectIda(slot: VesselSlot): void {

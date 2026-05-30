@@ -107,14 +107,18 @@
           <h2 class="mb-1 font-semibold text-gray-800 dark:text-white/90">→ Salidas disponibles</h2>
           <p class="mb-4 text-xs text-gray-400">Selecciona el horario de ida que prefieras</p>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <button *ngFor="let s of visibleIdaSlots" type="button" (click)="selectIda(s)"
+            <button *ngFor="let s of visibleIdaSlots" type="button"
+              (click)="!slotIsFull(s) && selectIda(s)"
+              [disabled]="slotIsFull(s)"
               class="flex items-center justify-between rounded-2xl border-2 p-4 text-left transition-all"
               [class.border-brand-500]="selectedIda?.id === s.id"
               [class.bg-brand-50]="selectedIda?.id === s.id"
               [class.dark:bg-brand-500/10]="selectedIda?.id === s.id"
-              [class.border-gray-200]="selectedIda?.id !== s.id"
-              [class.hover:border-brand-300]="selectedIda?.id !== s.id"
-              [class.dark:border-gray-700]="selectedIda?.id !== s.id">
+              [class.border-gray-200]="selectedIda?.id !== s.id && !slotIsFull(s)"
+              [class.hover:border-brand-300]="selectedIda?.id !== s.id && !slotIsFull(s)"
+              [class.dark:border-gray-700]="selectedIda?.id !== s.id"
+              [class.opacity-50]="slotIsFull(s)"
+              [class.cursor-not-allowed]="slotIsFull(s)">
               <div>
                 <p class="text-base font-extrabold text-gray-800 dark:text-white">{{ s.departureTime }}</p>
                 <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
@@ -122,12 +126,21 @@
                   → {{ s.arrivalPoint.icon ?? '⚓' }} {{ s.arrivalPoint.name }}
                 </p>
                 <p *ngIf="s.durationMinutes" class="mt-0.5 text-[10px] text-gray-400">⏱ {{ s.durationMinutes }} min</p>
-                <p class="mt-0.5 text-[10px] text-gray-400">👥 {{ s.maxPassengers ?? vessel!.capacity }} cupos disponibles</p>
+                <!-- Cupos disponibles reales -->
+                <p class="mt-0.5 text-[10px] font-semibold"
+                   [class.text-green-600]="slotAvailable(s) > 5"
+                   [class.text-amber-500]="slotAvailable(s) > 0 && slotAvailable(s) <= 5"
+                   [class.text-red-500]="slotIsFull(s)">
+                  👥 {{ slotIsFull(s) ? 'Agotado' : slotAvailable(s) + ' cupo' + (slotAvailable(s) !== 1 ? 's' : '') + ' disponible' + (slotAvailable(s) !== 1 ? 's' : '') }}
+                </p>
               </div>
               <div class="text-right ml-4 flex-shrink-0">
-                <p class="text-lg font-extrabold text-brand-600 dark:text-brand-400">${{ s.pricePerPerson | number:'1.2-2' }}</p>
-                <p class="text-[10px] text-gray-400">/ persona</p>
-                <div *ngIf="selectedIda?.id === s.id" class="mt-1 text-brand-500 text-lg">✓</div>
+                <span *ngIf="slotIsFull(s)" class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-600">LLENO</span>
+                <ng-container *ngIf="!slotIsFull(s)">
+                  <p class="text-lg font-extrabold text-brand-600 dark:text-brand-400">${{ s.pricePerPerson | number:'1.2-2' }}</p>
+                  <p class="text-[10px] text-gray-400">/ persona</p>
+                  <div *ngIf="selectedIda?.id === s.id" class="mt-1 text-brand-500 text-lg">✓</div>
+                </ng-container>
               </div>
             </button>
           </div>
@@ -138,14 +151,18 @@
           <h2 class="mb-1 font-semibold text-gray-800 dark:text-white/90">← Regresos disponibles</h2>
           <p class="mb-4 text-xs text-gray-400">Selecciona el horario de regreso</p>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <button *ngFor="let s of visibleRegresoSlots" type="button" (click)="selectRegreso(s)"
+            <button *ngFor="let s of visibleRegresoSlots" type="button"
+              (click)="!slotIsFull(s) && selectRegreso(s)"
+              [disabled]="slotIsFull(s)"
               class="flex items-center justify-between rounded-2xl border-2 p-4 text-left transition-all"
               [class.border-emerald-500]="selectedRegreso?.id === s.id"
               [class.bg-emerald-50]="selectedRegreso?.id === s.id"
               [class.dark:bg-emerald-500/10]="selectedRegreso?.id === s.id"
-              [class.border-gray-200]="selectedRegreso?.id !== s.id"
-              [class.hover:border-emerald-300]="selectedRegreso?.id !== s.id"
-              [class.dark:border-gray-700]="selectedRegreso?.id !== s.id">
+              [class.border-gray-200]="selectedRegreso?.id !== s.id && !slotIsFull(s)"
+              [class.hover:border-emerald-300]="selectedRegreso?.id !== s.id && !slotIsFull(s)"
+              [class.dark:border-gray-700]="selectedRegreso?.id !== s.id"
+              [class.opacity-50]="slotIsFull(s)"
+              [class.cursor-not-allowed]="slotIsFull(s)">
               <div>
                 <p class="text-base font-extrabold text-gray-800 dark:text-white">{{ s.departureTime }}</p>
                 <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
@@ -153,12 +170,20 @@
                   → {{ s.arrivalPoint.icon ?? '⚓' }} {{ s.arrivalPoint.name }}
                 </p>
                 <p *ngIf="s.durationMinutes" class="mt-0.5 text-[10px] text-gray-400">⏱ {{ s.durationMinutes }} min</p>
-                <p class="mt-0.5 text-[10px] text-gray-400">👥 {{ s.maxPassengers ?? vessel!.capacity }} cupos disponibles</p>
+                <p class="mt-0.5 text-[10px] font-semibold"
+                   [class.text-green-600]="slotAvailable(s) > 5"
+                   [class.text-amber-500]="slotAvailable(s) > 0 && slotAvailable(s) <= 5"
+                   [class.text-red-500]="slotIsFull(s)">
+                  👥 {{ slotIsFull(s) ? 'Agotado' : slotAvailable(s) + ' cupo' + (slotAvailable(s) !== 1 ? 's' : '') + ' disponible' + (slotAvailable(s) !== 1 ? 's' : '') }}
+                </p>
               </div>
               <div class="text-right ml-4 flex-shrink-0">
-                <p class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">${{ s.pricePerPerson | number:'1.2-2' }}</p>
-                <p class="text-[10px] text-gray-400">/ persona</p>
-                <div *ngIf="selectedRegreso?.id === s.id" class="mt-1 text-emerald-500 text-lg">✓</div>
+                <span *ngIf="slotIsFull(s)" class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-600">LLENO</span>
+                <ng-container *ngIf="!slotIsFull(s)">
+                  <p class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">${{ s.pricePerPerson | number:'1.2-2' }}</p>
+                  <p class="text-[10px] text-gray-400">/ persona</p>
+                  <div *ngIf="selectedRegreso?.id === s.id" class="mt-1 text-emerald-500 text-lg">✓</div>
+                </ng-container>
               </div>
             </button>
           </div>
@@ -202,7 +227,7 @@
             <!-- Fecha -->
             <div>
               <label class="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">📅 Fecha del viaje</label>
-              <input type="date" [(ngModel)]="fecha" [min]="today"
+              <input type="date" [(ngModel)]="fecha" [min]="today" (ngModelChange)="onFechaChange()"
                 class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
             </div>
 

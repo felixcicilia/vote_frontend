@@ -28,7 +28,7 @@ export class AlquileresService {
   }
 
   getByClient(clientId: number): Observable<Alquiler[]> {
-    return this.http.get<any>(`${this.base}/client/${clientId}`).pipe(map(r => this.extractArray(r)));
+    return this.http.get<any>(this.base, { params: { clientId } }).pipe(map(r => this.extractArray(r)));
   }
 
   getByProvider(providerId: number): Observable<Alquiler[]> {
@@ -45,5 +45,13 @@ export class AlquileresService {
 
   changeStatus(id: number, dto: ChangeStatusAlquilerDto): Observable<Alquiler> {
     return this.http.patch<any>(`${this.base}/${id}`, dto).pipe(map(r => this.extractItem(r)));
+  }
+
+  assignCaptain(id: number, captainId: number): Observable<Alquiler> {
+    return this.http.patch<any>(`${this.base}/${id}`, { captainId }).pipe(map(r => this.extractItem(r)));
+  }
+
+  assignCaptainProfile(id: number, captainProfileId: number): Observable<Alquiler> {
+    return this.http.patch<any>(`${this.base}/${id}`, { captainProfileId }).pipe(map(r => this.extractItem(r)));
   }
 }

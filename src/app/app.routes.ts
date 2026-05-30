@@ -81,15 +81,8 @@ export const routes: Routes = [
         title: "Detalle lancha | MARITIMO",
       },
 
-      // ── Mi Negocio (proveedor) ────────────────────────────────────────────────
-      {
-        path: "mi-negocio",
-        loadComponent: () =>
-          import("./pages/mi-negocio/mi-negocio.component").then(
-            (m) => m.MiNegocioComponent,
-          ),
-        title: "Mi Negocio | MARITIMO",
-      },
+      // ── Mi Negocio → redirige a Estadísticas ─────────────────────────────────
+      { path: "mi-negocio", redirectTo: "mi-charter/estadisticas", pathMatch: "full" },
 
       // Dashboard (legacy / admin)
       {
@@ -154,6 +147,14 @@ export const routes: Routes = [
           ),
         title: "Pagar Reserva | MARITIMO",
       },
+      {
+        path: "pagar-charter",
+        loadComponent: () =>
+          import("./pages/alquileres/pages/pagar-charter/pagar-charter.component").then(
+            (m) => m.PagarCharterComponent,
+          ),
+        title: "Pagar Charter | MARITIMO",
+      },
 
       // Perfil
       {
@@ -162,12 +163,8 @@ export const routes: Routes = [
         title: "Perfil | MARITIMO",
       },
 
-      // ── Dashboard cliente ─────────────────────────────────────────────────────
-      {
-        path: "mi-dashboard",
-        component: MiDashboardComponent,
-        title: "Mi Dashboard | MARITIMO",
-      },
+      // ── Dashboard cliente (redirect → inicio) ────────────────────────────────
+      { path: "mi-dashboard", redirectTo: "inicio", pathMatch: "full" },
 
       // ── Métodos de pago (cliente) ─────────────────────────────────────────────
       {
@@ -210,14 +207,7 @@ export const routes: Routes = [
         title: "Embarcaciones | MARITIMO",
       },
 
-      {
-        path: "embarcaciones/verificar",
-        loadComponent: () =>
-          import("./pages/embarcaciones/pages/verificar-embarcaciones/verificar-embarcaciones.component").then(
-            (m) => m.VerificarEmbarcacionesComponent,
-          ),
-        title: "Verificar embarcaciones | MARITIMO",
-      },
+      { path: "embarcaciones/verificar", redirectTo: "/embarcaciones", pathMatch: "full" },
       {
         path: "embarcaciones/editar/:id",
         loadComponent: () =>
@@ -423,6 +413,30 @@ export const routes: Routes = [
           ),
         title: "Mi itinerario | MARITIMO",
       },
+      {
+        path: "mi-charter/calendario",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/calendario/calendario.component").then(
+            (m) => m.CalendarioComponent,
+          ),
+        title: "Calendario | MARITIMO",
+      },
+      {
+        path: "mis-capitanes",
+        loadComponent: () =>
+          import("./pages/mis-capitanes/mis-capitanes.component").then(
+            (m) => m.MisCapitanesComponent,
+          ),
+        title: "Mis capitanes | MARITIMO",
+      },
+      {
+        path: "mi-charter/estadisticas",
+        loadComponent: () =>
+          import("./pages/mi-charter/pages/estadisticas/estadisticas.component").then(
+            (m) => m.EstadisticasComponent,
+          ),
+        title: "Estadísticas | MARITIMO",
+      },
 
       // ── Viajes Taxi ───────────────────────────────────────────────────────────
       {
@@ -565,6 +579,14 @@ export const routes: Routes = [
             (m) => m.ListaReservasIslaComponent,
           ),
         title: "Reservas de isla | MARITIMO",
+      },
+      {
+        path: "reservas-isla/:id",
+        loadComponent: () =>
+          import("./pages/reservas-isla/detalle-reserva-isla/detalle-reserva-isla.component").then(
+            (m) => m.DetalleReservaIslaComponent,
+          ),
+        title: "Detalle de excursión | MARITIMO",
       },
     ],
   },

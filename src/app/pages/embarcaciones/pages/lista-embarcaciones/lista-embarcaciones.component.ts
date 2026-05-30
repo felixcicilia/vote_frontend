@@ -5,6 +5,9 @@ import { RouterModule } from '@angular/router';
 
 import { Embarcacion, VesselType, VesselStatus, VesselVerificationStatus } from '../../models/embarcacion.model';
 import { EmbarcacionesService } from '../../services/embarcaciones.service';
+import { environment } from '../../../../../environments/environment';
+
+type Tab = 'TODAS' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 @Component({
   selector: 'app-lista-embarcaciones',
@@ -16,134 +19,79 @@ export class ListaEmbarcacionesComponent implements OnInit {
   private readonly service = inject(EmbarcacionesService);
 
   loading = false;
-  errorMessage = '';
-
   embarcaciones: Embarcacion[] = [];
-  filtradas: Embarcacion[] = [];
-  paginadas: Embarcacion[] = [];
-
   search = '';
   filtroTipo: VesselType | '' = '';
-  filtroEstado: VesselStatus | '' = '';
-  filtroVerificacion: VesselVerificationStatus | '' = '';
+  tab: Tab = 'TODAS';
 
   page = 1;
-  limit = 10;
-  total = 0;
-  totalPages = 0;
+  readonly limit = 12;
 
-  ngOnInit(): void {
-    this.cargar();
-  }
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     this.loading = true;
-    this.errorMessage = '';
-
     this.service.getAll().subscribe({
-      next: (data) => {
-        this.embarcaciones = data ?? [];
-        this.aplicarFiltros();
-        this.loading = false;
-      },
-      error: () => {
-        this.errorMessage = 'No se pudo cargar la lista de embarcaciones.';
-        this.loading = false;
-      },
+      next: (d) => { this.embarcaciones = d ?? []; this.loading = false; },
+      error: () => { this.loading = false; },
     });
   }
 
-  aplicarFiltros(): void {
-    const term = this.search.trim().toLowerCase();
-
-    this.filtradas = this.embarcaciones.filter((e) => {
-      const busqueda =
-        e.name.toLowerCase().includes(term) ||
-        (e.licensePlate ?? '').toLowerCase().includes(term) ||
-        (e.description ?? '').toLowerCase().includes(term);
-      const tipo = !this.filtroTipo || e.type === this.filtroTipo;
-      const estado = !this.filtroEstado || e.status === this.filtroEstado;
-      const verificacion = !this.filtroVerificacion || e.verificationStatus === this.filtroVerificacion;
-      return busqueda && tipo && estado && verificacion;
-    });
-
-    this.total = this.filtradas.length;
-    this.totalPages = Math.max(1, Math.ceil(this.total / this.limit));
-    if (this.page > this.totalPages) this.page = this.totalPages;
-    if (this.page < 1) this.page = 1;
-    this.actualizarPaginacion();
-  }
-
-  actualizarPaginacion(): void {
-    const start = (this.page - 1) * this.limit;
-    this.paginadas = this.filtradas.slice(start, start + this.limit);
-  }
-
-  onSearchChange(): void { this.page = 1; this.aplicarFiltros(); }
-  onFilterChange(): void { this.page = 1; this.aplicarFiltros(); }
-
-  cambiarPagina(p: number): void {
-    if (p < 1 || p > this.totalPages) return;
-    this.page = p;
-    this.actualizarPaginacion();
-  }
-
-  limpiar(): void {
-    this.search = '';
-    this.filtroTipo = '';
-    this.filtroEstado = '';
-    this.filtroVerificacion = '';
-    this.page = 1;
-    this.aplicarFiltros();
-  }
-
-  eliminar(e: Embarcacion): void {
-    if (!confirm(`¿Eliminar "${e.name}"?`)) return;
-    this.service.delete(e.id).subscribe({
-      next: () => {
-        this.embarcaciones = this.embarcaciones.filter((x) => x.id !== e.id);
-        this.aplicarFiltros();
-      },
-      error: () => alert('No se pudo eliminar la embarcación.'),
+  get filtered(): Embarcacion[] {
+    const q = this.search.trim().toLowerCase();
+    return this.embarcaciones.filter(e => {
+      const matchTab = this.tab === 'TODAS' || e.verificationStatus === this.tab;
+      const matchTipo = !this.filtroTipo || e.type === this.filtroTipo;
+      const matchQ = !q || e.name.toLowerCase().includes(q) ||
+        (e.licensePlate ?? '').toLowerCase().includes(q) ||
+        (e.provider?.companyName ?? '').toLowerCase().includes(q);
+      return matchTab && matchTipo && matchQ;
     });
   }
 
-  tipoLabel(t: VesselType): string {
-    const map: Record<VesselType, string> = {
-      LANCHA: 'Lancha', YATE: 'Yate', CATAMARAN: 'Catamarán', BOTE: 'Bote',
-    };
-    return map[t] ?? t;
+  get paginated(): Embarcacion[] {
+    return this.filtered.slice((this.page - 1) * this.limit, this.page * this.limit);
   }
 
-  estadoClase(s: VesselStatus): string {
-    return s === 'ACTIVE'
-      ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-      : s === 'MAINTENANCE'
-      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400'
-      : 'bg-gray-100 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400';
+  get totalPages(): number { return Math.max(1, Math.ceil(this.filtered.length / this.limit)); }
+
+  count(v: Tab): number {
+    if (v === 'TODAS') return this.embarcaciones.length;
+    return this.embarcaciones.filter(e => e.verificationStatus === v).length;
   }
 
-  estadoLabel(s: VesselStatus): string {
-    return s === 'ACTIVE' ? 'Activa' : s === 'MAINTENANCE' ? 'Mantenimiento' : 'Inactiva';
+  setTab(t: Tab): void { this.tab = t; this.page = 1; }
+
+  // Helpers
+  imageUrl(p: string): string {
+    return p?.startsWith('http') ? p : `${environment.apiUrl.replace('/api', '')}${p}`;
   }
 
-  verificacionClase(s: VesselVerificationStatus): string {
-    return s === 'APPROVED'
-      ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-      : s === 'REJECTED'
-      ? 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
-      : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400';
+  typeIcon(t: VesselType): string {
+    return { LANCHA: '🚤', YATE: '⛵', CATAMARAN: '🪸', BOTE: '🛶' }[t] ?? '🚢';
   }
 
-  verificacionLabel(s: VesselVerificationStatus): string {
-    return s === 'APPROVED' ? '✓ Aprobada' : s === 'REJECTED' ? '✗ Rechazada' : '⏳ Pendiente';
+  statusClass(s: VesselStatus): string {
+    return {
+      ACTIVE: 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+      MAINTENANCE: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+      INACTIVE: 'bg-gray-100 text-gray-500 dark:bg-gray-500/10 dark:text-gray-400',
+    }[s] ?? '';
   }
 
-  get hayFiltros(): boolean {
-    return !!(this.search || this.filtroTipo || this.filtroEstado || this.filtroVerificacion);
+  statusLabel(s: VesselStatus): string {
+    return { ACTIVE: 'Activa', MAINTENANCE: 'Mantenimiento', INACTIVE: 'Inactiva' }[s] ?? s;
   }
 
-  get rangoInicio(): number { return this.total === 0 ? 0 : (this.page - 1) * this.limit + 1; }
-  get rangoFin(): number { return Math.min(this.page * this.limit, this.total); }
-  trackById(_: number, e: Embarcacion): number { return e.id; }
+  verifClass(s: VesselVerificationStatus): string {
+    return {
+      APPROVED: 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+      REJECTED: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+      PENDING:  'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+    }[s] ?? '';
+  }
+
+  verifLabel(s: VesselVerificationStatus): string {
+    return { APPROVED: '✓ Aprobada', REJECTED: '✗ Rechazada', PENDING: '⏳ Pendiente' }[s] ?? s;
+  }
 }

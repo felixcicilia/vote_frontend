@@ -4,19 +4,59 @@
   <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">🎫 Mis Reservas</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Historial completo de tus viajes y excursiones.</p>
+        <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">Mis Reservas</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Excursiones a isla y charters privados.</p>
       </div>
       <div class="flex gap-2">
         <button (click)="reload()"
-          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-300">
-          ↻ Actualizar
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-300">
+          <i class="fas fa-rotate-right text-xs"></i> Actualizar
         </button>
         <a routerLink="/buscar"
-          class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
-          + Nueva reserva
+          class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 transition">
+          <i class="fas fa-plus text-xs"></i> Nueva reserva
         </a>
       </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div *ngIf="!loading" class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Excursiones</p>
+      <p class="mt-1 text-2xl font-extrabold text-teal-600 dark:text-teal-400">{{ totalIsland }}</p>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Charters</p>
+      <p class="mt-1 text-2xl font-extrabold text-purple-600 dark:text-purple-400">{{ totalCharter }}</p>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Pendientes de pago</p>
+      <p class="mt-1 text-2xl font-extrabold text-amber-500">{{ pendingCount }}</p>
+    </div>
+    <!-- En curso -->
+    <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 shadow-sm dark:border-cyan-500/20 dark:bg-cyan-500/[0.07]">
+      <div class="flex items-center gap-1.5">
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-500 opacity-60"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-cyan-500"></span>
+        </span>
+        <p class="text-xs text-cyan-600 dark:text-cyan-400 font-medium">En curso</p>
+      </div>
+      <p class="mt-1 text-2xl font-extrabold text-cyan-700 dark:text-cyan-400">{{ activeCount }}</p>
+    </div>
+    <!-- Completados -->
+    <div class="rounded-2xl border border-green-200 bg-green-50 p-4 shadow-sm dark:border-green-500/20 dark:bg-green-500/[0.07]">
+      <div class="flex items-center gap-1.5">
+        <i class="fas fa-circle-check text-green-500 text-xs"></i>
+        <p class="text-xs text-green-600 dark:text-green-400 font-medium">Completados</p>
+      </div>
+      <p class="mt-1 text-2xl font-extrabold text-green-700 dark:text-green-400">{{ completedCount }}</p>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Total gastado</p>
+      <p class="mt-1 text-lg font-extrabold text-brand-600 dark:text-brand-400">{{ tasaService.formatBs(gastadoTotal) }}</p>
+      <p class="text-[10px] text-gray-400">${{ gastadoTotal | number:'1.2-2' }} USD</p>
     </div>
   </div>
 
@@ -24,28 +64,28 @@
   <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex flex-wrap gap-3">
       <div class="relative min-w-[200px] flex-1">
-        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">🔍</span>
+        <i class="fas fa-search pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 text-xs" style="top:50%;transform:translateY(-50%)"></i>
         <input type="text" [(ngModel)]="search" (ngModelChange)="applyFilter()"
-          placeholder="Ruta, embarcación..."
+          placeholder="Destino, embarcación..."
           class="h-10 w-full rounded-lg border border-gray-300 bg-transparent pl-9 pr-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
       </div>
       <select [(ngModel)]="filtroTipo" (ngModelChange)="applyFilter()"
         class="h-10 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
         <option value="">Todos los tipos</option>
-        <option value="TICKET">🚢 Ruta de ferry</option>
         <option value="ISLAND">🏝️ Excursión a isla</option>
+        <option value="CHARTER">⚓ Charter privado</option>
       </select>
       <select [(ngModel)]="filtroEstado" (ngModelChange)="applyFilter()"
         class="h-10 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90">
         <option value="">Todos los estados</option>
         <option value="PENDING">⏳ Pendiente</option>
         <option value="CONFIRMED">✓ Confirmado</option>
-        <option value="USED">✈️ Realizado</option>
+        <option value="ACTIVE">🚢 En curso</option>
         <option value="COMPLETED">✔ Completado</option>
         <option value="CANCELLED">✗ Cancelado</option>
       </select>
       <button *ngIf="hayFiltros" (click)="limpiar()"
-        class="h-10 rounded-lg border border-gray-300 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+        class="h-10 rounded-lg border border-gray-300 px-4 text-sm text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
         Limpiar
       </button>
     </div>
@@ -61,99 +101,116 @@
   <div *ngIf="!loading" class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-800">
       <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lista de reservas</h3>
-      <span class="text-xs text-gray-400">{{ rangoInicio }}-{{ rangoFin }} de {{ total }}</span>
+      <span class="text-xs text-gray-400">{{ rangoInicio }}–{{ rangoFin }} de {{ total }}</span>
     </div>
 
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="border-b border-gray-100 dark:border-gray-800">
           <tr>
-            <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">#</th>
             <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Tipo</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Ruta</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Destino / Ruta</th>
             <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Embarcación</th>
             <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Fecha</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Pax</th>
-            <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-400">Total</th>
             <th class="px-5 py-3 text-center text-xs font-semibold uppercase text-gray-400">Estado</th>
+            <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-400">Total</th>
             <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-400">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+
           <tr *ngFor="let r of paginados; trackBy: trackById"
-            class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]"
+            class="group hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors"
             [class.border-l-2]="r.status === 'PENDING'"
             [class.border-l-amber-400]="r.status === 'PENDING'">
 
-            <td class="px-5 py-3.5 text-xs text-gray-400">#{{ r.id }}</td>
-
-            <td class="px-5 py-3.5">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
-                [class.bg-blue-100]="r.type === 'TICKET'"
-                [class.text-blue-700]="r.type === 'TICKET'"
-                [class.dark:bg-blue-500\/10]="r.type === 'TICKET'"
-                [class.dark:text-blue-400]="r.type === 'TICKET'"
-                [class.bg-teal-100]="r.type === 'ISLAND'"
-                [class.text-teal-700]="r.type === 'ISLAND'"
-                [class.dark:bg-teal-500\/10]="r.type === 'ISLAND'"
-                [class.dark:text-teal-400]="r.type === 'ISLAND'">
-                {{ r.type === 'TICKET' ? '🚢 Ferry' : '🏝️ Isla' }}
+            <!-- Tipo -->
+            <td class="px-5 py-4">
+              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="typeClase(r.type)">
+                {{ typeLabel(r.type) }}
               </span>
             </td>
 
-            <td class="px-5 py-3.5">
-              <p class="font-medium text-gray-800 dark:text-white/90">{{ r.origen }} → {{ r.destino }}</p>
+            <!-- Destino -->
+            <td class="px-5 py-4">
+              <p class="font-medium text-gray-800 dark:text-white/90 truncate max-w-[180px]">
+                <ng-container *ngIf="r.origen">{{ r.origen }} → </ng-container>{{ r.destino }}
+              </p>
               <p *ngIf="r.extra" class="text-xs text-gray-400 mt-0.5">{{ r.extra }}</p>
             </td>
 
-            <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400">{{ r.embarcacion }}</td>
-
-            <td class="px-5 py-3.5 text-xs text-gray-500 dark:text-gray-400">
-              <div>{{ r.fecha | date:'dd/MM/yyyy' }}</div>
-              <div class="text-gray-400">{{ r.hora }}</div>
+            <!-- Embarcación -->
+            <td class="px-5 py-4 text-gray-600 dark:text-gray-400">
+              <p class="truncate max-w-[140px]">{{ r.embarcacion }}</p>
+              <p class="text-xs text-gray-400">👥 {{ r.pasajeros }} pax</p>
             </td>
 
-            <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400">{{ r.pasajeros }}</td>
-
-            <td class="px-5 py-3.5 font-semibold text-gray-800 dark:text-white/90">
-              ${{ r.total | number:'1.2-2' }}
+            <!-- Fecha -->
+            <td class="px-5 py-4 text-sm">
+              <p class="text-gray-700 dark:text-gray-300">{{ r.fecha | date:'dd MMM yyyy':'':'es' }}</p>
+              <p *ngIf="r.hora" class="text-xs text-gray-400">🕐 {{ r.hora }}</p>
             </td>
 
-            <td class="px-5 py-3.5 text-center">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClase(r.status)">
+            <!-- Estado -->
+            <td class="px-5 py-4 text-center">
+              <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClase(r.status)">
+                <span *ngIf="r.status === 'ACTIVE'" class="relative flex h-1.5 w-1.5">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75"></span>
+                  <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-current"></span>
+                </span>
                 {{ statusLabel(r.status) }}
               </span>
             </td>
 
-            <td class="px-5 py-3.5 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <a *ngIf="r.type === 'TICKET'" [routerLink]="['/tickets', r.id]"
-                  class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 transition">
-                  Ver →
-                </a>
-                <a *ngIf="r.type === 'ISLAND'" [routerLink]="['/mis-reservas', r.id]"
-                  class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 transition">
-                  Ver →
-                </a>
+            <!-- Total -->
+            <td class="px-5 py-4 text-right">
+              <p class="font-bold text-brand-600 dark:text-brand-400">{{ tasaService.formatBs(r.total) }}</p>
+              <p class="text-xs text-gray-400">${{ r.total | number:'1.2-2' }}</p>
+            </td>
+
+            <!-- Acciones -->
+            <td class="px-5 py-4" (click)="$event.stopPropagation()">
+              <div class="flex items-center justify-end gap-1.5">
+
+                <!-- Pagar (solo PENDING island) -->
                 <a *ngIf="r.type === 'ISLAND' && r.status === 'PENDING'"
                   [routerLink]="['/pagar-reserva']" [queryParams]="{ bookingId: r.id }"
-                  class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 transition">
-                  💳 Pagar
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 transition">
+                  <i class="fas fa-credit-card text-[10px]"></i> Pagar
                 </a>
+
+                <!-- Chat -->
+                <button (click)="openChat(r, $event)"
+                  class="relative inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-400 hover:text-brand-600 dark:border-gray-700 dark:text-gray-300 transition">
+                  <i class="fas fa-comment-dots text-xs"></i>
+                  <span class="hidden sm:inline">Chat</span>
+                </button>
+
+                <!-- Ver detalle -->
+                <a [routerLink]="detailRoute(r)"
+                  class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 transition">
+                  Ver <i class="fas fa-arrow-right text-[10px]"></i>
+                </a>
+
               </div>
             </td>
 
           </tr>
-          <tr *ngIf="!loading && paginados.length === 0">
-            <td colspan="9" class="py-14 text-center">
-              <div class="text-4xl mb-3">🎫</div>
-              <p class="text-sm text-gray-400">{{ hayFiltros ? 'No hay reservas con esos filtros.' : 'Aún no tienes reservas.' }}</p>
+
+          <!-- Vacío -->
+          <tr *ngIf="paginados.length === 0">
+            <td colspan="7" class="py-16 text-center">
+              <div class="text-5xl mb-3">🏝️</div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                {{ hayFiltros ? 'No hay reservas con esos filtros.' : 'Aún no tienes reservas.' }}
+              </p>
               <a *ngIf="!hayFiltros" routerLink="/buscar"
-                class="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white hover:bg-brand-600">
-                🔍 Buscar lanchas
+                class="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600">
+                🔍 Buscar excursiones
               </a>
             </td>
           </tr>
+
         </tbody>
       </table>
     </div>
@@ -175,3 +232,15 @@
   </div>
 
 </div>
+
+<!-- Chat panel -->
+<app-reservation-chat
+  *ngIf="chatRow"
+  [bookingId]="chatRow.id"
+  [bookingType]="chatRow.type === 'ISLAND' ? 'ISLAND' : 'CHARTER'"
+  [clientUserId]="currentUserId"
+  [providerUserId]="0"
+  [title]="chatRow.destino"
+  [providerName]="chatRow.providerName || ''"
+  (closeChat)="closeChat()">
+</app-reservation-chat>

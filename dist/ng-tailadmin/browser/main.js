@@ -3,28 +3,23 @@ import {
 } from "./chunk-TD6O4IY7.js";
 import {
   NotificacionesService
-} from "./chunk-N4MMPEOR.js";
+} from "./chunk-RIYDTRC3.js";
 import {
   UsuariosService
-} from "./chunk-J3XAW4YV.js";
-import {
-  TicketsService
-} from "./chunk-4C5T4XRR.js";
+} from "./chunk-VKINGFC2.js";
 import {
   PaymentAccountsService
-} from "./chunk-XARPOOSK.js";
-import {
-  PagosService
-} from "./chunk-KAI4EMGQ.js";
+} from "./chunk-G77DX7AD.js";
 import {
   ImageUploadComponent
-} from "./chunk-CHEEZELV.js";
-import {
-  AlquileresService
-} from "./chunk-R5MJQUPH.js";
+} from "./chunk-MF5I77NK.js";
+import "./chunk-PFOQZ4L6.js";
 import {
   TasaService
-} from "./chunk-WSNZJFQG.js";
+} from "./chunk-XGLCC3KY.js";
+import {
+  AuthService
+} from "./chunk-W52DWYR4.js";
 import {
   CheckboxControlValueAccessor,
   DefaultValueAccessor,
@@ -44,10 +39,7 @@ import {
   Validators,
   ɵNgNoValidate,
   ɵNgSelectMultipleOption
-} from "./chunk-X6ED7CSN.js";
-import {
-  AuthService
-} from "./chunk-U2PDA3ZS.js";
+} from "./chunk-7NRIB5KE.js";
 import {
   ActivatedRoute,
   DomSanitizer,
@@ -59,7 +51,7 @@ import {
   RouterOutlet,
   bootstrapApplication,
   provideRouter
-} from "./chunk-AJH5TJUW.js";
+} from "./chunk-DNRCO4H6.js";
 import {
   AsyncPipe,
   BehaviorSubject,
@@ -75,6 +67,7 @@ import {
   HttpParams,
   Injectable,
   Input,
+  LOCALE_ID,
   NgClass,
   NgForOf,
   NgIf,
@@ -84,8 +77,6 @@ import {
   Subscription,
   ViewChild,
   ViewChildren,
-  __spreadProps,
-  __spreadValues,
   combineLatest,
   computed,
   environment,
@@ -93,6 +84,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideHttpClient,
   provideZoneChangeDetection,
+  registerLocaleData,
   setClassMetadata,
   signal,
   take,
@@ -137,7 +129,6 @@ import {
   ɵɵpureFunction3,
   ɵɵpureFunction4,
   ɵɵqueryRefresh,
-  ɵɵreference,
   ɵɵrepeater,
   ɵɵrepeaterCreate,
   ɵɵrepeaterTrackByIndex,
@@ -148,7 +139,6 @@ import {
   ɵɵsanitizeUrl,
   ɵɵstyleProp,
   ɵɵtemplate,
-  ɵɵtemplateRefExtractor,
   ɵɵtext,
   ɵɵtextInterpolate,
   ɵɵtextInterpolate1,
@@ -158,7 +148,23 @@ import {
   ɵɵtwoWayListener,
   ɵɵtwoWayProperty,
   ɵɵviewQuery
-} from "./chunk-6L3J4MHE.js";
+} from "./chunk-VNQE6XX7.js";
+import {
+  __spreadProps,
+  __spreadValues
+} from "./chunk-XWLXMCJQ.js";
+
+// node_modules/@angular/common/locales/es.js
+var u = void 0;
+function plural(val) {
+  const n = val, i = Math.floor(Math.abs(val)), v = val.toString().replace(/^[^.]*\.?/, "").length, e = parseInt(val.toString().replace(/^[^e]*(e([-+]?\d+))?/, "$2")) || 0;
+  if (n === 1)
+    return 1;
+  if (e === 0 && (!(i === 0) && (i % 1e6 === 0 && v === 0)) || !(e >= 0 && e <= 5))
+    return 4;
+  return 5;
+}
+var es_default = ["es", [["a.\u202Fm.", "p.\u202Fm."], u, ["a.\xA0m.", "p.\xA0m."]], u, [["D", "L", "M", "X", "J", "V", "S"], ["dom", "lun", "mar", "mi\xE9", "jue", "vie", "s\xE1b"], ["domingo", "lunes", "martes", "mi\xE9rcoles", "jueves", "viernes", "s\xE1bado"], ["DO", "LU", "MA", "MI", "JU", "VI", "SA"]], u, [["E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"], ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"], ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]], u, [["a. C.", "d. C."], u, ["antes de Cristo", "despu\xE9s de Cristo"]], 1, [6, 0], ["d/M/yy", "d MMM y", "d 'de' MMMM 'de' y", "EEEE, d 'de' MMMM 'de' y"], ["H:mm", "H:mm:ss", "H:mm:ss z", "H:mm:ss (zzzz)"], ["{1}, {0}", u, u, u], [",", ".", ";", "%", "+", "-", "E", "\xD7", "\u2030", "\u221E", "NaN", ":"], ["#,##0.###", "#,##0\xA0%", "#,##0.00\xA0\xA4", "#E0"], "EUR", "\u20AC", "euro", { "AUD": [u, "$"], "BRL": [u, "R$"], "BYN": [u, "\u0440."], "CAD": [u, "$"], "CNY": [u, "\xA5"], "EGP": [u, "EGP"], "ESP": ["\u20A7"], "GBP": [u, "\xA3"], "HKD": [u, "$"], "ILS": [u, "\u20AA"], "INR": [u, "\u20B9"], "JPY": [u, "\xA5"], "KRW": [u, "\u20A9"], "MXN": [u, "$"], "NZD": [u, "$"], "PHP": [u, "\u20B1"], "RON": [u, "L"], "THB": ["\u0E3F"], "TWD": [u, "NT$"], "USD": ["US$", "$"], "XAF": [], "XCD": [u, "$"], "XOF": [] }, "ltr", plural];
 
 // src/app/shared/pipe/safe-html.pipe.ts
 var SafeHtmlPipe = class _SafeHtmlPipe {
@@ -793,11 +799,6 @@ var AppSidebarComponent = class _AppSidebarComponent {
       name: "Inicio",
       path: "/inicio"
     },
-    {
-      icon: `<i class="fas fa-chart-pie fa-lg"></i>`,
-      name: "Mi Dashboard",
-      path: "/mi-dashboard"
-    },
     // ── Modelo 1 ────────────────────────────────────────────────────────────
     {
       icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
@@ -861,11 +862,6 @@ var AppSidebarComponent = class _AppSidebarComponent {
       name: "Inicio",
       path: "/inicio"
     },
-    {
-      icon: `<i class="fas fa-chart-line fa-lg"></i>`,
-      name: "Mi negocio",
-      path: "/mi-negocio"
-    },
     // ── Mi flota ────────────────────────────────────────────────────────────
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
@@ -876,6 +872,11 @@ var AppSidebarComponent = class _AppSidebarComponent {
       icon: `<i class="fas fa-calendar-days fa-lg"></i>`,
       name: "Mis horarios",
       path: "/mi-charter/itinerario"
+    },
+    {
+      icon: `<i class="fas fa-calendar-alt fa-lg"></i>`,
+      name: "Calendario",
+      path: "/mi-charter/calendario"
     },
     // ── Reservas recibidas ──────────────────────────────────────────────────
     {
@@ -889,6 +890,16 @@ var AppSidebarComponent = class _AppSidebarComponent {
       path: "/mi-charter/reservas"
     },
     // ── Mi cuenta ───────────────────────────────────────────────────────────
+    {
+      icon: `<i class="fas fa-chart-bar fa-lg"></i>`,
+      name: "Estad\xEDsticas",
+      path: "/mi-charter/estadisticas"
+    },
+    {
+      icon: `<i class="fas fa-id-card fa-lg"></i>`,
+      name: "Mis capitanes",
+      path: "/mis-capitanes"
+    },
     {
       icon: `<i class="fas fa-university fa-lg"></i>`,
       name: "Datos bancarios",
@@ -1011,10 +1022,12 @@ var AppSidebarComponent = class _AppSidebarComponent {
     {
       icon: `<i class="fas fa-sailboat fa-lg"></i>`,
       name: "Embarcaciones",
-      subItems: [
-        { name: "Todas las embarcaciones", path: "/embarcaciones" },
-        { name: "Pendientes de aprobaci\xF3n", path: "/embarcaciones/verificar" }
-      ]
+      path: "/embarcaciones"
+    },
+    {
+      icon: `<i class="fas fa-id-card fa-lg"></i>`,
+      name: "Capitanes",
+      path: "/mis-capitanes"
     },
     {
       icon: `<i class="fas fa-users fa-lg"></i>`,
@@ -1024,11 +1037,16 @@ var AppSidebarComponent = class _AppSidebarComponent {
         { name: "Nuevo usuario", path: "/usuarios/crear" }
       ]
     },
-    // ── Configuración ────────────────────────────────────────────────────────
+    // ── Configuración excursiones ────────────────────────────────────────────
     {
       icon: `<i class="fas fa-map-pin fa-lg"></i>`,
       name: "Puntos de salida",
       path: "/puntos-salida"
+    },
+    {
+      icon: `<i class="fas fa-island-tropical fa-lg"></i>`,
+      name: "Destinos / Islas",
+      path: "/destinos"
     },
     {
       icon: `<i class="fas fa-credit-card fa-lg"></i>`,
@@ -6334,18 +6352,18 @@ var ProfileComponent = class _ProfileComponent {
     });
   }
   openModal() {
-    const u = this.user();
-    if (u)
-      this.patchForm(u);
+    const u2 = this.user();
+    if (u2)
+      this.patchForm(u2);
     this.saveError.set(null);
     this.isOpen.set(true);
   }
   closeModal() {
     this.isOpen.set(false);
     this.saveError.set(null);
-    const u = this.user();
-    if (u)
-      this.patchForm(u);
+    const u2 = this.user();
+    if (u2)
+      this.patchForm(u2);
   }
   formatFecha(fecha) {
     if (!fecha)
@@ -6462,582 +6480,6 @@ var ProfileComponent = class _ProfileComponent {
 })();
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(ProfileComponent, { className: "ProfileComponent", filePath: "src/app/pages/profile/profile.component.ts", lineNumber: 27 });
-})();
-
-// src/app/pages/mi-dashboard/mi-dashboard.component.ts
-function MiDashboardComponent_div_13_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 12)(1, "div", 13);
-    \u0275\u0275text(2, "\u26F5");
-    \u0275\u0275elementEnd()();
-  }
-}
-function MiDashboardComponent_ng_container_14_ng_container_39_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementContainerStart(0);
-    \u0275\u0275elementStart(1, "p", 35);
-    \u0275\u0275text(2, " Viaje programado ");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "p", 22);
-    \u0275\u0275text(4);
-    \u0275\u0275pipe(5, "date");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementContainerEnd();
-  }
-  if (rf & 2) {
-    const ctx_r0 = \u0275\u0275nextContext(2);
-    \u0275\u0275advance(4);
-    \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(5, 1, ctx_r0.proximoViaje.trip == null ? null : ctx_r0.proximoViaje.trip.departureDate, "dd MMM yyyy"));
-  }
-}
-function MiDashboardComponent_ng_container_14_ng_template_40_ng_container_0_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementContainerStart(0);
-    \u0275\u0275elementStart(1, "p", 35);
-    \u0275\u0275text(2);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "p", 36);
-    \u0275\u0275text(4);
-    \u0275\u0275pipe(5, "date");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementContainerEnd();
-  }
-  if (rf & 2) {
-    const ctx_r0 = \u0275\u0275nextContext(3);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(ctx_r0.proximoAlquiler.vessel == null ? null : ctx_r0.proximoAlquiler.vessel.name);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("Charter \xB7 ", \u0275\u0275pipeBind2(5, 2, ctx_r0.proximoAlquiler.startDate, "dd MMM"));
-  }
-}
-function MiDashboardComponent_ng_container_14_ng_template_40_ng_template_1_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "p", 37);
-    \u0275\u0275text(1, "Sin viajes pr\xF3ximos");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(2, "a", 38);
-    \u0275\u0275text(3, "Buscar \u2192");
-    \u0275\u0275elementEnd();
-  }
-}
-function MiDashboardComponent_ng_container_14_ng_template_40_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275template(0, MiDashboardComponent_ng_container_14_ng_template_40_ng_container_0_Template, 6, 5, "ng-container", 25)(1, MiDashboardComponent_ng_container_14_ng_template_40_ng_template_1_Template, 4, 0, "ng-template", null, 1, \u0275\u0275templateRefExtractor);
-  }
-  if (rf & 2) {
-    const sinNada_r2 = \u0275\u0275reference(2);
-    const ctx_r0 = \u0275\u0275nextContext(2);
-    \u0275\u0275property("ngIf", ctx_r0.proximoAlquiler)("ngIfElse", sinNada_r2);
-  }
-}
-function MiDashboardComponent_ng_container_14_div_42_tr_22_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "tr", 50)(1, "td", 51);
-    \u0275\u0275text(2);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "td", 52);
-    \u0275\u0275text(4);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "td", 53);
-    \u0275\u0275text(6);
-    \u0275\u0275pipe(7, "date");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(8, "td", 54);
-    \u0275\u0275text(9);
-    \u0275\u0275pipe(10, "number");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(11, "td", 55)(12, "span", 56);
-    \u0275\u0275text(13);
-    \u0275\u0275elementEnd()()();
-  }
-  if (rf & 2) {
-    const a_r3 = ctx.$implicit;
-    const ctx_r0 = \u0275\u0275nextContext(3);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(a_r3.tipo);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(a_r3.descripcion);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(\u0275\u0275pipeBind2(7, 6, a_r3.fecha, "dd MMM yyyy"));
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate1(" $", \u0275\u0275pipeBind2(10, 9, a_r3.monto, "1.2-2"), " ");
-    \u0275\u0275advance(3);
-    \u0275\u0275property("ngClass", ctx_r0.statusClass(a_r3.estado));
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate1(" ", ctx_r0.statusLabel(a_r3.estado), " ");
-  }
-}
-function MiDashboardComponent_ng_container_14_div_42_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 39)(1, "div", 40)(2, "h3", 41);
-    \u0275\u0275text(3, "Actividad reciente");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "div", 7)(5, "a", 42);
-    \u0275\u0275text(6, "Ver reservas \u2192");
-    \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(7, "div", 43)(8, "table", 44)(9, "thead")(10, "tr", 45)(11, "th", 46);
-    \u0275\u0275text(12, "Tipo");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(13, "th", 46);
-    \u0275\u0275text(14, "Descripci\xF3n");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "th", 46);
-    \u0275\u0275text(16, "Fecha");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(17, "th", 47);
-    \u0275\u0275text(18, "Monto");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(19, "th", 48);
-    \u0275\u0275text(20, "Estado");
-    \u0275\u0275elementEnd()()();
-    \u0275\u0275elementStart(21, "tbody");
-    \u0275\u0275template(22, MiDashboardComponent_ng_container_14_div_42_tr_22_Template, 14, 12, "tr", 49);
-    \u0275\u0275elementEnd()()()();
-  }
-  if (rf & 2) {
-    const ctx_r0 = \u0275\u0275nextContext(2);
-    \u0275\u0275advance(22);
-    \u0275\u0275property("ngForOf", ctx_r0.actividadReciente);
-  }
-}
-function MiDashboardComponent_ng_container_14_div_43_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 57)(1, "div", 58);
-    \u0275\u0275text(2, "\u26F5");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "h3", 59);
-    \u0275\u0275text(4, "Sin actividad todav\xEDa");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "p", 60);
-    \u0275\u0275text(6, "Reserva tu primer viaje o charter para comenzar.");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "a", 61);
-    \u0275\u0275text(8, " Buscar viajes \u2192 ");
-    \u0275\u0275elementEnd()();
-  }
-}
-function MiDashboardComponent_ng_container_14_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementContainerStart(0);
-    \u0275\u0275elementStart(1, "div", 14)(2, "div", 3)(3, "div", 15)(4, "p", 16);
-    \u0275\u0275text(5, "Total reservas");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "span", 17);
-    \u0275\u0275text(7, "\u{1F3AB}");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(8, "p", 18);
-    \u0275\u0275text(9);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(10, "p", 19);
-    \u0275\u0275text(11);
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(12, "div", 3)(13, "div", 15)(14, "p", 16);
-    \u0275\u0275text(15, "Total pagado");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(16, "span", 20);
-    \u0275\u0275text(17, "\u{1F4B3}");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(18, "p", 21);
-    \u0275\u0275text(19);
-    \u0275\u0275pipe(20, "number");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(21, "p", 22);
-    \u0275\u0275text(22);
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(23, "div", 3)(24, "div", 15)(25, "p", 16);
-    \u0275\u0275text(26, "Activas");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(27, "span", 23);
-    \u0275\u0275text(28, "\u23F3");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(29, "p", 18);
-    \u0275\u0275text(30);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(31, "p", 19);
-    \u0275\u0275text(32, "en curso o confirmadas");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(33, "div", 3)(34, "div", 15)(35, "p", 16);
-    \u0275\u0275text(36, "Pr\xF3ximo viaje");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(37, "span", 24);
-    \u0275\u0275text(38, "\u{1F4C5}");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275template(39, MiDashboardComponent_ng_container_14_ng_container_39_Template, 6, 4, "ng-container", 25)(40, MiDashboardComponent_ng_container_14_ng_template_40_Template, 3, 2, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
-    \u0275\u0275elementEnd()();
-    \u0275\u0275template(42, MiDashboardComponent_ng_container_14_div_42_Template, 23, 1, "div", 26)(43, MiDashboardComponent_ng_container_14_div_43_Template, 9, 0, "div", 27);
-    \u0275\u0275elementStart(44, "div", 28)(45, "a", 29)(46, "span", 30);
-    \u0275\u0275text(47, "\u{1F50D}");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(48, "span", 31);
-    \u0275\u0275text(49, "Buscar viaje");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(50, "a", 32)(51, "span", 30);
-    \u0275\u0275text(52, "\u2693");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(53, "span", 31);
-    \u0275\u0275text(54, "Charter privado");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(55, "a", 33)(56, "span", 30);
-    \u0275\u0275text(57, "\u{1F3AB}");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(58, "span", 31);
-    \u0275\u0275text(59, "Mis reservas");
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(60, "a", 34)(61, "span", 30);
-    \u0275\u0275text(62, "\u{1F4B3}");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(63, "span", 31);
-    \u0275\u0275text(64, "M\xE9todos de pago");
-    \u0275\u0275elementEnd()()();
-    \u0275\u0275elementContainerEnd();
-  }
-  if (rf & 2) {
-    const sinProximo_r4 = \u0275\u0275reference(41);
-    const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275advance(9);
-    \u0275\u0275textInterpolate(ctx_r0.totalReservas);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate2("", ctx_r0.totalTickets, " terminal \xB7 ", ctx_r0.totalAlquileres, " charter");
-    \u0275\u0275advance(8);
-    \u0275\u0275textInterpolate1("$", \u0275\u0275pipeBind2(20, 10, ctx_r0.gastadoPagos, "1.0-0"));
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(ctx_r0.tasaService.formatBs(ctx_r0.gastadoPagos));
-    \u0275\u0275advance(8);
-    \u0275\u0275textInterpolate1(" ", ctx_r0.alquileresActivos.length + ctx_r0.ticketsPendientes.length, " ");
-    \u0275\u0275advance(9);
-    \u0275\u0275property("ngIf", ctx_r0.proximoViaje)("ngIfElse", sinProximo_r4);
-    \u0275\u0275advance(3);
-    \u0275\u0275property("ngIf", ctx_r0.actividadReciente.length > 0);
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", ctx_r0.actividadReciente.length === 0);
-  }
-}
-var MiDashboardComponent = class _MiDashboardComponent {
-  auth = inject(AuthService);
-  ticketsService = inject(TicketsService);
-  alquileresService = inject(AlquileresService);
-  pagosService = inject(PagosService);
-  tasaService = inject(TasaService);
-  loading = true;
-  tickets = [];
-  alquileres = [];
-  pagos = [];
-  get user() {
-    return this.auth.user();
-  }
-  ngOnInit() {
-    const id = this.user?.id;
-    if (!id) {
-      this.loading = false;
-      return;
-    }
-    let done = 0;
-    const check = () => {
-      if (++done === 3)
-        this.loading = false;
-    };
-    this.ticketsService.getAll({ clientId: id }).subscribe({
-      next: (t) => {
-        this.tickets = t;
-        check();
-      },
-      error: () => check()
-    });
-    this.alquileresService.getByClient(id).subscribe({
-      next: (a) => {
-        this.alquileres = a;
-        check();
-      },
-      error: () => check()
-    });
-    this.pagosService.getByClient(id).subscribe({
-      next: (p) => {
-        this.pagos = p;
-        check();
-      },
-      error: () => check()
-    });
-  }
-  // ── KPIs ────────────────────────────────────────────────────────────────────
-  get totalTickets() {
-    return this.tickets.length;
-  }
-  get totalAlquileres() {
-    return this.alquileres.length;
-  }
-  get totalReservas() {
-    return this.totalTickets + this.totalAlquileres;
-  }
-  get gastadoPagos() {
-    return this.pagos.filter((p) => p.status === "VERIFIED").reduce((s, p) => s + (p.amount || 0), 0);
-  }
-  get alquileresActivos() {
-    return this.alquileres.filter((a) => ["PENDING", "CONFIRMED", "ACTIVE"].includes(a.status));
-  }
-  get ticketsPendientes() {
-    return this.tickets.filter((t) => t.status === "CONFIRMED" || t.status === "PENDING");
-  }
-  get proximoViaje() {
-    const upcoming = this.tickets.filter((t) => t.status === "CONFIRMED" && new Date(t.trip?.departureDate) >= /* @__PURE__ */ new Date()).sort((a, b) => new Date(a.trip?.departureDate).getTime() - new Date(b.trip?.departureDate).getTime());
-    return upcoming[0] ?? null;
-  }
-  get proximoAlquiler() {
-    const upcoming = this.alquileres.filter((a) => a.status === "CONFIRMED" && new Date(a.startDate) >= /* @__PURE__ */ new Date()).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-    return upcoming[0] ?? null;
-  }
-  // ── Actividad reciente ───────────────────────────────────────────────────────
-  get actividadReciente() {
-    const items = [];
-    this.tickets.slice(0, 5).forEach((t) => items.push({
-      tipo: "\u26F5 Terminal",
-      descripcion: `Viaje ${t.trip?.departureDate ?? ""}`,
-      fecha: t.createdAt ?? "",
-      monto: t.totalPrice ?? 0,
-      estado: t.status
-    }));
-    this.alquileres.slice(0, 5).forEach((a) => items.push({
-      tipo: "\u{1F6E5}\uFE0F Charter",
-      descripcion: a.vessel?.name ?? "Embarcaci\xF3n",
-      fecha: a.createdAt ?? "",
-      monto: a.totalPrice ?? 0,
-      estado: a.status
-    }));
-    return items.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()).slice(0, 8);
-  }
-  statusLabel(s) {
-    const map = {
-      CONFIRMED: "Confirmado",
-      PENDING: "Pendiente",
-      USED: "Realizado",
-      CANCELLED: "Cancelado",
-      ACTIVE: "Activo",
-      COMPLETED: "Completado"
-    };
-    return map[s] ?? s;
-  }
-  statusClass(s) {
-    const map = {
-      CONFIRMED: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400",
-      PENDING: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
-      USED: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
-      COMPLETED: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
-      ACTIVE: "bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400",
-      CANCELLED: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-    };
-    return map[s] ?? "bg-gray-100 text-gray-500";
-  }
-  static \u0275fac = function MiDashboardComponent_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MiDashboardComponent)();
-  };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MiDashboardComponent, selectors: [["app-mi-dashboard"]], decls: 15, vars: 3, consts: [["sinProximo", ""], ["sinNada", ""], [1, "space-y-6"], [1, "rounded-2xl", "border", "border-gray-200", "bg-white", "p-5", "shadow-sm", "dark:border-gray-800", "dark:bg-white/[0.03]"], [1, "flex", "flex-col", "gap-2", "md:flex-row", "md:items-center", "md:justify-between"], [1, "text-2xl", "font-bold", "text-gray-800", "dark:text-white/90"], [1, "mt-1", "text-sm", "text-gray-500", "dark:text-gray-400"], [1, "flex", "gap-2"], ["routerLink", "/buscar", 1, "inline-flex", "items-center", "gap-2", "rounded-xl", "bg-brand-500", "px-4", "py-2.5", "text-sm", "font-bold", "text-white", "hover:bg-brand-600", "transition-colors"], ["routerLink", "/alquileres", 1, "inline-flex", "items-center", "gap-2", "rounded-xl", "border", "border-gray-200", "px-4", "py-2.5", "text-sm", "font-medium", "text-gray-600", "hover:border-brand-300", "hover:text-brand-600", "transition", "dark:border-gray-700", "dark:text-gray-300"], ["class", "flex justify-center py-20", 4, "ngIf"], [4, "ngIf"], [1, "flex", "justify-center", "py-20"], [1, "text-5xl", "animate-bounce"], [1, "grid", "grid-cols-2", "gap-4", "lg:grid-cols-4"], [1, "mb-3", "flex", "items-center", "justify-between"], [1, "text-xs", "font-semibold", "uppercase", "tracking-wide", "text-gray-400"], [1, "inline-flex", "size-9", "items-center", "justify-center", "rounded-lg", "bg-brand-500/10", "text-xl"], [1, "text-3xl", "font-extrabold", "text-gray-800", "dark:text-white"], [1, "mt-1", "text-xs", "text-gray-400"], [1, "inline-flex", "size-9", "items-center", "justify-center", "rounded-lg", "bg-green-500/10", "text-xl"], [1, "text-3xl", "font-extrabold", "text-brand-600", "dark:text-brand-400"], [1, "mt-1", "text-xs", "text-brand-500"], [1, "inline-flex", "size-9", "items-center", "justify-center", "rounded-lg", "bg-amber-500/10", "text-xl"], [1, "inline-flex", "size-9", "items-center", "justify-center", "rounded-lg", "bg-blue-500/10", "text-xl"], [4, "ngIf", "ngIfElse"], ["class", "overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]", 4, "ngIf"], ["class", "rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]", 4, "ngIf"], [1, "grid", "grid-cols-2", "gap-4", "sm:grid-cols-4"], ["routerLink", "/buscar", 1, "flex", "flex-col", "items-center", "gap-2", "rounded-2xl", "border", "border-gray-200", "bg-white", "p-5", "text-center", "hover:border-brand-300", "hover:shadow-sm", "transition", "dark:border-gray-800", "dark:bg-white/[0.03]"], [1, "text-3xl"], [1, "text-xs", "font-semibold", "text-gray-700", "dark:text-gray-300"], ["routerLink", "/alquileres", 1, "flex", "flex-col", "items-center", "gap-2", "rounded-2xl", "border", "border-gray-200", "bg-white", "p-5", "text-center", "hover:border-brand-300", "hover:shadow-sm", "transition", "dark:border-gray-800", "dark:bg-white/[0.03]"], ["routerLink", "/mis-reservas", 1, "flex", "flex-col", "items-center", "gap-2", "rounded-2xl", "border", "border-gray-200", "bg-white", "p-5", "text-center", "hover:border-brand-300", "hover:shadow-sm", "transition", "dark:border-gray-800", "dark:bg-white/[0.03]"], ["routerLink", "/mis-metodos-pago", 1, "flex", "flex-col", "items-center", "gap-2", "rounded-2xl", "border", "border-gray-200", "bg-white", "p-5", "text-center", "hover:border-brand-300", "hover:shadow-sm", "transition", "dark:border-gray-800", "dark:bg-white/[0.03]"], [1, "text-sm", "font-bold", "text-gray-800", "dark:text-white", "truncate"], [1, "mt-1", "text-xs", "text-purple-500"], [1, "text-sm", "text-gray-400"], ["routerLink", "/buscar", 1, "mt-1", "block", "text-xs", "text-brand-500", "hover:underline"], [1, "overflow-hidden", "rounded-2xl", "border", "border-gray-200", "bg-white", "shadow-sm", "dark:border-gray-800", "dark:bg-white/[0.03]"], [1, "flex", "items-center", "justify-between", "border-b", "border-gray-100", "px-5", "py-4", "dark:border-gray-800"], [1, "text-base", "font-semibold", "text-gray-800", "dark:text-white/90"], ["routerLink", "/mis-reservas", 1, "text-xs", "font-semibold", "text-brand-500", "hover:text-brand-600"], [1, "overflow-x-auto"], [1, "min-w-full"], [1, "border-b", "border-gray-100", "dark:border-gray-800"], [1, "px-5", "py-3", "text-left", "text-xs", "font-medium", "text-gray-500"], [1, "px-5", "py-3", "text-right", "text-xs", "font-medium", "text-gray-500"], [1, "px-5", "py-3", "text-center", "text-xs", "font-medium", "text-gray-500"], ["class", "border-b border-gray-100 last:border-0 dark:border-gray-800", 4, "ngFor", "ngForOf"], [1, "border-b", "border-gray-100", "last:border-0", "dark:border-gray-800"], [1, "px-5", "py-4", "text-sm", "text-gray-600", "dark:text-gray-400", "whitespace-nowrap"], [1, "px-5", "py-4", "text-sm", "font-medium", "text-gray-800", "dark:text-white/90", "max-w-[200px]", "truncate"], [1, "px-5", "py-4", "text-xs", "text-gray-400", "whitespace-nowrap"], [1, "px-5", "py-4", "text-right", "text-sm", "font-bold", "text-brand-600", "dark:text-brand-400", "whitespace-nowrap"], [1, "px-5", "py-4", "text-center", "whitespace-nowrap"], [1, "inline-flex", "rounded-full", "px-2.5", "py-0.5", "text-xs", "font-medium", 3, "ngClass"], [1, "rounded-2xl", "border", "border-dashed", "border-gray-300", "bg-white", "p-14", "text-center", "dark:border-gray-700", "dark:bg-white/[0.02]"], [1, "text-5xl", "mb-4"], [1, "text-lg", "font-bold", "text-gray-700", "dark:text-white/80"], [1, "mt-2", "text-sm", "text-gray-500"], ["routerLink", "/buscar", 1, "mt-5", "inline-flex", "rounded-xl", "bg-brand-500", "px-6", "py-3", "text-sm", "font-bold", "text-white", "hover:bg-brand-600"]], template: function MiDashboardComponent_Template(rf, ctx) {
-    if (rf & 1) {
-      \u0275\u0275elementStart(0, "div", 2)(1, "div", 3)(2, "div", 4)(3, "div")(4, "h1", 5);
-      \u0275\u0275text(5);
-      \u0275\u0275elementEnd();
-      \u0275\u0275elementStart(6, "p", 6);
-      \u0275\u0275text(7, " Resumen de tu actividad en MARITIMO ");
-      \u0275\u0275elementEnd()();
-      \u0275\u0275elementStart(8, "div", 7)(9, "a", 8);
-      \u0275\u0275text(10, " \u{1F50D} Buscar viaje ");
-      \u0275\u0275elementEnd();
-      \u0275\u0275elementStart(11, "a", 9);
-      \u0275\u0275text(12, " \u2693 Charter ");
-      \u0275\u0275elementEnd()()()();
-      \u0275\u0275template(13, MiDashboardComponent_div_13_Template, 3, 0, "div", 10)(14, MiDashboardComponent_ng_container_14_Template, 65, 13, "ng-container", 11);
-      \u0275\u0275elementEnd();
-    }
-    if (rf & 2) {
-      \u0275\u0275advance(5);
-      \u0275\u0275textInterpolate1(" Hola, ", ctx.user == null ? null : ctx.user.firstName, " \u{1F44B} ");
-      \u0275\u0275advance(8);
-      \u0275\u0275property("ngIf", ctx.loading);
-      \u0275\u0275advance();
-      \u0275\u0275property("ngIf", !ctx.loading);
-    }
-  }, dependencies: [CommonModule, NgClass, NgForOf, NgIf, RouterModule, RouterLink, DecimalPipe, DatePipe], encapsulation: 2 });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MiDashboardComponent, [{
-    type: Component,
-    args: [{ selector: "app-mi-dashboard", standalone: true, imports: [CommonModule, RouterModule], template: `<div class="space-y-6">
-
-  <!-- Header -->
-  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
-          Hola, {{ user?.firstName }} \u{1F44B}
-        </h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Resumen de tu actividad en MARITIMO
-        </p>
-      </div>
-      <div class="flex gap-2">
-        <a routerLink="/buscar"
-          class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
-          \u{1F50D} Buscar viaje
-        </a>
-        <a routerLink="/alquileres"
-          class="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-300">
-          \u2693 Charter
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Loading -->
-  <div *ngIf="loading" class="flex justify-center py-20">
-    <div class="text-5xl animate-bounce">\u26F5</div>
-  </div>
-
-  <ng-container *ngIf="!loading">
-
-    <!-- KPIs -->
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-
-      <!-- Total reservas -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="mb-3 flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Total reservas</p>
-          <span class="inline-flex size-9 items-center justify-center rounded-lg bg-brand-500/10 text-xl">\u{1F3AB}</span>
-        </div>
-        <p class="text-3xl font-extrabold text-gray-800 dark:text-white">{{ totalReservas }}</p>
-        <p class="mt-1 text-xs text-gray-400">{{ totalTickets }} terminal \xB7 {{ totalAlquileres }} charter</p>
-      </div>
-
-      <!-- Total gastado -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="mb-3 flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Total pagado</p>
-          <span class="inline-flex size-9 items-center justify-center rounded-lg bg-green-500/10 text-xl">\u{1F4B3}</span>
-        </div>
-        <p class="text-3xl font-extrabold text-brand-600 dark:text-brand-400">\${{ gastadoPagos | number:'1.0-0' }}</p>
-        <p class="mt-1 text-xs text-brand-500">{{ tasaService.formatBs(gastadoPagos) }}</p>
-      </div>
-
-      <!-- Reservas activas -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="mb-3 flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Activas</p>
-          <span class="inline-flex size-9 items-center justify-center rounded-lg bg-amber-500/10 text-xl">\u23F3</span>
-        </div>
-        <p class="text-3xl font-extrabold text-gray-800 dark:text-white">
-          {{ alquileresActivos.length + ticketsPendientes.length }}
-        </p>
-        <p class="mt-1 text-xs text-gray-400">en curso o confirmadas</p>
-      </div>
-
-      <!-- Pr\xF3ximo viaje -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="mb-3 flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Pr\xF3ximo viaje</p>
-          <span class="inline-flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-xl">\u{1F4C5}</span>
-        </div>
-        <ng-container *ngIf="proximoViaje; else sinProximo">
-          <p class="text-sm font-bold text-gray-800 dark:text-white truncate">
-            Viaje programado
-          </p>
-          <p class="mt-1 text-xs text-brand-500">{{ proximoViaje.trip?.departureDate | date:'dd MMM yyyy' }}</p>
-        </ng-container>
-        <ng-template #sinProximo>
-          <ng-container *ngIf="proximoAlquiler; else sinNada">
-            <p class="text-sm font-bold text-gray-800 dark:text-white truncate">{{ proximoAlquiler.vessel?.name }}</p>
-            <p class="mt-1 text-xs text-purple-500">Charter \xB7 {{ proximoAlquiler.startDate | date:'dd MMM' }}</p>
-          </ng-container>
-          <ng-template #sinNada>
-            <p class="text-sm text-gray-400">Sin viajes pr\xF3ximos</p>
-            <a routerLink="/buscar" class="mt-1 block text-xs text-brand-500 hover:underline">Buscar \u2192</a>
-          </ng-template>
-        </ng-template>
-      </div>
-
-    </div>
-
-    <!-- Actividad reciente -->
-    <div *ngIf="actividadReciente.length > 0"
-      class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-
-      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Actividad reciente</h3>
-        <div class="flex gap-2">
-          <a routerLink="/mis-reservas" class="text-xs font-semibold text-brand-500 hover:text-brand-600">Ver reservas \u2192</a>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead>
-            <tr class="border-b border-gray-100 dark:border-gray-800">
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Tipo</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Descripci\xF3n</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Fecha</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Monto</th>
-              <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let a of actividadReciente"
-              class="border-b border-gray-100 last:border-0 dark:border-gray-800">
-              <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ a.tipo }}</td>
-              <td class="px-5 py-4 text-sm font-medium text-gray-800 dark:text-white/90 max-w-[200px] truncate">{{ a.descripcion }}</td>
-              <td class="px-5 py-4 text-xs text-gray-400 whitespace-nowrap">{{ a.fecha | date:'dd MMM yyyy' }}</td>
-              <td class="px-5 py-4 text-right text-sm font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">
-                \${{ a.monto | number:'1.2-2' }}
-              </td>
-              <td class="px-5 py-4 text-center whitespace-nowrap">
-                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium" [ngClass]="statusClass(a.estado)">
-                  {{ statusLabel(a.estado) }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Sin actividad -->
-    <div *ngIf="actividadReciente.length === 0"
-      class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
-      <div class="text-5xl mb-4">\u26F5</div>
-      <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">Sin actividad todav\xEDa</h3>
-      <p class="mt-2 text-sm text-gray-500">Reserva tu primer viaje o charter para comenzar.</p>
-      <a routerLink="/buscar"
-        class="mt-5 inline-flex rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600">
-        Buscar viajes \u2192
-      </a>
-    </div>
-
-    <!-- Accesos r\xE1pidos -->
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <a routerLink="/buscar"
-        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-5 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-3xl">\u{1F50D}</span>
-        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Buscar viaje</span>
-      </a>
-      <a routerLink="/alquileres"
-        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-5 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-3xl">\u2693</span>
-        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Charter privado</span>
-      </a>
-      <a routerLink="/mis-reservas"
-        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-5 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-3xl">\u{1F3AB}</span>
-        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Mis reservas</span>
-      </a>
-      <a routerLink="/mis-metodos-pago"
-        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-5 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
-        <span class="text-3xl">\u{1F4B3}</span>
-        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">M\xE9todos de pago</span>
-      </a>
-    </div>
-
-  </ng-container>
-</div>
-` }]
-  }], null, null);
-})();
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(MiDashboardComponent, { className: "MiDashboardComponent", filePath: "src/app/pages/mi-dashboard/mi-dashboard.component.ts", lineNumber: 20 });
 })();
 
 // src/app/pages/mis-metodos-pago/mis-metodos-pago.component.ts
@@ -7738,6 +7180,7 @@ function MisMetodosPagoComponent_div_35_Template(rf, ctx) {
 var MisMetodosPagoComponent = class _MisMetodosPagoComponent {
   auth = inject(AuthService);
   http = inject(HttpClient);
+  router = inject(Router);
   accountsService = inject(PaymentAccountsService);
   tasaService = inject(TasaService);
   accounts = [];
@@ -8025,11 +7468,16 @@ var MisMetodosPagoComponent = class _MisMetodosPagoComponent {
     if (this.proofUrl)
       dto.proofImageUrl = this.proofUrl;
     this.http.post(`${environment.apiUrl}/payments`, dto).subscribe({
-      next: () => {
+      next: (res) => {
         this.submitting = false;
-        this.reportSent.set(true);
         this.showModal.set(false);
         this.loadSaldo();
+        const pagoId = res?.data?.id ?? res?.id;
+        if (pagoId) {
+          this.router.navigate(["/pagos", pagoId]);
+        } else {
+          this.reportSent.set(true);
+        }
       },
       error: (err) => {
         const msg = err?.error?.message;
@@ -8557,7 +8005,7 @@ var MisMetodosPagoComponent = class _MisMetodosPagoComponent {
   }], null, null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(MisMetodosPagoComponent, { className: "MisMetodosPagoComponent", filePath: "src/app/pages/mis-metodos-pago/mis-metodos-pago.component.ts", lineNumber: 92 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(MisMetodosPagoComponent, { className: "MisMetodosPagoComponent", filePath: "src/app/pages/mis-metodos-pago/mis-metodos-pago.component.ts", lineNumber: 93 });
 })();
 
 // src/app/pages/mis-cuentas-retiro/mis-cuentas-retiro.component.ts
@@ -9339,10 +8787,10 @@ var ListaUsuariosComponent = class _ListaUsuariosComponent {
   }
   aplicarFiltros() {
     const termino = this.search.trim().toLowerCase();
-    this.usuariosFiltrados = this.usuarios.filter((u) => {
-      const nombreCompleto = `${u.firstName} ${u.lastName}`.toLowerCase();
-      const busqueda = nombreCompleto.includes(termino) || u.email.toLowerCase().includes(termino) || (u.phone ?? "").toLowerCase().includes(termino) || u.role.toLowerCase().includes(termino);
-      const rol = !this.filtroRol || u.role === this.filtroRol;
+    this.usuariosFiltrados = this.usuarios.filter((u2) => {
+      const nombreCompleto = `${u2.firstName} ${u2.lastName}`.toLowerCase();
+      const busqueda = nombreCompleto.includes(termino) || u2.email.toLowerCase().includes(termino) || (u2.phone ?? "").toLowerCase().includes(termino) || u2.role.toLowerCase().includes(termino);
+      const rol = !this.filtroRol || u2.role === this.filtroRol;
       return busqueda && rol;
     });
     this.total = this.usuariosFiltrados.length;
@@ -9388,8 +8836,8 @@ var ListaUsuariosComponent = class _ListaUsuariosComponent {
     this.page = 1;
     this.aplicarFiltros();
   }
-  getNombreCompleto(u) {
-    return `${u.firstName} ${u.lastName}`.trim() || u.email;
+  getNombreCompleto(u2) {
+    return `${u2.firstName} ${u2.lastName}`.trim() || u2.email;
   }
   getRoleLabel(role) {
     const map = {
@@ -9417,8 +8865,8 @@ var ListaUsuariosComponent = class _ListaUsuariosComponent {
   get rangoFin() {
     return Math.min(this.page * this.limit, this.total);
   }
-  trackByUsuario(_, u) {
-    return u.id;
+  trackByUsuario(_, u2) {
+    return u2.id;
   }
   static \u0275fac = function ListaUsuariosComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _ListaUsuariosComponent)();
@@ -10446,14 +9894,14 @@ var EditarUsuariosComponent = class _EditarUsuariosComponent {
   cargarUsuario() {
     this.loadingUser = true;
     this.usuariosService.obtenerUsuarioPorId(this.usuarioId).subscribe({
-      next: (u) => {
+      next: (u2) => {
         this.form.patchValue({
-          firstName: u.firstName ?? "",
-          lastName: u.lastName ?? "",
-          phone: u.phone ?? "",
-          email: u.email ?? "",
-          role: u.role ?? UserRole2.CLIENTE,
-          isActive: u.isActive ?? true,
+          firstName: u2.firstName ?? "",
+          lastName: u2.lastName ?? "",
+          phone: u2.phone ?? "",
+          email: u2.email ?? "",
+          role: u2.role ?? UserRole2.CLIENTE,
+          isActive: u2.isActive ?? true,
           password: "",
           confirmPassword: ""
         });
@@ -10795,26 +10243,22 @@ var routes = [
       // ── Inicio (role-based home) ──────────────────────────────────────────────
       {
         path: "inicio",
-        loadComponent: () => import("./chunk-4V6JZQKY.js").then((m) => m.InicioComponent),
+        loadComponent: () => import("./chunk-WMFTZHF2.js").then((m) => m.InicioComponent),
         title: "Inicio | MARITIMO"
       },
       // ── Buscar viajes ─────────────────────────────────────────────────────────
       {
         path: "buscar",
-        loadComponent: () => import("./chunk-DZAZNN7R.js").then((m) => m.BuscarComponent),
+        loadComponent: () => import("./chunk-DAUS7IAZ.js").then((m) => m.BuscarComponent),
         title: "Buscar viajes | MARITIMO"
       },
       {
         path: "buscar/lancha/:id",
-        loadComponent: () => import("./chunk-DGBRGYZK.js").then((m) => m.DetalleLanchaComponent),
+        loadComponent: () => import("./chunk-JPG32OYH.js").then((m) => m.DetalleLanchaComponent),
         title: "Detalle lancha | MARITIMO"
       },
-      // ── Mi Negocio (proveedor) ────────────────────────────────────────────────
-      {
-        path: "mi-negocio",
-        loadComponent: () => import("./chunk-K5KEHIEJ.js").then((m) => m.MiNegocioComponent),
-        title: "Mi Negocio | MARITIMO"
-      },
+      // ── Mi Negocio → redirige a Estadísticas ─────────────────────────────────
+      { path: "mi-negocio", redirectTo: "mi-charter/estadisticas", pathMatch: "full" },
       // Dashboard (legacy / admin)
       {
         path: "dashboard",
@@ -10824,36 +10268,36 @@ var routes = [
       // ── Soporte ───────────────────────────────────────────────────────────────
       {
         path: "soporte/tickets",
-        loadComponent: () => import("./chunk-OQDFO3FL.js").then((m) => m.SoporteTicketsComponent),
+        loadComponent: () => import("./chunk-XNH5XHDS.js").then((m) => m.SoporteTicketsComponent),
         title: "Tickets de soporte | MARITIMO"
       },
       { path: "soporte/chat", redirectTo: "/mensajes", pathMatch: "full" },
       // ── FAQ ───────────────────────────────────────────────────────────────────
       {
         path: "faq",
-        loadComponent: () => import("./chunk-DET2W352.js").then((m) => m.FaqComponent),
+        loadComponent: () => import("./chunk-IXVIICU5.js").then((m) => m.FaqComponent),
         title: "Preguntas frecuentes | MARITIMO"
       },
       // ── Mensajes / Chat general ───────────────────────────────────────────────
       {
         path: "mensajes",
-        loadComponent: () => import("./chunk-SV3AXX2P.js").then((m) => m.MensajesComponent),
+        loadComponent: () => import("./chunk-D2DU3NQA.js").then((m) => m.MensajesComponent),
         title: "Mensajes | MARITIMO"
       },
       // ── Mis Reservas (cliente) ────────────────────────────────────────────────
       {
         path: "mis-reservas",
-        loadComponent: () => import("./chunk-G2QGSRBZ.js").then((m) => m.MisReservasComponent),
+        loadComponent: () => import("./chunk-APTXQOA4.js").then((m) => m.MisReservasComponent),
         title: "Mis Reservas | MARITIMO"
       },
       {
         path: "mis-reservas/:id",
-        loadComponent: () => import("./chunk-3IWFSVDX.js").then((m) => m.DetalleReservaComponent),
+        loadComponent: () => import("./chunk-6XNXDGWG.js").then((m) => m.DetalleReservaComponent),
         title: "Detalle de Reserva | MARITIMO"
       },
       {
         path: "pagar-reserva",
-        loadComponent: () => import("./chunk-JHOXNKEP.js").then((m) => m.PagarReservaComponent),
+        loadComponent: () => import("./chunk-HS3P4EQL.js").then((m) => m.PagarReservaComponent),
         title: "Pagar Reserva | MARITIMO"
       },
       // Perfil
@@ -10862,12 +10306,8 @@ var routes = [
         component: ProfileComponent,
         title: "Perfil | MARITIMO"
       },
-      // ── Dashboard cliente ─────────────────────────────────────────────────────
-      {
-        path: "mi-dashboard",
-        component: MiDashboardComponent,
-        title: "Mi Dashboard | MARITIMO"
-      },
+      // ── Dashboard cliente (redirect → inicio) ────────────────────────────────
+      { path: "mi-dashboard", redirectTo: "inicio", pathMatch: "full" },
       // ── Métodos de pago (cliente) ─────────────────────────────────────────────
       {
         path: "mis-metodos-pago",
@@ -10899,109 +10339,105 @@ var routes = [
       // ── Embarcaciones ────────────────────────────────────────────────────────
       {
         path: "embarcaciones",
-        loadComponent: () => import("./chunk-4RIPJKSI.js").then((m) => m.ListaEmbarcacionesComponent),
+        loadComponent: () => import("./chunk-YDNYRADC.js").then((m) => m.ListaEmbarcacionesComponent),
         title: "Embarcaciones | MARITIMO"
       },
-      {
-        path: "embarcaciones/verificar",
-        loadComponent: () => import("./chunk-ZNFHFK2S.js").then((m) => m.VerificarEmbarcacionesComponent),
-        title: "Verificar embarcaciones | MARITIMO"
-      },
+      { path: "embarcaciones/verificar", redirectTo: "/embarcaciones", pathMatch: "full" },
       {
         path: "embarcaciones/editar/:id",
-        loadComponent: () => import("./chunk-V6MMHHC6.js").then((m) => m.EditarEmbarcacionComponent),
+        loadComponent: () => import("./chunk-DAT6LXSR.js").then((m) => m.EditarEmbarcacionComponent),
         title: "Editar embarcaci\xF3n | MARITIMO"
       },
       // ── Muelles ──────────────────────────────────────────────────────────────
       {
         path: "muelles",
-        loadComponent: () => import("./chunk-AAQD6CE3.js").then((m) => m.ListaMuellesComponent),
+        loadComponent: () => import("./chunk-LGBJY557.js").then((m) => m.ListaMuellesComponent),
         title: "Muelles | MARITIMO"
       },
       {
         path: "muelles/crear",
-        loadComponent: () => import("./chunk-NUKVAR24.js").then((m) => m.CrearMuelleComponent),
+        loadComponent: () => import("./chunk-RRQT6GA2.js").then((m) => m.CrearMuelleComponent),
         title: "Nuevo muelle | MARITIMO"
       },
       {
         path: "muelles/editar/:id",
-        loadComponent: () => import("./chunk-F4RD4ZG6.js").then((m) => m.EditarMuelleComponent),
+        loadComponent: () => import("./chunk-OJ6ADTMA.js").then((m) => m.EditarMuelleComponent),
         title: "Editar muelle | MARITIMO"
       },
       // ── Rutas ────────────────────────────────────────────────────────────────
       {
         path: "rutas",
-        loadComponent: () => import("./chunk-NHBSM5SP.js").then((m) => m.ListaRutasComponent),
+        loadComponent: () => import("./chunk-BIMLQGTG.js").then((m) => m.ListaRutasComponent),
         title: "Rutas | MARITIMO"
       },
       {
         path: "rutas/crear",
-        loadComponent: () => import("./chunk-IPLCBS3V.js").then((m) => m.CrearRutaComponent),
+        loadComponent: () => import("./chunk-XRWOBC6R.js").then((m) => m.CrearRutaComponent),
         title: "Nueva ruta | MARITIMO"
       },
       {
         path: "rutas/editar/:id",
-        loadComponent: () => import("./chunk-LVQWVSKC.js").then((m) => m.EditarRutaComponent),
+        loadComponent: () => import("./chunk-UBPTFDX7.js").then((m) => m.EditarRutaComponent),
         title: "Editar ruta | MARITIMO"
       },
       // ── Horarios ─────────────────────────────────────────────────────────────
       {
         path: "horarios",
-        loadComponent: () => import("./chunk-VDJ5VKEV.js").then((m) => m.ListaHorariosComponent),
+        loadComponent: () => import("./chunk-MYTNMZ5Y.js").then((m) => m.ListaHorariosComponent),
         title: "Horarios | MARITIMO"
       },
       {
         path: "horarios/crear",
-        loadComponent: () => import("./chunk-6S2KQAHJ.js").then((m) => m.CrearHorarioComponent),
+        loadComponent: () => import("./chunk-QGQMQDM2.js").then((m) => m.CrearHorarioComponent),
         title: "Nuevo horario | MARITIMO"
       },
       {
         path: "horarios/editar/:id",
-        loadComponent: () => import("./chunk-VFKTQ7SL.js").then((m) => m.EditarHorarioComponent),
+        loadComponent: () => import("./chunk-YSFPMCRE.js").then((m) => m.EditarHorarioComponent),
         title: "Editar horario | MARITIMO"
       },
       // ── Checkout ─────────────────────────────────────────────────────────────
       {
         path: "checkout",
-        loadComponent: () => import("./chunk-YEURDYH7.js").then((m) => m.CheckoutComponent),
+        loadComponent: () => import("./chunk-4R75A6B7.js").then((m) => m.CheckoutComponent),
         title: "Checkout | MARITIMO"
       },
       // ── Viajes (Terminal) ─────────────────────────────────────────────────────
       {
         path: "viajes",
-        loadComponent: () => import("./chunk-ORXDDFAL.js").then((m) => m.ListaViajesComponent),
+        loadComponent: () => import("./chunk-J52LDRRZ.js").then((m) => m.ListaViajesComponent),
         title: "Viajes | MARITIMO"
       },
       {
         path: "viajes/:id",
-        loadComponent: () => import("./chunk-SHKNVLNG.js").then((m) => m.DetalleViajeComponent),
+        loadComponent: () => import("./chunk-H6XM5XYC.js").then((m) => m.DetalleViajeComponent),
         title: "Detalle de viaje | MARITIMO"
       },
       // ── Tickets ───────────────────────────────────────────────────────────────
       {
         path: "tickets",
-        loadComponent: () => import("./chunk-RUTJEUH5.js").then((m) => m.ListaTicketsComponent),
+        loadComponent: () => import("./chunk-4IDINR2W.js").then((m) => m.ListaTicketsComponent),
         title: "Tickets | MARITIMO"
       },
       {
         path: "tickets/:id",
-        loadComponent: () => import("./chunk-HX3ATREC.js").then((m) => m.DetalleTicketComponent),
+        loadComponent: () => import("./chunk-IQNUUWMA.js").then((m) => m.DetalleTicketComponent),
         title: "Ticket | MARITIMO"
       },
       // ── Alquileres (cliente) ─────────────────────────────────────────────────
       {
         path: "alquileres",
-        loadComponent: () => import("./chunk-AJLI3ARQ.js").then((m) => m.ListaAlquileresComponent),
+        loadComponent: () => import("./chunk-PGWBX5KZ.js").then((m) => m.ListaAlquileresComponent),
         title: "Charter privado | MARITIMO"
       },
       {
         path: "alquileres/yate/:id",
-        loadComponent: () => import("./chunk-NGHEPC5K.js").then((m) => m.DetalleYateComponent),
+        loadComponent: () => import("./chunk-VSKRKBHZ.js").then((m) => m.DetalleYateComponent),
         title: "Detalle de embarcaci\xF3n | MARITIMO"
       },
       {
         path: "alquileres/:id",
-        loadComponent: () => import("./chunk-CJ6U4Y27.js").then((m) => m.DetalleAlquilerComponent),
+        loadComponent: () => import("./chunk-66DK5AYB.js").then((m) => m.DetalleAlquilerComponent),
         title: "Reserva de charter | MARITIMO"
       },
       // ── Mi Charter (proveedor) ────────────────────────────────────────────────
@@ -11012,116 +10448,136 @@ var routes = [
       },
       {
         path: "mi-charter/yates",
-        loadComponent: () => import("./chunk-YK2IVZDA.js").then((m) => m.ListaYatesComponent),
+        loadComponent: () => import("./chunk-EVVSPMCE.js").then((m) => m.ListaYatesComponent),
         title: "Mis embarcaciones | MARITIMO"
       },
       {
         path: "mi-charter/yates/nuevo",
-        loadComponent: () => import("./chunk-DKTJ22ES.js").then((m) => m.FormYateComponent),
+        loadComponent: () => import("./chunk-6DY67ARU.js").then((m) => m.FormYateComponent),
         title: "Nueva embarcaci\xF3n | MARITIMO"
       },
       {
         path: "mi-charter/yates/:id/editar",
-        loadComponent: () => import("./chunk-DKTJ22ES.js").then((m) => m.FormYateComponent),
+        loadComponent: () => import("./chunk-6DY67ARU.js").then((m) => m.FormYateComponent),
         title: "Editar embarcaci\xF3n | MARITIMO"
       },
       {
         path: "mi-charter/reservas",
-        loadComponent: () => import("./chunk-AVDGSCAZ.js").then((m) => m.ReservasCharterComponent),
+        loadComponent: () => import("./chunk-M5TEQY34.js").then((m) => m.ReservasCharterComponent),
         title: "Reservas de charter | MARITIMO"
       },
       {
         path: "mi-charter/itinerario",
-        loadComponent: () => import("./chunk-TZERIAHE.js").then((m) => m.ItinerarioComponent),
+        loadComponent: () => import("./chunk-3ZMDDL2H.js").then((m) => m.ItinerarioComponent),
         title: "Mi itinerario | MARITIMO"
+      },
+      {
+        path: "mi-charter/calendario",
+        loadComponent: () => import("./chunk-MZQN3XDL.js").then((m) => m.CalendarioComponent),
+        title: "Calendario | MARITIMO"
+      },
+      {
+        path: "mis-capitanes",
+        loadComponent: () => import("./chunk-RMGADWUS.js").then((m) => m.MisCapitanesComponent),
+        title: "Mis capitanes | MARITIMO"
+      },
+      {
+        path: "mi-charter/estadisticas",
+        loadComponent: () => import("./chunk-WCQ7NBRX.js").then((m) => m.EstadisticasComponent),
+        title: "Estad\xEDsticas | MARITIMO"
       },
       // ── Viajes Taxi ───────────────────────────────────────────────────────────
       {
         path: "viajes-taxi",
-        loadComponent: () => import("./chunk-Y5LE3HA2.js").then((m) => m.ListaViajesTaxiComponent),
+        loadComponent: () => import("./chunk-IWSB7N4S.js").then((m) => m.ListaViajesTaxiComponent),
         title: "Viajes Taxi | MARITIMO"
       },
       {
         path: "viajes-taxi/solicitar",
-        loadComponent: () => import("./chunk-P3WXMB2T.js").then((m) => m.SolicitarViajeComponent),
+        loadComponent: () => import("./chunk-3XTBTT4B.js").then((m) => m.SolicitarViajeComponent),
         title: "Solicitar taxi | MARITIMO"
       },
       {
         path: "viajes-taxi/:id",
-        loadComponent: () => import("./chunk-6CRIV3RH.js").then((m) => m.DetalleViajeTaxiComponent),
+        loadComponent: () => import("./chunk-NUA4YI75.js").then((m) => m.DetalleViajeTaxiComponent),
         title: "Viaje taxi | MARITIMO"
       },
       // ── Pagos ─────────────────────────────────────────────────────────────────
       {
         path: "pagos",
-        loadComponent: () => import("./chunk-SWNJQ4FC.js").then((m) => m.ListaPagosComponent),
+        loadComponent: () => import("./chunk-ES5RTE4Y.js").then((m) => m.ListaPagosComponent),
         title: "Pagos | MARITIMO"
       },
       {
         path: "pagos/:id",
-        loadComponent: () => import("./chunk-GXIVLG2J.js").then((m) => m.DetallePagoComponent),
+        loadComponent: () => import("./chunk-5FIMWGZH.js").then((m) => m.DetallePagoComponent),
         title: "Pago | MARITIMO"
       },
       // ── Reseñas ───────────────────────────────────────────────────────────────
       {
         path: "resenas",
-        loadComponent: () => import("./chunk-2ZG6NBHF.js").then((m) => m.ListaResenasComponent),
+        loadComponent: () => import("./chunk-TVY3DMCA.js").then((m) => m.ListaResenasComponent),
         title: "Rese\xF1as | MARITIMO"
       },
       // ── Tasas de cambio ───────────────────────────────────────────────────────
       {
         path: "tasas",
-        loadComponent: () => import("./chunk-B6RIOGE5.js").then((m) => m.ListaTasasComponent),
+        loadComponent: () => import("./chunk-4NW7EKFV.js").then((m) => m.ListaTasasComponent),
         title: "Tasas | MARITIMO"
       },
       {
         path: "tasas/crear",
         canActivate: [masterGuard],
-        loadComponent: () => import("./chunk-L7NDNQOJ.js").then((m) => m.CrearTasasComponent),
+        loadComponent: () => import("./chunk-QYRKMSUC.js").then((m) => m.CrearTasasComponent),
         title: "Nueva tasa | MARITIMO"
       },
       {
         path: "tasas/editar/:id",
         canActivate: [masterGuard],
-        loadComponent: () => import("./chunk-CS7W3T2K.js").then((m) => m.EditarTasasComponent),
+        loadComponent: () => import("./chunk-WCR7BFDC.js").then((m) => m.EditarTasasComponent),
         title: "Editar tasa | MARITIMO"
       },
       // ── Notificaciones ────────────────────────────────────────────────────────
       {
         path: "notificaciones",
-        loadComponent: () => import("./chunk-GFWO34HR.js").then((m) => m.ListaNotificacionesComponent),
+        loadComponent: () => import("./chunk-BACO42YP.js").then((m) => m.ListaNotificacionesComponent),
         title: "Notificaciones | MARITIMO"
       },
       // ── Métodos de cobro (MASTER/ADMIN) ──────────────────────────────────────
       {
         path: "metodos-cobro",
-        loadComponent: () => import("./chunk-GOA7BUCW.js").then((m) => m.MetodosCobroComponent),
+        loadComponent: () => import("./chunk-MQ7BNKV2.js").then((m) => m.MetodosCobroComponent),
         title: "M\xE9todos de cobro | MARITIMO"
       },
       // ── Finanzas (MASTER only) ────────────────────────────────────────────────
       {
         path: "finanzas",
         canActivate: [masterGuard],
-        loadComponent: () => import("./chunk-6PQMSUQI.js").then((m) => m.FinanzasComponent),
+        loadComponent: () => import("./chunk-JH6HVE6T.js").then((m) => m.FinanzasComponent),
         title: "Finanzas | MARITIMO"
       },
       // ── Puntos de salida (admin) ──────────────────────────────────────────────
       {
         path: "puntos-salida",
-        loadComponent: () => import("./chunk-MXSJI6VX.js").then((m) => m.ListaPuntosSalidaComponent),
+        loadComponent: () => import("./chunk-LSTEBXQM.js").then((m) => m.ListaPuntosSalidaComponent),
         title: "Puntos de salida | MARITIMO"
       },
       // ── Destinos (admin) ──────────────────────────────────────────────────────
       {
         path: "destinos",
-        loadComponent: () => import("./chunk-5KNHTL5B.js").then((m) => m.ListaDestinosAdminComponent),
+        loadComponent: () => import("./chunk-SIEGLX22.js").then((m) => m.ListaDestinosAdminComponent),
         title: "Destinos | MARITIMO"
       },
       // ── Reservas de isla (admin) ──────────────────────────────────────────────
       {
         path: "reservas-isla",
-        loadComponent: () => import("./chunk-UBJIIBHG.js").then((m) => m.ListaReservasIslaComponent),
+        loadComponent: () => import("./chunk-O6ESTRID.js").then((m) => m.ListaReservasIslaComponent),
         title: "Reservas de isla | MARITIMO"
+      },
+      {
+        path: "reservas-isla/:id",
+        loadComponent: () => import("./chunk-6ZNPUDXD.js").then((m) => m.DetalleReservaIslaComponent),
+        title: "Detalle de excursi\xF3n | MARITIMO"
       }
     ]
   },
@@ -11146,12 +10602,14 @@ var authInterceptor = (req, next) => {
 };
 
 // src/app/app.config.ts
+registerLocaleData(es_default, "es");
 var appConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor]))
+    provideHttpClient(withInterceptors([authInterceptor])),
+    { provide: LOCALE_ID, useValue: "es" }
   ]
 };
 
@@ -21314,4 +20772,15 @@ if (typeof window !== "undefined") {
 // src/main.ts
 register();
 bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));
+/*! Bundled license information:
+
+@angular/common/locales/es.js:
+  (**
+   * @license
+   * Copyright Google LLC All Rights Reserved.
+   *
+   * Use of this source code is governed by an MIT-style license that can be
+   * found in the LICENSE file at https://angular.dev/license
+   *)
+*/
 //# sourceMappingURL=main.js.map

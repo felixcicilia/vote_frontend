@@ -1,0 +1,299 @@
+<div class="space-y-5">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Estadísticas</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Rendimiento de tu negocio y análisis de ingresos.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Period selector -->
+        <div class="flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-white/[0.04]">
+          <button *ngFor="let opt of [{v:'3m',l:'3M'},{v:'6m',l:'6M'},{v:'12m',l:'12M'}]"
+            (click)="setPeriod($any(opt.v))"
+            [ngClass]="period === opt.v
+              ? 'bg-white text-brand-600 shadow-sm dark:bg-white/[0.08] dark:text-brand-400'
+              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+            class="rounded-lg px-3.5 py-1.5 text-xs font-semibold transition">
+            {{ opt.l }}
+          </button>
+        </div>
+        <a routerLink="/mi-charter/yates"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-300">
+          ⚓ Gestionar flota →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-24">
+    <div class="flex flex-col items-center gap-4">
+      <div class="text-5xl animate-bounce">📊</div>
+      <p class="text-sm text-gray-400">Cargando estadísticas...</p>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ── KPI cards ──────────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Ingresos totales</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-lg dark:bg-brand-500/10">💰</span>
+        </div>
+        <p class="mt-3 text-3xl font-extrabold text-brand-600 dark:text-brand-400">${{ totalRevenue | number:'1.0-0' }}</p>
+        <p class="mt-0.5 text-xs text-brand-500">{{ tasaService.formatBs(totalRevenue) }}</p>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Reservas activas</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-lg dark:bg-blue-500/10">📋</span>
+        </div>
+        <p class="mt-3 text-3xl font-extrabold text-gray-800 dark:text-white">{{ totalBookings }}</p>
+        <p class="mt-0.5 text-xs text-gray-400">{{ completedCount }} completadas</p>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Promedio / reserva</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-lg dark:bg-purple-500/10">📈</span>
+        </div>
+        <p class="mt-3 text-3xl font-extrabold text-purple-600 dark:text-purple-400">${{ avgPerBooking | number:'1.0-0' }}</p>
+        <p class="mt-0.5 text-xs text-gray-400">por reserva activa</p>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Cancelaciones</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-lg dark:bg-red-500/10">❌</span>
+        </div>
+        <p class="mt-3 text-3xl font-extrabold"
+          [ngClass]="cancellationRate > 20 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-white'">
+          {{ cancellationRate }}%
+        </p>
+        <p class="mt-0.5 text-xs text-gray-400">{{ cancelledCount }} canceladas</p>
+      </div>
+    </div>
+
+    <!-- ── Revenue bar chart + type donut ────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <!-- Bar chart -->
+      <div class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Ingresos por mes</h3>
+          <div class="flex items-center gap-4 text-xs text-gray-400">
+            <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-sm bg-purple-500"></span> Charter</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-sm bg-blue-500"></span> Excursiones</span>
+          </div>
+        </div>
+        <apx-chart [series]="revenueSeries" [chart]="revenueChart" [xaxis]="revenueXAxis" [yaxis]="revenueYAxis"
+          [plotOptions]="revenuePlot" [dataLabels]="revenueDataLabels" [stroke]="revenueStroke"
+          [grid]="revenueGrid" [fill]="revenueFill" [tooltip]="revenueTooltip"
+          [legend]="revenueLegend" [colors]="revenueColors">
+        </apx-chart>
+      </div>
+
+      <!-- Type donut -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <h3 class="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">Tipo de servicio</h3>
+        <apx-chart [series]="donutSeries" [chart]="donutChart" [labels]="donutLabels"
+          [colors]="donutColors" [responsive]="donutResponsive">
+        </apx-chart>
+        <div class="mt-4 space-y-2">
+          <div class="flex items-center justify-between text-sm">
+            <span class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <span class="h-2.5 w-2.5 rounded-full bg-purple-500"></span> Charters
+            </span>
+            <span class="font-bold text-gray-800 dark:text-white">{{ donutSeries[0] }}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span> Excursiones
+            </span>
+            <span class="font-bold text-gray-800 dark:text-white">{{ donutSeries[1] }}</span>
+          </div>
+          <div class="border-t border-gray-100 pt-2 dark:border-gray-800 flex items-center justify-between text-sm">
+            <span class="text-gray-500">Charter $</span>
+            <span class="font-bold text-purple-600 dark:text-purple-400">${{ charterRevenue | number:'1.0-0' }}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-500">Excursiones $</span>
+            <span class="font-bold text-blue-600 dark:text-blue-400">${{ islandRevenue | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Status + Resumen ──────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <h3 class="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">Estado de reservas</h3>
+        <div class="flex items-center gap-6">
+          <apx-chart [series]="statusSeries" [chart]="statusChart" [labels]="statusLabels"
+            [colors]="statusColors" [responsive]="statusResponsive">
+          </apx-chart>
+          <div class="flex flex-col gap-3 text-sm">
+            <div *ngFor="let item of [
+              {l:'Completadas', c:'bg-green-500',  v:statusSeries[0]},
+              {l:'Confirmadas', c:'bg-blue-500',   v:statusSeries[1]},
+              {l:'Pendientes',  c:'bg-amber-400',  v:statusSeries[2]},
+              {l:'Canceladas',  c:'bg-red-500',    v:statusSeries[3]}
+            ]" class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 flex-shrink-0 rounded-full" [ngClass]="item.c"></span>
+              <span class="text-gray-600 dark:text-gray-400">{{ item.l }}</span>
+              <span class="ml-auto font-bold text-gray-800 dark:text-white">{{ item.v }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <h3 class="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">Resumen del período</h3>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 dark:bg-white/[0.04]">
+            <span class="text-sm text-gray-600 dark:text-gray-400">⛵ Charter</span>
+            <div class="text-right">
+              <p class="text-sm font-bold text-purple-600 dark:text-purple-400">${{ charterRevenue | number:'1.0-0' }}</p>
+              <p class="text-[10px] text-purple-400">{{ tasaService.formatBs(charterRevenue) }}</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 dark:bg-white/[0.04]">
+            <span class="text-sm text-gray-600 dark:text-gray-400">🏝️ Excursiones</span>
+            <div class="text-right">
+              <p class="text-sm font-bold text-blue-600 dark:text-blue-400">${{ islandRevenue | number:'1.0-0' }}</p>
+              <p class="text-[10px] text-blue-400">{{ tasaService.formatBs(islandRevenue) }}</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 dark:bg-white/[0.04]">
+            <span class="text-sm text-gray-600 dark:text-gray-400">✅ Completadas</span>
+            <span class="text-sm font-bold text-green-600 dark:text-green-400">{{ completedCount }}</span>
+          </div>
+          <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 dark:bg-white/[0.04]">
+            <span class="text-sm text-gray-600 dark:text-gray-400">💵 Promedio</span>
+            <span class="text-sm font-bold text-brand-600 dark:text-brand-400">${{ avgPerBooking | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Rendimiento por embarcación ───────────────────────────────────── -->
+    <div *ngIf="vesselStats.length > 0"
+      class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Rendimiento por embarcación</h3>
+        <span class="text-sm text-gray-400">{{ vesselStats.length }} embarcacion{{ vesselStats.length !== 1 ? 'es' : '' }}</span>
+      </div>
+      <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        <div *ngFor="let s of vesselStats" class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+          <div class="h-24 w-full flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 sm:h-20 sm:w-28">
+            <img *ngIf="s.vessel.photos?.[0]" [src]="imageUrl(s.vessel.photos![0])" [alt]="s.vessel.name"
+              class="h-full w-full object-cover" />
+            <div *ngIf="!s.vessel.photos?.[0]"
+              class="flex h-full items-center justify-center text-3xl opacity-20">{{ typeIcon(s.vessel.type) }}</div>
+          </div>
+          <div class="flex flex-1 flex-col justify-between">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base font-bold text-gray-800 dark:text-white/90">{{ s.vessel.name }}</h3>
+                  <span class="rounded-full px-2 py-0.5 text-[10px] font-bold" [ngClass]="verificationClass(s.vessel.verificationStatus)">
+                    {{ verificationLabel(s.vessel.verificationStatus) }}
+                  </span>
+                </div>
+                <p class="text-xs text-gray-400">{{ s.vessel.type }} · {{ s.vessel.capacity }} pax</p>
+              </div>
+              <div class="text-right">
+                <p class="text-2xl font-extrabold text-brand-600 dark:text-brand-400">${{ s.totalRevenue | number:'1.0-0' }}</p>
+                <p class="text-xs text-brand-500">{{ tasaService.formatBs(s.totalRevenue) }}</p>
+              </div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div class="rounded-xl bg-purple-50 p-3 text-center dark:bg-purple-500/10">
+                <p class="text-base font-extrabold text-purple-700 dark:text-purple-400">${{ s.charterRevenue | number:'1.0-0' }}</p>
+                <p class="text-[10px] text-gray-400">Charter</p>
+                <p class="text-[10px] text-purple-500">{{ s.charterCount }} reservas</p>
+              </div>
+              <div class="rounded-xl bg-blue-50 p-3 text-center dark:bg-blue-500/10">
+                <p class="text-base font-extrabold text-blue-700 dark:text-blue-400">${{ s.islandRevenue | number:'1.0-0' }}</p>
+                <p class="text-[10px] text-gray-400">Excursiones</p>
+                <p class="text-[10px] text-blue-500">{{ s.islandCount }} reservas</p>
+              </div>
+              <div class="rounded-xl bg-gray-50 p-3 text-center dark:bg-white/[0.04]">
+                <p class="text-base font-extrabold text-gray-800 dark:text-white">{{ s.totalBookings }}</p>
+                <p class="text-[10px] text-gray-400">Total reservas</p>
+              </div>
+              <div class="flex flex-col gap-1.5 justify-center">
+                <a [routerLink]="['/mi-charter/yates', s.vessel.id, 'editar']"
+                  class="block rounded-lg border border-gray-200 px-3 py-1.5 text-center text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700">
+                  ✏️ Editar
+                </a>
+                <a routerLink="/mi-charter/reservas"
+                  class="block rounded-lg border border-brand-200 px-3 py-1.5 text-center text-xs font-medium text-brand-600 hover:bg-brand-50 transition dark:border-brand-500/30">
+                  📋 Reservas
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Sin embarcaciones ─────────────────────────────────────────────── -->
+    <div *ngIf="vessels.length === 0"
+      class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+      <div class="text-5xl mb-4">⛵</div>
+      <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">Sin embarcaciones registradas</h3>
+      <p class="mt-2 text-sm text-gray-500">Agrega tu primera embarcación para comenzar a ver estadísticas.</p>
+      <a routerLink="/mi-charter/yates" class="mt-5 inline-flex rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600">
+        Ir a Mis embarcaciones →
+      </a>
+    </div>
+
+    <!-- ── Últimas reservas ───────────────────────────────────────────────── -->
+    <div *ngIf="recentCharter.length > 0 || recentIsland.length > 0"
+      class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Últimas reservas</h3>
+        <a routerLink="/mi-charter/reservas" class="text-xs font-semibold text-brand-500 hover:text-brand-600">Ver todas →</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="border-b border-gray-100 dark:border-gray-800">
+              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Cliente</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Embarcación</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Detalle</th>
+              <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Tipo</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Total</th>
+              <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of recentCharter" class="border-b border-gray-50 hover:bg-gray-50/50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
+              <td class="px-5 py-3.5 text-sm font-medium text-gray-800 dark:text-white/90">{{ a.client?.firstName }} {{ a.client?.lastName }}</td>
+              <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">{{ a.vessel?.name }}</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400">{{ a.startDate | date:'dd MMM' }} – {{ a.endDate | date:'dd MMM yy' }}</td>
+              <td class="px-5 py-3.5 text-center">
+                <span class="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/10 dark:text-purple-400">⛵ Charter</span>
+              </td>
+              <td class="px-5 py-3.5 text-right text-sm font-bold text-brand-600 dark:text-brand-400">${{ a.totalPrice | number:'1.0-0' }}</td>
+              <td class="px-5 py-3.5 text-center text-xs text-gray-400">{{ a.status }}</td>
+            </tr>
+            <tr *ngFor="let b of recentIsland" class="border-b border-gray-50 hover:bg-gray-50/50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
+              <td class="px-5 py-3.5 text-sm font-medium text-gray-800 dark:text-white/90">{{ b.client?.firstName }} {{ b.client?.lastName }}</td>
+              <td class="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-400">{{ b.vessel?.name }}</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400">{{ b.destination?.icon }} {{ b.destination?.name }} · {{ b.tripDate | date:'dd MMM yy' }}</td>
+              <td class="px-5 py-3.5 text-center">
+                <span class="inline-flex rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">🏝️ Excursión</span>
+              </td>
+              <td class="px-5 py-3.5 text-right text-sm font-bold text-blue-600 dark:text-blue-400">${{ b.totalPrice | number:'1.0-0' }}</td>
+              <td class="px-5 py-3.5 text-center text-xs text-gray-400">{{ islandStatusLabel(b.status) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

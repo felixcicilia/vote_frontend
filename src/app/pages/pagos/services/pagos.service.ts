@@ -31,6 +31,10 @@ export class PagosService {
     return this.http.get<any>(`${this.base}/client/${clientId}`).pipe(map(r => this.extractArray(r)));
   }
 
+  getByReference(type: string, id: number): Observable<Pago[]> {
+    return this.http.get<any>(`${this.base}/reference/${type}/${id}`).pipe(map(r => this.extractArray(r)));
+  }
+
   create(dto: CreatePagoDto): Observable<Pago> {
     return this.http.post<any>(this.base, dto).pipe(map(r => this.extractItem(r)));
   }

@@ -44,12 +44,14 @@
             <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Pax</th>
             <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Total</th>
             <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Estado</th>
-            <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Acciones</th>
+            <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Chat / Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let b of paginados; trackBy: trackById" class="border-b border-gray-100 dark:border-gray-800">
-            <td class="px-5 py-4 text-sm text-gray-500">#{{ b.id }}</td>
+          <tr *ngFor="let b of paginados; trackBy: trackById"
+            (click)="verDetalle(b)"
+            class="cursor-pointer border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
+            <td class="px-5 py-4 text-sm text-gray-500">🏝️ #{{ b.id }}</td>
             <td class="px-5 py-4">
               <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ b.client.firstName }} {{ b.client.lastName }}</p>
               <p class="text-xs text-gray-400">{{ b.client.email }}</p>
@@ -70,16 +72,28 @@
                 {{ statusLabel(b.status) }}
               </span>
             </td>
-            <td class="px-5 py-4">
-              <div class="flex items-center justify-end gap-1.5">
-                <button *ngIf="b.status === 'PENDING'" (click)="updateStatus(b, 'CONFIRMED')"
-                  class="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">✓ Confirmar pago</button>
-                <button *ngIf="b.status === 'CONFIRMED'" (click)="updateStatus(b, 'ACTIVE')"
-                  class="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50">🚢 Iniciar viaje</button>
-                <button *ngIf="b.status === 'ACTIVE'" (click)="updateStatus(b, 'COMPLETED')"
-                  class="rounded-lg border border-green-200 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50">🏁 Completar</button>
-                <button *ngIf="b.status === 'PENDING' || b.status === 'CONFIRMED'" (click)="cancel(b)"
-                  class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">Cancelar</button>
+            <td class="px-5 py-4" (click)="$event.stopPropagation()">
+              <div class="flex flex-col items-end gap-1.5">
+                <!-- Chat button -->
+                <button (click)="openChat(b, $event)"
+                  class="relative inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-400 hover:text-brand-600 dark:border-gray-700 dark:text-gray-300 dark:hover:border-brand-400 dark:hover:text-brand-400 transition-colors">
+                  <i class="fas fa-comment-dots"></i> Chat
+                  <span *ngIf="(unreadCounts[b.id] ?? 0) > 0"
+                    class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                    {{ unreadCounts[b.id] > 9 ? '9+' : unreadCounts[b.id] }}
+                  </span>
+                </button>
+                <!-- Status actions (proveedor/empleado only) -->
+                <ng-container *ngIf="!isMaster">
+                  <button *ngIf="b.status === 'PENDING'" (click)="updateStatus(b, 'CONFIRMED')"
+                    class="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">✓ Confirmar pago</button>
+                  <button *ngIf="b.status === 'CONFIRMED'" (click)="updateStatus(b, 'ACTIVE')"
+                    class="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50">🚢 Iniciar viaje</button>
+                  <button *ngIf="b.status === 'ACTIVE'" (click)="updateStatus(b, 'COMPLETED')"
+                    class="rounded-lg border border-green-200 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50">🏁 Completar</button>
+                  <button *ngIf="b.status === 'PENDING' || b.status === 'CONFIRMED'" (click)="cancel(b)"
+                    class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">Cancelar</button>
+                </ng-container>
               </div>
             </td>
           </tr>
@@ -99,3 +113,20 @@
   </div>
 
 </div>
+
+<!-- Reservation Chat Panel -->
+<ng-container *ngIf="chatOpenId">
+  <ng-container *ngFor="let b of bookings">
+    <ng-container *ngIf="b.id === chatOpenId">
+      <app-reservation-chat
+        [bookingId]="b.id"
+        bookingType="ISLAND"
+        [clientUserId]="clientUserIdFor(b)"
+        [providerUserId]="currentUserId"
+        [title]="chatTitle(b)"
+        (closeChat)="closeChat()"
+        (unreadChange)="onUnreadChange(b.id, $event)">
+      </app-reservation-chat>
+    </ng-container>
+  </ng-container>
+</ng-container>

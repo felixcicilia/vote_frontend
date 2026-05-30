@@ -1,0 +1,471 @@
+<div class="space-y-5">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">{{ pageTitle }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ pageSubtitle }}</p>
+      </div>
+      <button *ngIf="isProvider" (click)="openCreate()"
+        class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+        </svg>
+        Agregar capitán
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="successMessage" class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-700 dark:border-green-800/30 dark:bg-green-500/10 dark:text-green-400">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600 dark:border-red-800/30 dark:bg-red-500/10 dark:text-red-400">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Info banner (provider) -->
+  <div *ngIf="isProvider"
+    class="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-700 dark:border-blue-800/30 dark:bg-blue-500/10 dark:text-blue-300">
+    <span class="text-lg mt-0.5">ℹ️</span>
+    <p>Adjunta la foto del capitán y sus documentos (cédula, licencia náutica). El equipo MARITIMO revisará la información. Solo los capitanes <strong>Aprobados</strong> pueden ser asignados a un charter.</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-24">
+    <div class="flex flex-col items-center gap-4">
+      <div class="text-5xl animate-bounce">⚓</div>
+      <p class="text-sm text-gray-400">Cargando capitanes...</p>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && captains.length === 0"
+    class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+    <div class="text-5xl mb-4">⚓</div>
+    <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">
+      {{ isProvider ? 'Aún no tienes capitanes registrados' : 'No hay capitanes registrados' }}
+    </h3>
+    <p class="mt-2 text-sm text-gray-500">
+      {{ isProvider ? 'Agrega tu primer capitán y adjunta sus documentos.' : 'Los proveedores aún no han registrado capitanes.' }}
+    </p>
+    <button *ngIf="isProvider" (click)="openCreate()"
+      class="mt-5 inline-flex rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600">
+      Agregar capitán →
+    </button>
+  </div>
+
+  <!-- Grid -->
+  <div *ngIf="!loading && captains.length > 0"
+    class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+    <div *ngFor="let c of captains"
+      (click)="isMaster ? openDetail(c) : null"
+      [class.cursor-pointer]="isMaster"
+      [class.hover:shadow-md]="isMaster"
+      class="flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+
+      <!-- Header -->
+      <div class="flex items-center gap-4 p-5">
+        <div class="relative flex-shrink-0">
+          <div class="h-14 w-14 overflow-hidden rounded-2xl bg-brand-100 dark:bg-brand-500/10">
+            <img *ngIf="photoSrc(c)" [src]="photoSrc(c)" [alt]="c.firstName"
+              class="h-full w-full object-cover" />
+            <div *ngIf="!photoSrc(c)"
+              class="flex h-full w-full items-center justify-center text-xl font-bold text-brand-600 dark:text-brand-400">
+              {{ initials(c) }}
+            </div>
+          </div>
+          <span class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-gray-900"
+            [ngClass]="statusDot(c.verificationStatus)"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="truncate text-base font-bold text-gray-800 dark:text-white/90">
+            {{ c.firstName }} {{ c.lastName }}
+          </h3>
+          <p *ngIf="c.licenseNumber" class="text-xs text-gray-400">Lic. {{ c.licenseNumber }}</p>
+          <p *ngIf="isMaster && c.providerProfile?.companyName"
+            class="text-xs text-brand-500 font-medium mt-0.5">{{ c.providerProfile!.companyName }}</p>
+        </div>
+        <!-- Doc count badge -->
+        <div *ngIf="hasAnyDoc(c)"
+          class="flex-shrink-0 flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-white/[0.07]">
+          📎 {{ (c.documentFrontUrl ? 1 : 0) + (c.documentBackUrl ? 1 : 0) + (c.licenseDocumentUrl ? 1 : 0) }}
+        </div>
+      </div>
+
+      <!-- Details row -->
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 space-y-1.5">
+        <div *ngIf="c.documentId" class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Documento</span>
+          <span class="font-medium text-gray-700 dark:text-gray-300">{{ c.documentId }}</span>
+        </div>
+        <div *ngIf="c.phone" class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Teléfono</span>
+          <span class="font-medium text-gray-700 dark:text-gray-300">{{ c.phone }}</span>
+        </div>
+        <div *ngIf="c.notes" class="flex items-start gap-2 text-xs">
+          <span class="text-gray-400 flex-shrink-0">Notas</span>
+          <span class="text-right text-gray-600 dark:text-gray-400 ml-auto">{{ c.notes }}</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-auto border-t border-gray-100 dark:border-gray-800 flex items-center justify-between px-5 py-3">
+        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold"
+          [ngClass]="statusClass(c.verificationStatus)">
+          {{ statusLabel(c.verificationStatus) }}
+        </span>
+        <div class="flex items-center gap-2" (click)="$event.stopPropagation()">
+          <ng-container *ngIf="isProvider">
+            <button (click)="openEdit(c, $event)"
+              class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700">
+              ✏️ Editar
+            </button>
+            <button (click)="deactivate(c, $event)"
+              class="rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition dark:border-red-800/30">
+              Eliminar
+            </button>
+          </ng-container>
+          <ng-container *ngIf="isMaster">
+            <button (click)="openDetail(c); $event.stopPropagation()"
+              class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700">
+              Ver detalle →
+            </button>
+            <button (click)="openVerify(c); $event.stopPropagation()"
+              class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-600 transition">
+              Verificar
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Rejection note -->
+      <div *ngIf="c.verificationStatus === 'RECHAZADO' && c.verificationNotes"
+        class="border-t border-red-100 bg-red-50 px-5 py-2.5 text-xs text-red-600 dark:border-red-800/20 dark:bg-red-500/10 dark:text-red-400">
+        <strong>Motivo:</strong> {{ c.verificationNotes }}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: Add / Edit captain                                               -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div *ngIf="showForm()" class="fixed inset-0 z-[99999] flex items-start justify-center overflow-y-auto p-4 py-8">
+  <div class="absolute inset-0 bg-gray-400/50 backdrop-blur-sm" (click)="closeForm()"></div>
+
+  <div class="relative z-10 w-full max-w-2xl rounded-3xl bg-white shadow-2xl dark:bg-gray-900">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white/90">
+        {{ editTarget() ? 'Editar capitán' : 'Registrar capitán' }}
+      </h3>
+      <button (click)="closeForm()"
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-white/[0.07] dark:text-gray-300">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5418C5.65237 16.9323 5.65237 17.5655 6.04289 17.956C6.43342 18.3465 7.06658 18.3465 7.45711 17.956L11.9987 13.4144L16.5408 17.9565C16.9313 18.347 17.5645 18.347 17.955 17.9565C18.3455 17.566 18.3455 16.9328 17.955 16.5423L13.4129 12.0002L17.955 7.45808C18.3455 7.06756 18.3455 6.43439 17.955 6.04387C17.5645 5.65335 16.9313 5.65335 16.5408 6.04387L11.9987 10.586L7.45711 6.04439C7.06658 5.65386 6.43342 5.65386 6.04289 6.04439C5.65237 6.43491 5.65237 7.06808 6.04289 7.4586L10.5845 12.0002L6.04289 16.5418Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="p-6 space-y-6">
+
+      <!-- Section: Datos básicos -->
+      <div>
+        <h4 class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Datos personales</h4>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Nombre <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="firstName" placeholder="Juan"
+              class="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+              [ngClass]="form.get('firstName')?.invalid && form.get('firstName')?.touched ? 'border-red-400 bg-red-50' : ''" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Apellido <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="lastName" placeholder="Pérez"
+              class="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90"
+              [ngClass]="form.get('lastName')?.invalid && form.get('lastName')?.touched ? 'border-red-400 bg-red-50' : ''" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Cédula / Pasaporte</label>
+            <input type="text" formControlName="documentId" placeholder="V-12345678"
+              class="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Número de licencia náutica</label>
+            <input type="text" formControlName="licenseNumber" placeholder="LN-001234"
+              class="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Teléfono</label>
+            <input type="text" formControlName="phone" placeholder="+58 412 000 0000"
+              class="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Notas adicionales</label>
+            <textarea formControlName="notes" rows="2" placeholder="Experiencia, especialidad..."
+              class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Foto -->
+      <div>
+        <h4 class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Foto del capitán</h4>
+        <div class="max-w-xs">
+          <app-doc-upload
+            type="image"
+            label="Foto de perfil"
+            [currentUrl]="photoUrl"
+            (uploaded)="photoUrl = $event">
+          </app-doc-upload>
+        </div>
+      </div>
+
+      <!-- Section: Documentos -->
+      <div>
+        <h4 class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Documentos adjuntos</h4>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <app-doc-upload
+            type="document"
+            label="Cédula — frente"
+            [currentUrl]="documentFrontUrl"
+            (uploaded)="documentFrontUrl = $event">
+          </app-doc-upload>
+          <app-doc-upload
+            type="document"
+            label="Cédula — reverso"
+            [currentUrl]="documentBackUrl"
+            (uploaded)="documentBackUrl = $event">
+          </app-doc-upload>
+          <app-doc-upload
+            type="document"
+            label="Licencia náutica"
+            [currentUrl]="licenseDocumentUrl"
+            (uploaded)="licenseDocumentUrl = $event">
+          </app-doc-upload>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+        <button type="button" (click)="closeForm()"
+          class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/[0.04]">
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="saving || form.invalid"
+          class="flex-1 rounded-xl bg-brand-500 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60 transition-colors">
+          {{ saving ? 'Guardando...' : editTarget() ? 'Actualizar capitán' : 'Registrar capitán' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: Master detail view                                               -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div *ngIf="detailTarget()" class="fixed inset-0 z-[99999] flex items-start justify-center overflow-y-auto p-4 py-8">
+  <div class="absolute inset-0 bg-gray-400/50 backdrop-blur-sm" (click)="closeDetail()"></div>
+
+  <div class="relative z-10 w-full max-w-2xl rounded-3xl bg-white shadow-2xl dark:bg-gray-900">
+
+    <!-- Header -->
+    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-6">
+      <button (click)="closeDetail()"
+        class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5418C5.65237 16.9323 5.65237 17.5655 6.04289 17.956C6.43342 18.3465 7.06658 18.3465 7.45711 17.956L11.9987 13.4144L16.5408 17.9565C16.9313 18.347 17.5645 18.347 17.955 17.9565C18.3455 17.566 18.3455 16.9328 17.955 16.5423L13.4129 12.0002L17.955 7.45808C18.3455 7.06756 18.3455 6.43439 17.955 6.04387C17.5645 5.65335 16.9313 5.65335 16.5408 6.04387L11.9987 10.586L7.45711 6.04439C7.06658 5.65386 6.43342 5.65386 6.04289 6.04439C5.65237 6.43491 5.65237 7.06808 6.04289 7.4586L10.5845 12.0002L6.04289 16.5418Z" fill="currentColor"/></svg>
+      </button>
+      <div class="flex items-center gap-4">
+        <!-- Photo -->
+        <div class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border-2 border-white/30 bg-white/20">
+          <img *ngIf="photoSrc(detailTarget()!)" [src]="photoSrc(detailTarget()!)" [alt]="detailTarget()!.firstName"
+            class="h-full w-full object-cover" />
+          <div *ngIf="!photoSrc(detailTarget()!)"
+            class="flex h-full w-full items-center justify-center text-2xl font-bold text-white">
+            {{ initials(detailTarget()!) }}
+          </div>
+        </div>
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-white">{{ detailTarget()!.firstName }} {{ detailTarget()!.lastName }}</h2>
+          <p *ngIf="detailTarget()!.providerProfile?.companyName" class="text-sm text-white/70">{{ detailTarget()!.providerProfile!.companyName }}</p>
+          <span class="mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+            [ngClass]="statusClass(detailTarget()!.verificationStatus)">
+            {{ statusLabel(detailTarget()!.verificationStatus) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+
+      <!-- Info grid -->
+      <div>
+        <h4 class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Información personal</h4>
+        <div class="grid grid-cols-2 gap-3">
+          <div *ngIf="detailTarget()!.documentId" class="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/[0.04]">
+            <p class="text-[10px] text-gray-400">Cédula / Pasaporte</p>
+            <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white/90">{{ detailTarget()!.documentId }}</p>
+          </div>
+          <div *ngIf="detailTarget()!.licenseNumber" class="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/[0.04]">
+            <p class="text-[10px] text-gray-400">Licencia náutica</p>
+            <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white/90">{{ detailTarget()!.licenseNumber }}</p>
+          </div>
+          <div *ngIf="detailTarget()!.phone" class="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/[0.04]">
+            <p class="text-[10px] text-gray-400">Teléfono</p>
+            <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white/90">{{ detailTarget()!.phone }}</p>
+          </div>
+          <div *ngIf="detailTarget()!.createdAt" class="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/[0.04]">
+            <p class="text-[10px] text-gray-400">Registrado</p>
+            <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white/90">{{ detailTarget()!.createdAt | date:'dd MMM yyyy' }}</p>
+          </div>
+        </div>
+        <div *ngIf="detailTarget()!.notes"
+          class="mt-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 dark:border-amber-800/30 dark:bg-amber-500/10 dark:text-amber-400">
+          <p class="text-[10px] font-semibold uppercase tracking-wide mb-0.5">Notas del proveedor</p>
+          {{ detailTarget()!.notes }}
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div>
+        <h4 class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Documentos adjuntos</h4>
+
+        <div *ngIf="!hasAnyDoc(detailTarget()!)"
+          class="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-400 dark:border-gray-700">
+          Sin documentos adjuntos
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+          <!-- Document front -->
+          <div *ngIf="detailTarget()!.documentFrontUrl" class="group relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-white/[0.04]">
+            <div class="relative h-40 w-full bg-gray-100 dark:bg-gray-800">
+              <img [src]="filesService.absoluteUrl(detailTarget()!.documentFrontUrl!)" alt="Cédula frente"
+                class="h-full w-full object-cover" />
+              <a [href]="filesService.absoluteUrl(detailTarget()!.documentFrontUrl!)" target="_blank"
+                class="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/30 group-hover:opacity-100">
+                <span class="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-gray-800 shadow">Abrir →</span>
+              </a>
+            </div>
+            <div class="px-3 py-2">
+              <p class="text-[10px] font-semibold text-gray-400">Cédula — frente</p>
+            </div>
+          </div>
+
+          <!-- Document back -->
+          <div *ngIf="detailTarget()!.documentBackUrl" class="group relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-white/[0.04]">
+            <div class="relative h-40 w-full bg-gray-100 dark:bg-gray-800">
+              <img [src]="filesService.absoluteUrl(detailTarget()!.documentBackUrl!)" alt="Cédula reverso"
+                class="h-full w-full object-cover" />
+              <a [href]="filesService.absoluteUrl(detailTarget()!.documentBackUrl!)" target="_blank"
+                class="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/30 group-hover:opacity-100">
+                <span class="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-gray-800 shadow">Abrir →</span>
+              </a>
+            </div>
+            <div class="px-3 py-2">
+              <p class="text-[10px] font-semibold text-gray-400">Cédula — reverso</p>
+            </div>
+          </div>
+
+          <!-- License document -->
+          <div *ngIf="detailTarget()!.licenseDocumentUrl" class="group relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-white/[0.04]">
+            <div class="relative h-40 w-full bg-gray-100 dark:bg-gray-800">
+              <img [src]="filesService.absoluteUrl(detailTarget()!.licenseDocumentUrl!)" alt="Licencia"
+                class="h-full w-full object-cover" />
+              <a [href]="filesService.absoluteUrl(detailTarget()!.licenseDocumentUrl!)" target="_blank"
+                class="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/30 group-hover:opacity-100">
+                <span class="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-gray-800 shadow">Abrir →</span>
+              </a>
+            </div>
+            <div class="px-3 py-2">
+              <p class="text-[10px] font-semibold text-gray-400">Licencia náutica</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Verification notes (if any) -->
+      <div *ngIf="detailTarget()!.verificationNotes"
+        class="rounded-xl border px-4 py-3 text-sm"
+        [ngClass]="detailTarget()!.verificationStatus === 'RECHAZADO'
+          ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-800/30 dark:bg-red-500/10 dark:text-red-400'
+          : 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800/30 dark:bg-blue-500/10 dark:text-blue-300'">
+        <p class="text-[10px] font-semibold uppercase tracking-wide mb-0.5">Notas de verificación</p>
+        {{ detailTarget()!.verificationNotes }}
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+        <button (click)="closeDetail()"
+          class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+          Cerrar
+        </button>
+        <button (click)="openVerifyFromDetail()"
+          class="flex-1 rounded-xl bg-brand-500 py-2.5 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+          ✅ Verificar capitán
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: Verify captain (master)                                          -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div *ngIf="verifyTarget()" class="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-gray-400/50 backdrop-blur-sm" (click)="closeVerify()"></div>
+  <div class="relative z-10 w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-gray-900">
+
+    <button (click)="closeVerify()"
+      class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-white/[0.07] dark:text-gray-300">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5418C5.65237 16.9323 5.65237 17.5655 6.04289 17.956C6.43342 18.3465 7.06658 18.3465 7.45711 17.956L11.9987 13.4144L16.5408 17.9565C16.9313 18.347 17.5645 18.347 17.955 17.9565C18.3455 17.566 18.3455 16.9328 17.955 16.5423L13.4129 12.0002L17.955 7.45808C18.3455 7.06756 18.3455 6.43439 17.955 6.04387C17.5645 5.65335 16.9313 5.65335 16.5408 6.04387L11.9987 10.586L7.45711 6.04439C7.06658 5.65386 6.43342 5.65386 6.04289 6.04439C5.65237 6.43491 5.65237 7.06808 6.04289 7.4586L10.5845 12.0002L6.04289 16.5418Z" fill="currentColor"/></svg>
+    </button>
+
+    <h3 class="mb-1 text-lg font-bold text-gray-800 dark:text-white/90">Verificar capitán</h3>
+    <p class="mb-5 text-sm text-gray-500">{{ verifyTarget()!.firstName }} {{ verifyTarget()!.lastName }}</p>
+
+    <!-- Status picker -->
+    <div class="mb-4 grid grid-cols-2 gap-3">
+      <button *ngFor="let opt of [
+        {v:'APROBADO',     l:'✅ Aprobar',      c:'border-green-400 bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 dark:border-green-700'},
+        {v:'EN_REVISION',  l:'🔍 En revisión',  c:'border-blue-400 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-700'},
+        {v:'PENDIENTE',    l:'⏳ Pendiente',    c:'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-700'},
+        {v:'RECHAZADO',    l:'❌ Rechazar',     c:'border-red-400 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 dark:border-red-700'}
+      ]"
+        (click)="verifyStatus.set($any(opt.v))"
+        [ngClass]="[opt.c, verifyStatus() === opt.v ? 'ring-2 ring-offset-1' : 'opacity-70 hover:opacity-100']"
+        class="rounded-xl border px-3 py-2.5 text-sm font-semibold transition">
+        {{ opt.l }}
+      </button>
+    </div>
+
+    <div class="mb-5">
+      <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+        Notas (motivo de rechazo o comentarios)
+      </label>
+      <textarea [(ngModel)]="verifyNotes" rows="3" placeholder="Ej. Licencia vencida, foto ilegible..."
+        class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90"></textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <button (click)="closeVerify()"
+        class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+        Cancelar
+      </button>
+      <button (click)="submitVerify()" [disabled]="verifying"
+        class="flex-1 rounded-xl bg-brand-500 py-2.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60 transition-colors">
+        {{ verifying ? 'Guardando...' : 'Confirmar' }}
+      </button>
+    </div>
+
+  </div>
+</div>

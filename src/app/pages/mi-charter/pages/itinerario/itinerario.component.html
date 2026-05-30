@@ -127,9 +127,23 @@
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de salida</label>
-                <input type="date" [(ngModel)]="form.departureDate" [min]="today"
-                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de salida</label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox"
+                      [checked]="!form.departureDate"
+                      (change)="form.departureDate = form.departureDate ? '' : today"
+                      class="accent-brand-500 w-3.5 h-3.5" />
+                    <span class="text-[11px] text-gray-400">Recurrente (sin fecha)</span>
+                  </label>
+                </div>
+                <input type="date" [(ngModel)]="form.departureDate"
+                  [disabled]="!form.departureDate && form.departureDate === ''"
+                  [min]="editingId ? '' : today"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 disabled:opacity-40 disabled:cursor-not-allowed" />
+                <p class="mt-1 text-[10px] text-gray-400">
+                  {{ form.departureDate ? 'Solo disponible esa fecha' : 'Aparece todos los días (horario fijo)' }}
+                </p>
               </div>
 
               <div>

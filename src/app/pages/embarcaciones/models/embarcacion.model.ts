@@ -56,4 +56,7 @@ export interface CreateEmbarcacionDto {
 
 export interface UpdateEmbarcacionDto extends Partial<CreateEmbarcacionDto> {
   status?: VesselStatus;
+  verificationStatus?: VesselVerificationStatus;
+  rejectionReason?: string;
+  pricePerPerson?: number;
 }

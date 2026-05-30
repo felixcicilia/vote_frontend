@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
 import { IslandTripsService } from './services/island-trips.service';
+import { BuscarStateService } from './services/buscar-state.service';
 import { TasaService } from '../../shared/services/tasa.service';
 import { PuertoSalida, VesselSlot } from './models/island-trip.model';
 import { Embarcacion } from '../embarcaciones/models/embarcacion.model';
@@ -24,6 +25,7 @@ interface VesselGroup {
 })
 export class BuscarComponent implements OnInit {
   private readonly tripsService = inject(IslandTripsService);
+  private readonly buscarState  = inject(BuscarStateService);
   readonly tasaService = inject(TasaService);
   private readonly router = inject(Router);
 
@@ -56,7 +58,19 @@ export class BuscarComponent implements OnInit {
   ngOnInit(): void {
     this.tasaService.load();
     this.tripsService.getPuertos(true).subscribe({
-      next: (puntos) => { this.puntos = puntos; this.loadingPuntos = false; },
+      next: (puntos) => {
+        this.puntos = puntos;
+        this.loadingPuntos = false;
+        const saved = this.buscarState.restore();
+        if (saved) {
+          this.salidaId     = saved.salidaId;
+          this.llegadaId    = saved.llegadaId;
+          this.fecha        = saved.fecha;
+          this.passengers   = saved.passengers;
+          this.vesselGroups = saved.vesselGroups;
+          this.buscado      = saved.buscado;
+        }
+      },
       error: () => { this.loadingPuntos = false; },
     });
   }
@@ -74,6 +88,11 @@ export class BuscarComponent implements OnInit {
       next: (slots) => {
         this.vesselGroups = this.groupByVessel(slots);
         this.loading = false;
+        this.buscarState.save({
+          salidaId: this.salidaId, llegadaId: this.llegadaId,
+          fecha: this.fecha, passengers: this.passengers,
+          vesselGroups: this.vesselGroups, buscado: true,
+        });
       },
       error: () => { this.loading = false; },
     });

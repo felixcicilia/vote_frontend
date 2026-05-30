@@ -101,6 +101,31 @@
     </div>
   </div>
 
+  <!-- ══ KPIs CLIENTE ══ -->
+  <div *ngIf="!loading" class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Excursiones</p>
+      <p class="mt-1 text-2xl font-extrabold text-teal-600 dark:text-teal-400">{{ clienteTotalExcursiones }}</p>
+      <a routerLink="/mis-reservas" class="text-[10px] text-gray-400 hover:text-teal-500">Ver →</a>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Charters</p>
+      <p class="mt-1 text-2xl font-extrabold text-purple-600 dark:text-purple-400">{{ clienteTotalCharters }}</p>
+      <a routerLink="/mis-reservas" class="text-[10px] text-gray-400 hover:text-purple-500">Ver →</a>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Pendientes de pago</p>
+      <p class="mt-1 text-2xl font-extrabold" [class.text-amber-500]="clientePendientePago > 0" [class.text-gray-400]="clientePendientePago === 0">
+        {{ clientePendientePago }}
+      </p>
+    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <p class="text-xs text-gray-400">Total gastado</p>
+      <p class="mt-1 text-lg font-extrabold text-brand-600 dark:text-brand-400">{{ tasaService.formatBs(clienteGastadoTotal) }}</p>
+      <p class="text-[10px] text-gray-400">${{ clienteGastadoTotal | number:'1.2-2' }} USD</p>
+    </div>
+  </div>
+
   <!-- ══ ¿QUÉ NECESITAS? — solo Lancha y Yate ══ -->
   <div class="mb-6">
     <h2 class="mb-4 text-lg font-bold text-gray-800 dark:text-white/90">¿Qué necesitas?</h2>
@@ -153,19 +178,60 @@
     </a>
   </div>
 
-  <!-- ══ PRÓXIMAS EXCURSIONES ══ -->
-  <div *ngIf="!loading && excursionesProximas.length > 0" class="mb-6">
-    <h2 class="mb-3 text-base font-bold text-gray-800 dark:text-white/90">📅 Próximas excursiones confirmadas</h2>
-    <div class="grid gap-3 sm:grid-cols-3">
+  <!-- ══ PRÓXIMOS VIAJES ══ -->
+  <div *ngIf="!loading && (excursionesProximas.length > 0 || proximoCharter)" class="mb-6">
+    <h2 class="mb-3 text-base font-bold text-gray-800 dark:text-white/90">📅 Próximos viajes confirmados</h2>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+
+      <!-- Excursiones isla -->
       <div *ngFor="let b of excursionesProximas"
-        class="flex items-start gap-4 rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-500/20 dark:bg-green-500/5">
-        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-green-500 text-xl text-white">🏝️</div>
+        class="flex items-start gap-3 rounded-2xl border border-teal-200 bg-teal-50 p-4 dark:border-teal-500/20 dark:bg-teal-500/5">
+        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-500 text-lg text-white">🏝️</div>
         <div class="min-w-0 flex-1">
-          <p class="font-bold text-green-900 dark:text-green-300 truncate">{{ b.destination?.name ?? b.vessel?.name }}</p>
-          <p class="text-xs text-green-700 dark:text-green-400 mt-0.5">{{ b.tripDate }} · {{ b.outboundSlot?.departureTime }}</p>
-          <p class="text-xs text-green-600 dark:text-green-500">{{ b.passengers }} pax · {{ b.vessel?.name }}</p>
+          <p class="font-bold text-teal-900 dark:text-teal-300 truncate">{{ b.destination?.name ?? b.vessel?.name }}</p>
+          <p class="text-xs text-teal-700 dark:text-teal-400 mt-0.5">{{ b.tripDate | date:'EEE dd MMM':'':'es' }}</p>
+          <p class="text-xs text-teal-600 dark:text-teal-500">{{ b.passengers }} pax · {{ b.vessel?.name }}</p>
         </div>
+        <a [routerLink]="['/mis-reservas', b.id]" class="text-xs font-semibold text-teal-600 hover:text-teal-700 flex-shrink-0">Ver →</a>
       </div>
+
+      <!-- Próximo charter -->
+      <div *ngIf="proximoCharter"
+        class="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/20 dark:bg-purple-500/5">
+        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-purple-500 text-lg text-white">⚓</div>
+        <div class="min-w-0 flex-1">
+          <p class="font-bold text-purple-900 dark:text-purple-300 truncate">{{ proximoCharter.vessel?.name }}</p>
+          <p class="text-xs text-purple-700 dark:text-purple-400 mt-0.5">{{ proximoCharter.startDate | date:'EEE dd MMM':'':'es' }}</p>
+          <p class="text-xs text-purple-600 dark:text-purple-500">{{ proximoCharter.passengers }} pax · {{ proximoCharter.days }} noches</p>
+        </div>
+        <a [routerLink]="['/alquileres', proximoCharter.id]" class="text-xs font-semibold text-purple-600 hover:text-purple-700 flex-shrink-0">Ver →</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ ACTIVIDAD RECIENTE ══ -->
+  <div *ngIf="!loading && actividadReciente.length > 0"
+    class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <h2 class="font-bold text-gray-800 dark:text-white/90">Actividad reciente</h2>
+      <a routerLink="/mis-reservas" class="text-sm font-medium text-brand-500 hover:text-brand-600">Ver todas →</a>
+    </div>
+    <div class="divide-y divide-gray-100 dark:divide-gray-800">
+      <a *ngFor="let a of actividadReciente" [routerLink]="a.link"
+        class="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+        <span class="text-xl flex-shrink-0">{{ a.icon }}</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90 truncate">{{ a.descripcion }}</p>
+          <p class="text-xs text-gray-400">{{ a.tipo }} · {{ a.fecha | date:'dd MMM yyyy' }}</p>
+        </div>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-sm font-bold text-brand-600 dark:text-brand-400">${{ a.monto | number:'1.2-2' }}</p>
+          <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold" [ngClass]="statusClass(a.estado)">
+            {{ statusLabel(a.estado) }}
+          </span>
+        </div>
+      </a>
     </div>
   </div>
 
@@ -219,4 +285,211 @@
       </div>
     </div>
   </div>
+</ng-container>
+
+<!-- ─── PROVEEDOR ──────────────────────────────────────────────────── -->
+<ng-container *ngIf="isProveedor">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-32">
+    <div class="flex flex-col items-center gap-4">
+      <div class="text-5xl animate-bounce">⚓</div>
+      <p class="text-sm text-gray-400">Cargando tu panel...</p>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- Greeting -->
+    <div class="mb-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+            ¡Buen día, {{ user?.firstName }}! 👋
+          </h1>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ companyName }} · Aquí está el resumen de actividad de hoy.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a routerLink="/mi-charter/reservas"
+            class="inline-flex items-center gap-1.5 rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+            📋 Charters
+          </a>
+          <a routerLink="/reservas-isla"
+            class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700">
+            🏝️ Excursiones
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Embarcaciones</p>
+        <p class="mt-2 text-3xl font-extrabold text-gray-800 dark:text-white">{{ activeVessels }}</p>
+        <p class="mt-0.5 text-xs text-gray-400">de {{ provVessels.length }} activas</p>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Charters activos</p>
+        <p class="mt-2 text-3xl font-extrabold text-brand-600 dark:text-brand-400">{{ activeCharters }}</p>
+        <p class="mt-0.5 text-xs text-gray-400">{{ confirmedCharters }} confirmados · {{ pendingCharters }} pendientes</p>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Excursiones pend.</p>
+        <p class="mt-2 text-3xl font-extrabold text-amber-500">{{ pendingIsland }}</p>
+        <p class="mt-0.5 text-xs text-gray-400">requieren confirmación</p>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Capitanes</p>
+        <p class="mt-2 text-3xl font-extrabold text-green-600 dark:text-green-400">{{ approvedCaptains }}</p>
+        <p class="mt-0.5 text-xs text-gray-400">de {{ provCaptains.length }} verificados</p>
+      </div>
+    </div>
+
+    <!-- Main grid: upcoming + vessel activity -->
+    <div class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-5">
+
+      <!-- Upcoming events (3 cols) -->
+      <div class="lg:col-span-3 rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">📅 Próximas salidas y regresos</h3>
+          <a routerLink="/mi-charter/calendario" class="text-xs font-semibold text-brand-500 hover:text-brand-600">Ver calendario →</a>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="upcomingEvents.length === 0" class="flex flex-col items-center gap-2 py-12 text-center">
+          <span class="text-4xl">📭</span>
+          <p class="text-sm text-gray-400">Sin eventos en los próximos 60 días</p>
+        </div>
+
+        <!-- Event list -->
+        <div *ngIf="upcomingEvents.length > 0" class="divide-y divide-gray-100 dark:divide-gray-800">
+          <a *ngFor="let ev of upcomingEvents" [routerLink]="ev.route"
+            class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+            <!-- Color dot + date -->
+            <div class="flex w-14 flex-shrink-0 flex-col items-center gap-1">
+              <span class="h-2.5 w-2.5 rounded-full" [ngClass]="eventTypeColor(ev.type)"></span>
+              <span class="text-center text-[10px] font-bold text-gray-500 dark:text-gray-400 leading-tight">
+                {{ ev.date | date:'dd MMM':'':'es' }}
+              </span>
+              <span class="rounded-full px-1.5 py-0.5 text-[9px] font-bold"
+                [ngClass]="ev.daysFrom === 0 ? 'bg-red-100 text-red-600' : ev.daysFrom <= 2 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'">
+                {{ daysLabel(ev.daysFrom) }}
+              </span>
+            </div>
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-800 dark:text-white/90 truncate">{{ ev.title }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">⛵ {{ ev.vessel }} · 👤 {{ ev.client }}</p>
+              <p *ngIf="ev.time" class="text-xs text-gray-400">🕐 {{ ev.time }}</p>
+            </div>
+            <!-- Status -->
+            <span class="flex-shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold" [ngClass]="statusClass(ev.status)">
+              {{ statusLabel(ev.status) }}
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Vessel activity (2 cols) -->
+      <div class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">⛵ Actividad por embarcación</h3>
+          <a routerLink="/mi-charter/estadisticas" class="text-xs font-semibold text-brand-500 hover:text-brand-600">Ver stats →</a>
+        </div>
+
+        <div *ngIf="vesselActivity.length === 0" class="flex flex-col items-center gap-2 py-12 text-center">
+          <span class="text-4xl">⛵</span>
+          <p class="text-sm text-gray-400">Sin embarcaciones registradas</p>
+          <a routerLink="/mi-charter/yates" class="mt-1 text-xs font-semibold text-brand-500 hover:text-brand-600">Agregar →</a>
+        </div>
+
+        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+          <div *ngFor="let va of vesselActivity" class="flex items-center gap-3 px-5 py-3.5">
+            <!-- Photo -->
+            <div class="h-11 w-11 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+              <img *ngIf="va.vessel.photos?.[0]" [src]="imageUrl(va.vessel.photos![0])" [alt]="va.vessel.name"
+                class="h-full w-full object-cover" />
+              <div *ngIf="!va.vessel.photos?.[0]"
+                class="flex h-full items-center justify-center text-xl opacity-30">{{ typeIcon(va.vessel.type) }}</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="truncate text-sm font-semibold text-gray-800 dark:text-white/90">{{ va.vessel.name }}</p>
+              <div class="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
+                <span>⛵ {{ va.charterCount }}ch</span>
+                <span>🏝️ {{ va.islandCount }}exc</span>
+              </div>
+              <p *ngIf="va.nextDate" class="text-[10px] text-brand-500 mt-0.5">
+                Próx: {{ va.nextDate | date:'dd MMM':'':'es' }}
+              </p>
+            </div>
+            <!-- Total badge -->
+            <div class="flex-shrink-0 text-right">
+              <p class="text-xl font-extrabold text-gray-800 dark:text-white">{{ va.totalTrips }}</p>
+              <p class="text-[10px] text-gray-400">viajes</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Captain activity -->
+    <div *ngIf="captainActivity.length > 0"
+      class="mb-5 rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+        <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">👨‍✈️ Actividad por capitán</h3>
+        <a routerLink="/mis-capitanes" class="text-xs font-semibold text-brand-500 hover:text-brand-600">Ver capitanes →</a>
+      </div>
+      <div class="grid grid-cols-1 divide-y divide-gray-100 dark:divide-gray-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+        <div *ngFor="let ca of captainActivity" class="flex items-center gap-4 px-5 py-4">
+          <!-- Avatar -->
+          <div class="relative flex-shrink-0">
+            <div class="h-12 w-12 overflow-hidden rounded-2xl bg-brand-100 dark:bg-brand-500/10">
+              <img *ngIf="captainPhotoUrl(ca.captain)" [src]="captainPhotoUrl(ca.captain)" [alt]="ca.captain.firstName"
+                class="h-full w-full object-cover" />
+              <div *ngIf="!captainPhotoUrl(ca.captain)"
+                class="flex h-full w-full items-center justify-center text-base font-bold text-brand-600 dark:text-brand-400">
+                {{ captainInitials(ca.captain) }}
+              </div>
+            </div>
+            <!-- Verified dot -->
+            <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-900"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="truncate text-sm font-bold text-gray-800 dark:text-white/90">
+              {{ ca.captain.firstName }} {{ ca.captain.lastName }}
+            </p>
+            <p *ngIf="ca.captain.licenseNumber" class="text-[10px] text-gray-400">Lic. {{ ca.captain.licenseNumber }}</p>
+          </div>
+          <!-- Stats -->
+          <div class="flex-shrink-0 flex items-center gap-4 text-center">
+            <div>
+              <p class="text-xl font-extrabold text-brand-600 dark:text-brand-400">{{ ca.assignedCharters }}</p>
+              <p class="text-[10px] text-gray-400">asignados</p>
+            </div>
+            <div>
+              <p class="text-xl font-extrabold text-green-600 dark:text-green-400">{{ ca.completedTrips }}</p>
+              <p class="text-[10px] text-gray-400">completados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No captains tip -->
+    <div *ngIf="provCaptains.length === 0"
+      class="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-700 dark:border-amber-800/30 dark:bg-amber-500/10 dark:text-amber-300">
+      <span class="mt-0.5 text-lg">⚠️</span>
+      <div>
+        <p class="font-semibold">Aún no tienes capitanes registrados</p>
+        <p class="text-xs mt-0.5">Registra los capitanes de tu flota para poder asignarlos a los charters.</p>
+        <a routerLink="/mis-capitanes" class="mt-2 inline-flex items-center gap-1 text-xs font-bold underline">
+          Ir a Mis capitanes →
+        </a>
+      </div>
+    </div>
+
+  </ng-container>
 </ng-container>

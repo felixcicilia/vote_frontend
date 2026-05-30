@@ -75,6 +75,7 @@ export class DetalleYateComponent implements OnInit {
   ngOnInit(): void {
     this.tasaService.load();
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    const q  = this.route.snapshot.queryParamMap;
 
     this.embService.getById(id).subscribe({
       next: (v) => { this.vessel = v; this.loading = false; },
@@ -82,6 +83,18 @@ export class DetalleYateComponent implements OnInit {
     });
 
     this.destService.getAll().subscribe({ next: (d) => { this.destinos = d; } });
+
+    // Pre-llenar formulario con los parámetros de la búsqueda
+    const startDate = q.get('startDate');
+    const endDate   = q.get('endDate');
+    const destinoId = q.get('destinoId');
+    const adults    = q.get('adults');
+    const children  = q.get('children');
+    if (startDate)  this.form.patchValue({ startDate });
+    if (endDate)    this.form.patchValue({ endDate });
+    if (destinoId)  this.form.patchValue({ destinationId: Number(destinoId) });
+    if (adults)     this.form.patchValue({ adults: Number(adults) });
+    if (children)   this.form.patchValue({ children: Number(children) });
   }
 
   reservar(): void {
@@ -122,7 +135,7 @@ export class DetalleYateComponent implements OnInit {
       passengers:      this.totalPassengers,
       specialRequests: notes,
     }).subscribe({
-      next: (a) => { this.submitting = false; this.router.navigate(['/alquileres', a.id]); },
+      next: (a) => { this.submitting = false; this.router.navigate(['/pagar-charter'], { queryParams: { rentalId: a.id } }); },
       error: (err) => {
         const msg = err?.error?.message;
         this.errorMessage = Array.isArray(msg) ? msg.join(', ') : typeof msg === 'string' ? msg : 'No se pudo crear la reserva.';

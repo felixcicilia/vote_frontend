@@ -19,8 +19,11 @@ export class EmbarcacionesService {
     return response;
   }
 
-  getCharterable(): Observable<Embarcacion[]> {
-    return this.http.get<any>(`${this.base}/charterable`).pipe(map(r => this.extractArray(r)));
+  getCharterable(startDate?: string, endDate?: string): Observable<Embarcacion[]> {
+    const params: Record<string, string> = {};
+    if (startDate) params['startDate'] = startDate;
+    if (endDate)   params['endDate']   = endDate;
+    return this.http.get<any>(`${this.base}/charterable`, { params }).pipe(map(r => this.extractArray(r)));
   }
 
   toggleAvailability(id: number): Observable<Embarcacion> {
