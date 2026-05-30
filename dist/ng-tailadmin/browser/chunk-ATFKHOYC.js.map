@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/tasas/models/tasa.model.ts"],
-  "sourcesContent": ["export enum CurrencyType {\n  USD = \"USD\",\n  BS = \"BS\",\n}\n\nexport interface Tasa {\n  id: number;\n  baseCurrency: CurrencyType;\n  targetCurrency: CurrencyType;\n  rate: number | string;\n  isActive: boolean;\n  effectiveDate: string;\n  source?: string | null;\n  observacion?: string | null;\n  createdAt: string;\n  updatedAt: string;\n}\n\nexport interface CrearTasaPayload {\n  baseCurrency: CurrencyType;\n  targetCurrency: CurrencyType;\n  rate: number;\n  isActive?: boolean;\n  effectiveDate: string;\n  source?: string;\n  observacion?: string;\n}\n\nexport interface EditarTasaPayload {\n  baseCurrency?: CurrencyType;\n  targetCurrency?: CurrencyType;\n  rate?: number;\n  isActive?: boolean;\n  effectiveDate?: string;\n  source?: string;\n  observacion?: string;\n}\n\nexport interface ApiResponse<T> {\n  message?: string;\n  data: T;\n}\n"],
-  "mappings": ";AAAA,IAAY;CAAZ,SAAYA,eAAY;AACtB,EAAAA,cAAA,KAAA,IAAA;AACA,EAAAA,cAAA,IAAA,IAAA;AACF,GAHY,iBAAA,eAAY,CAAA,EAAA;",
-  "names": ["CurrencyType"]
-}

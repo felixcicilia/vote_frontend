@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/auth-pages/models/auth.model.ts"],
-  "sourcesContent": ["// 🔥 Enum profesional para roles (mejor que string suelto)\nexport enum UserRole {\n  MASTER = \"MASTER\",\n  ADMINISTRADOR = \"ADMINISTRADOR\",\n  EMPLEADO = \"EMPLEADO\",\n  PROVEEDOR = \"PROVEEDOR\",\n  CLIENTE = \"CLIENTE\",\n}\n\nexport interface AuthUser {\n  id: number;\n  firstName: string;\n  lastName: string;\n  email: string;\n  phone?: string | null;\n  photoUrl?: string | null;\n  gender?: string | null;\n  isActive: boolean;\n  role: UserRole;\n  createdAt: string;\n  updatedAt: string;\n}\n\n// 🔹 Payload login\nexport interface LoginPayload {\n  email: string;\n  password: string;\n}\n\n// 🔹 Response login\nexport interface LoginResponse {\n  message: string;\n  access_token: string;\n  user: AuthUser;\n}\n\n// 🔹 Response profile\nexport interface ProfileResponse {\n  message: string;\n  data: AuthUser;\n}"],
-  "mappings": ";AACA,IAAY;CAAZ,SAAYA,WAAQ;AAClB,EAAAA,UAAA,QAAA,IAAA;AACA,EAAAA,UAAA,eAAA,IAAA;AACA,EAAAA,UAAA,UAAA,IAAA;AACA,EAAAA,UAAA,WAAA,IAAA;AACA,EAAAA,UAAA,SAAA,IAAA;AACF,GANY,aAAA,WAAQ,CAAA,EAAA;",
-  "names": ["UserRole"]
-}
