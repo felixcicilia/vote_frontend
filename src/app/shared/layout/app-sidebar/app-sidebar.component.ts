@@ -154,6 +154,11 @@ export class AppSidebarComponent {
       path: "/mis-cuentas-retiro",
     },
     {
+      icon: `<i class="fas fa-building fa-lg"></i>`,
+      name: "Mi empresa",
+      path: "/perfil-proveedor",
+    },
+    {
       icon: `<i class="fas fa-star fa-lg"></i>`,
       name: "Reseñas",
       path: "/resenas",

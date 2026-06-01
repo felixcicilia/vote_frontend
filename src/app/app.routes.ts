@@ -561,6 +561,16 @@ export const routes: Routes = [
         title: "Puntos de salida | MARITIMO",
       },
 
+      // ── Perfil proveedor ─────────────────────────────────────────────────────
+      {
+        path: "perfil-proveedor",
+        loadComponent: () =>
+          import("./pages/perfil-proveedor/perfil-proveedor.component").then(
+            (m) => m.PerfilProveedorComponent,
+          ),
+        title: "Mi perfil de empresa | MARITIMO",
+      },
+
       // ── Destinos (admin) ──────────────────────────────────────────────────────
       {
         path: "destinos",
