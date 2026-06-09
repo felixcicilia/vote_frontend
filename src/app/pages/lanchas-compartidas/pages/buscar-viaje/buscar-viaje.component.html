@@ -1,0 +1,130 @@
+<div class="container">
+  <div class="header">
+    <h1>Lanchas Compartidas</h1>
+    <p>Encuentra viajes disponibles entre puertos</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-card">
+    <div class="form-group">
+      <label>Puerto de Salida</label>
+      <select [(ngModel)]="originId" (ngModelChange)="resetSearch()">
+        <option value="">Selecciona puerto origen</option>
+        <option *ngFor="let port of ports" [value]="port.id">
+          {{ port.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Puerto de Destino</label>
+      <select [(ngModel)]="destinationId" (ngModelChange)="resetSearch()">
+        <option value="">Selecciona puerto destino</option>
+        <option *ngFor="let port of ports" [value]="port.id">
+          {{ port.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Fecha</label>
+      <input
+        type="date"
+        [(ngModel)]="selectedDate"
+        [min]="getMinDate()"
+        (ngModelChange)="resetSearch()"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Hora (opcional)</label>
+      <input
+        type="time"
+        [(ngModel)]="selectedTime"
+        (ngModelChange)="resetSearch()"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Pasajeros</label>
+      <div class="passenger-counter">
+        <button (click)="passengers = passengers > 1 ? passengers - 1 : 1">
+          −
+        </button>
+        <span>{{ passengers }}</span>
+        <button (click)="passengers = passengers + 1">+</button>
+      </div>
+    </div>
+
+    <button
+      class="btn-search"
+      [disabled]="!originId || !destinationId || isSearching"
+      (click)="search()"
+    >
+      <span *ngIf="!isSearching">Buscar viajes</span>
+      <span *ngIf="isSearching">Buscando...</span>
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="showResults && !isSearching" class="results">
+    <h2>Viajes Disponibles</h2>
+
+    <!-- Sin resultados -->
+    <div *ngIf="trips.length === 0" class="no-results">
+      <p>No hay viajes disponibles con esos filtros</p>
+    </div>
+
+    <!-- Lista de viajes -->
+    <div *ngFor="let trip of trips" class="trip-card" (click)="goToDetail(trip.id)">
+      <div class="trip-header">
+        <div class="route">
+          <span class="origin">{{ trip.origin.name }}</span>
+          <span class="arrow">→</span>
+          <span class="destination">{{ trip.destination.name }}</span>
+        </div>
+        <div class="date">{{ formatDate(trip.scheduledDepartureTime) }}</div>
+      </div>
+
+      <div class="trip-body">
+        <div class="time-info">
+          <span class="time">{{ formatTime(trip.scheduledDepartureTime) }}</span>
+          <span *ngIf="trip.estimatedDurationMinutes" class="duration">
+            +{{ trip.estimatedDurationMinutes }} min
+          </span>
+        </div>
+
+        <div class="vessel-info">
+          <span class="vessel-name">{{ trip.vessel.name }}</span>
+        </div>
+
+        <div class="price-info">
+          <span class="price">{{ formatPrice(trip.pricePerPassenger) }}</span>
+          <span class="per-person">por persona</span>
+        </div>
+      </div>
+
+      <div class="trip-footer">
+        <div
+          class="seats"
+          [class.available]="canBook(trip)"
+          [class.full]="!canBook(trip)"
+        >
+          {{ availableSeats(trip) }} asientos
+        </div>
+        <button
+          class="btn-book"
+          [disabled]="!canBook(trip)"
+          (click)="goToDetail(trip.id); $event.stopPropagation()"
+        >
+          Reservar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

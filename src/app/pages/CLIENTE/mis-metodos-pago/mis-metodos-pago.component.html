@@ -1,0 +1,446 @@
+<div class="space-y-6">
+
+  <!-- Header con saldo de nudos -->
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Recargar nudos</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Elige un método, transfiere a las cuentas de MARITIMO y acumula nudos para pagar tus reservas.
+        </p>
+      </div>
+      <!-- Saldo -->
+      <div class="flex-shrink-0 rounded-2xl border border-brand-200 bg-brand-50 px-6 py-4 text-center dark:border-brand-500/20 dark:bg-brand-500/10">
+        <p class="text-xs font-semibold uppercase tracking-widest text-brand-500 dark:text-brand-400">Tu saldo</p>
+        <p *ngIf="!loadingSaldo" class="mt-1 text-3xl font-black text-brand-700 dark:text-brand-300">
+          {{ saldoNudos | number:'1.2-2' }}<span class="ml-1 text-lg font-bold">nudos</span>
+        </p>
+        <p *ngIf="loadingSaldo" class="mt-1 text-xl text-brand-400 animate-pulse">Cargando...</p>
+        <p class="mt-0.5 text-[10px] text-brand-400">≈ ${{ saldoNudos | number:'1.2-2' }} USD</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aviso recarga reportada -->
+  <div *ngIf="reportSent()"
+    class="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 dark:border-green-800/30 dark:bg-green-500/10">
+    <span class="text-2xl">✅</span>
+    <div>
+      <p class="text-sm font-bold text-green-700 dark:text-green-400">¡Recarga reportada con éxito!</p>
+      <p class="text-xs text-green-600 dark:text-green-500">
+        El equipo verificará tu transferencia y acreditará tus nudos en máximo 24 horas hábiles.
+      </p>
+    </div>
+  </div>
+
+  <!-- Tasa del día -->
+  <div *ngIf="tasa > 0"
+    class="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
+    <p class="text-sm text-amber-700 dark:text-amber-400">
+      💱 Tasa del día: <strong>1 USD = Bs {{ tasa | number:'1.2-2' }}</strong>
+    </p>
+    <p class="text-xs text-amber-600 dark:text-amber-500">1 nudo = 1 USD</p>
+  </div>
+
+  <!-- Cuentas de MARITIMO -->
+  <div *ngFor="let acc of accounts"
+    class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+
+    <!-- Cabecera -->
+    <div class="flex items-center justify-between px-5 py-4">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl text-xl"
+          [ngClass]="acc.currency === 'BS' ? 'bg-amber-100 dark:bg-amber-500/10' : 'bg-blue-100 dark:bg-blue-500/10'">
+          {{ acc.icon }}
+        </span>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ acc.label }}</h3>
+          <p class="text-xs text-gray-400">{{ acc.description }}</p>
+        </div>
+      </div>
+      <button (click)="openModal(acc)"
+        class="flex-shrink-0 rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold text-white hover:bg-brand-600 transition-colors shadow-sm">
+        Recargar con este método
+      </button>
+    </div>
+
+    <!-- Datos de la cuenta -->
+    <div class="border-t border-gray-100 dark:border-gray-800">
+      <div class="flex flex-wrap">
+        <div *ngFor="let f of acc.fields"
+          class="group flex min-w-[140px] flex-1 items-center justify-between gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] border-r border-gray-100 dark:border-gray-800 last:border-r-0">
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">{{ f.label }}</p>
+            <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white/90">{{ f.value }}</p>
+          </div>
+          <button (click)="copyToClipboard(f.value)" title="Copiar"
+            class="flex-shrink-0 rounded-lg border border-gray-200 px-2 py-1 text-[10px] font-bold text-gray-400
+                   opacity-0 group-hover:opacity-100 transition hover:border-brand-300 hover:text-brand-500
+                   dark:border-gray-700">
+            Copiar
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Tarjeta de Crédito / Débito (cobro directo) ─────────────────────────── -->
+  <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+
+    <!-- Cabecera -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl bg-gray-900 dark:bg-white/10 text-xl">💳</span>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Tarjeta de Crédito / Débito</h3>
+          <p class="text-xs text-gray-400">Visa · Mastercard · Amex · Cobro directo en USD</p>
+        </div>
+      </div>
+      <button (click)="showAddCard.set(true)"
+        class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700">
+        + Agregar tarjeta
+      </button>
+    </div>
+
+    <!-- Grid de tarjetas guardadas -->
+    <div *ngIf="tarjetas.length > 0" class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div *ngFor="let card of tarjetas"
+        class="relative flex flex-col gap-3 overflow-hidden rounded-2xl bg-gray-900 p-5 shadow-lg">
+
+        <!-- Overlay vencida -->
+        <div *ngIf="isExpired(card)"
+          class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60 backdrop-blur-[2px]">
+          <span class="rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">VENCIDA</span>
+        </div>
+
+        <!-- Contenido tarjeta -->
+        <div class="flex items-center justify-between">
+          <span class="text-base font-extrabold tracking-widest text-white">MARITIMO</span>
+          <span class="text-xl">💳</span>
+        </div>
+        <p class="font-mono text-sm tracking-widest text-white">{{ maskedCard(card.numero) }}</p>
+        <div class="flex items-end justify-between">
+          <div>
+            <p class="text-[9px] uppercase tracking-widest text-white/40">Titular</p>
+            <p class="text-xs font-bold uppercase text-white">{{ card.titular }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] uppercase tracking-widest text-white/40">Vence</p>
+            <p class="text-xs font-bold" [class.text-red-400]="isExpired(card)" [class.text-white]="!isExpired(card)">{{ card.vencimiento }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] uppercase tracking-widest text-white/40">CVV</p>
+            <p class="text-xs font-bold text-white">•••</p>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex gap-2 pt-1">
+          <button (click)="openTdcModal(card)" [disabled]="isExpired(card)"
+            class="flex-1 rounded-lg bg-brand-500 py-2 text-xs font-bold text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            Recargar
+          </button>
+          <button (click)="removeCard(card.id)"
+            class="rounded-lg border border-red-400/50 px-3 py-2 text-xs font-bold text-red-400 hover:bg-red-500 hover:border-red-500 hover:text-white transition-colors">
+            🗑
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin tarjetas -->
+    <div *ngIf="tarjetas.length === 0 && !showAddCard()"
+      class="px-5 py-6 text-center text-sm text-gray-400">
+      Agrega tu tarjeta para poder recargar con un solo clic.
+    </div>
+
+    <!-- Formulario agregar tarjeta -->
+    <div *ngIf="showAddCard()" class="border-t border-gray-100 dark:border-gray-800 px-5 py-4 space-y-4">
+      <p class="text-sm font-semibold text-gray-700 dark:text-white/80">Nueva tarjeta</p>
+
+      <div *ngIf="cardError"
+        class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10">
+        ⚠️ {{ cardError }}
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+        <!-- Número de tarjeta -->
+        <div class="sm:col-span-2">
+          <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Número de tarjeta</label>
+          <div class="relative">
+            <input type="text" inputmode="numeric" [value]="newCard.numero" (input)="formatCardNumber($event)"
+              placeholder="0000 0000 0000 0000" maxlength="19"
+              class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 pr-20 font-mono text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            <!-- Brand badge -->
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold tracking-widest"
+              [class.text-blue-600]="cardBrand === 'visa'"
+              [class.text-red-500]="cardBrand === 'mastercard'"
+              [class.text-teal-600]="cardBrand === 'amex'"
+              [class.text-gray-300]="!cardBrand">
+              <ng-container *ngIf="cardBrand === 'visa'">VISA</ng-container>
+              <ng-container *ngIf="cardBrand === 'mastercard'">MC</ng-container>
+              <ng-container *ngIf="cardBrand === 'amex'">AMEX</ng-container>
+              <ng-container *ngIf="!cardBrand">····</ng-container>
+            </span>
+          </div>
+        </div>
+
+        <!-- Titular -->
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Nombre del titular</label>
+          <input type="text" [value]="newCard.titular" (input)="formatTitular($event)"
+            placeholder="NOMBRE APELLIDO"
+            class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm uppercase tracking-wide text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+
+        <!-- Vencimiento + CVV -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">Vencimiento</label>
+            <input type="text" inputmode="numeric" [value]="newCard.vencimiento" (input)="formatExpiry($event)"
+              placeholder="MM/YY" maxlength="5"
+              class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 font-mono text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">CVV</label>
+            <input type="password" inputmode="numeric" [(ngModel)]="newCard.cvv" placeholder="•••" maxlength="4"
+              class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-800 outline-none focus:border-brand-400 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+        </div>
+
+      </div>
+      <div class="flex justify-end gap-2">
+        <button (click)="showAddCard.set(false); cardError = ''"
+          class="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700">
+          Cancelar
+        </button>
+        <button (click)="saveCard()"
+          class="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+          Guardar tarjeta
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════ MODAL TDC ══════════════════ -->
+  <div *ngIf="showTdcModal()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+    (click)="closeTdcModal()">
+    <div class="w-full max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-950"
+      (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">💳</span>
+          <h2 class="text-base font-bold text-gray-800 dark:text-white/90">Recargar con TDC</h2>
+        </div>
+        <button (click)="closeTdcModal()"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06]">✕</button>
+      </div>
+
+      <div class="space-y-5 p-6">
+        <!-- Tarjeta visual mini -->
+        <div *ngIf="selectedCard" class="flex items-center gap-3 rounded-xl bg-gray-900 px-4 py-3">
+          <span class="text-xl">💳</span>
+          <div>
+            <p class="font-mono text-sm font-bold text-white">{{ maskedCard(selectedCard!.numero) }}</p>
+            <p class="text-[11px] text-white/50">{{ selectedCard!.titular }} · {{ selectedCard!.vencimiento }}</p>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="tdcError"
+          class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10">
+          ⚠️ {{ tdcError }}
+        </div>
+
+        <!-- Monto -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            ¿Cuánto quieres recargar? <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-400">$</span>
+            <input type="number" [(ngModel)]="tdcMonto" min="1" placeholder="0"
+              class="h-14 w-full rounded-xl border-2 border-gray-300 bg-white pl-10 pr-4 text-2xl font-extrabold text-gray-800 outline-none
+                     focus:border-brand-400 focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+            <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">USD</span>
+          </div>
+          <p class="mt-1.5 text-xs text-gray-400">
+            Recibirás <strong class="text-brand-600 dark:text-brand-400">{{ (tdcMonto ?? 0) | number:'1.2-2' }} nudos</strong>
+            acreditados tras la verificación.
+          </p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-3">
+          <button (click)="submitTdcRecharge()"
+            [disabled]="tdcSubmitting || !tdcMonto || tdcMonto <= 0"
+            class="flex-1 rounded-xl bg-brand-500 py-3 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition-colors">
+            {{ tdcSubmitting ? 'Procesando...' : '✓ Recargar $' + (tdcMonto ?? 0) + ' USD' }}
+          </button>
+          <button (click)="closeTdcModal()" type="button"
+            class="rounded-xl border border-gray-300 px-5 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MODAL ══════════════════ -->
+  <div *ngIf="showModal()"
+    class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 backdrop-blur-sm sm:items-center"
+    (click)="closeModal()">
+    <div class="w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-950"
+      (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">{{ selectedAccount?.icon }}</span>
+          <h2 class="text-base font-bold text-gray-800 dark:text-white/90">
+            Recargar vía {{ selectedAccount?.label }}
+          </h2>
+        </div>
+        <button (click)="closeModal()"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/[0.06]">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-5 p-6">
+
+        <!-- Error -->
+        <div *ngIf="errorMsg"
+          class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+          ⚠️ {{ errorMsg }}
+        </div>
+
+        <!-- PASO 1: Datos de la cuenta seleccionada -->
+        <div class="rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-500/20 dark:bg-brand-500/10">
+          <p class="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+            1. Transfiere a esta cuenta de MARITIMO
+          </p>
+          <div class="grid grid-cols-2 gap-y-2.5 gap-x-4">
+            <div *ngFor="let f of selectedAccount?.fields">
+              <p class="text-[10px] text-brand-400 dark:text-brand-500">{{ f.label }}</p>
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-bold text-brand-800 dark:text-brand-200">{{ f.value }}</p>
+                <button (click)="copyToClipboard(f.value)"
+                  class="rounded px-1.5 py-0.5 text-[10px] font-bold text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-500/20 transition">
+                  Copiar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 2: Cuántos nudos quieres comprar -->
+        <div>
+          <p class="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            2. ¿Cuántos nudos quieres comprar?
+          </p>
+
+          <div class="flex items-center gap-3">
+            <!-- Input nudos -->
+            <div class="relative flex-1">
+              <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">⚓</span>
+              <input type="number" [(ngModel)]="nudos" min="1" placeholder="0"
+                class="h-12 w-full rounded-xl border border-gray-300 bg-white pl-8 pr-3 text-lg font-bold text-gray-800 outline-none
+                       focus:border-brand-400 focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+              <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">nudos</span>
+            </div>
+
+            <span class="text-2xl text-gray-300">=</span>
+
+            <!-- Monto a transferir -->
+            <div class="flex-1 rounded-xl border-2 p-3 text-center"
+              [class.border-amber-300]="selectedAccount?.currency === 'BS'"
+              [class.bg-amber-50]="selectedAccount?.currency === 'BS'"
+              [class.dark:bg-amber-500/10]="selectedAccount?.currency === 'BS'"
+              [class.border-green-300]="selectedAccount?.currency !== 'BS'"
+              [class.bg-green-50]="selectedAccount?.currency !== 'BS'"
+              [class.dark:bg-green-500/10]="selectedAccount?.currency !== 'BS'">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Debes transferir</p>
+              <p class="mt-0.5 text-lg font-extrabold"
+                [class.text-amber-700]="selectedAccount?.currency === 'BS'"
+                [class.dark:text-amber-400]="selectedAccount?.currency === 'BS'"
+                [class.text-green-700]="selectedAccount?.currency !== 'BS'"
+                [class.dark:text-green-400]="selectedAccount?.currency !== 'BS'">
+                {{ nudos ? montoLabel : '—' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Explicación de la tasa -->
+          <p class="mt-2 text-xs text-gray-400">
+            <ng-container *ngIf="selectedAccount?.currency === 'BS'">
+              💱 {{ nudos || 0 }} nudos × Bs {{ tasa | number:'1.2-2' }} = <strong>{{ montoLabel }}</strong>
+            </ng-container>
+            <ng-container *ngIf="selectedAccount?.currency !== 'BS'">
+              💵 1 nudo = $1 USD — transferirás <strong>{{ montoLabel }}</strong>
+            </ng-container>
+          </p>
+        </div>
+
+        <!-- PASO 3: Referencia y comprobante -->
+        <div>
+          <p class="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            3. Confirma tu transferencia
+          </p>
+
+          <!-- Referencia -->
+          <div class="mb-3">
+            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+              Nº de referencia / confirmación
+            </label>
+            <input type="text" [(ngModel)]="referencia" placeholder="ej. 00123456789"
+              class="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-800 outline-none
+                     focus:border-brand-400 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+          </div>
+
+          <!-- Comprobante -->
+          <div>
+            <label class="mb-2 block text-xs font-medium text-gray-600 dark:text-gray-400">
+              Comprobante de pago <span class="text-gray-400">(recomendado)</span>
+            </label>
+            <app-image-upload
+              label="Adjuntar comprobante"
+              (uploaded)="onProofUploaded($event)">
+            </app-image-upload>
+          </div>
+        </div>
+
+        <!-- Resumen antes de enviar -->
+        <div *ngIf="nudos && nudos > 0"
+          class="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/[0.04]">
+          <p class="text-xs text-gray-400 mb-1">Resumen de recarga</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600 dark:text-gray-300">{{ nudos }} nudos via {{ selectedAccount?.label }}</span>
+            <span class="text-sm font-bold text-gray-800 dark:text-white/90">{{ montoLabel }}</span>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-3">
+          <button (click)="submitReport()"
+            [disabled]="submitting || !nudos || nudos <= 0"
+            class="flex-1 rounded-xl bg-brand-500 py-3 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition-colors">
+            {{ submitting ? 'Enviando...' : '✓ Reportar recarga' }}
+          </button>
+          <button (click)="closeModal()" type="button"
+            class="rounded-xl border border-gray-300 px-5 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50
+                   dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.04]">
+            Cancelar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

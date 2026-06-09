@@ -1,0 +1,339 @@
+$primary: #2563eb;
+$secondary: #14b8a6;
+$success: #22c55e;
+$danger: #ef4444;
+$slate: #64748b;
+$slate-light: #94a3b8;
+$bg: #f8fafc;
+$white: #ffffff;
+$dark: #0f172a;
+
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 32px;
+  text-align: center;
+
+  h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: $dark;
+    margin: 0;
+  }
+
+  p {
+    font-size: 14px;
+    color: $slate;
+    margin: 8px 0 0;
+  }
+}
+
+.filters-card {
+  background: $white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: $slate;
+      margin-bottom: 8px;
+    }
+
+    select,
+    input[type='date'],
+    input[type='time'] {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+    }
+  }
+
+  .passenger-counter {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+
+    button {
+      background: $white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 16px;
+      color: $primary;
+      font-weight: 600;
+
+      &:hover {
+        background: $bg;
+      }
+    }
+
+    span {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      color: $dark;
+      user-select: none;
+    }
+  }
+
+  .btn-search {
+    grid-column: auto;
+    padding: 10px 16px;
+    background: $primary;
+    color: $white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: darken($primary, 5%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    &:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.error-message {
+  background: rgba($danger, 0.1);
+  color: darken($danger, 20%);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba($danger, 0.3);
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.results {
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: $dark;
+    margin: 0 0 16px;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 48px 24px;
+    background: $white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+
+    p {
+      color: $slate;
+      font-size: 14px;
+      margin: 0;
+    }
+  }
+}
+
+.trip-card {
+  background: $white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: $primary;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .trip-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .route {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: $dark;
+
+      .arrow {
+        color: $slate;
+        font-size: 12px;
+      }
+    }
+
+    .date {
+      font-size: 12px;
+      color: $slate;
+      text-align: right;
+    }
+  }
+
+  .trip-body {
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+
+    .time-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .time {
+        font-size: 16px;
+        font-weight: 700;
+        color: $primary;
+      }
+
+      .duration {
+        font-size: 12px;
+        color: $slate;
+      }
+    }
+
+    .vessel-info {
+      display: flex;
+      flex-direction: column;
+
+      .vessel-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: $dark;
+      }
+    }
+
+    .price-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+
+      .price {
+        font-size: 16px;
+        font-weight: 700;
+        color: $primary;
+      }
+
+      .per-person {
+        font-size: 11px;
+        color: $slate;
+      }
+    }
+  }
+
+  .trip-footer {
+    padding: 12px 16px;
+    background: $bg;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .seats {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+
+      &.available {
+        background: rgba($success, 0.1);
+        color: darken($success, 20%);
+      }
+
+      &.full {
+        background: rgba($danger, 0.1);
+        color: darken($danger, 20%);
+      }
+    }
+
+    .btn-book {
+      padding: 8px 16px;
+      background: $primary;
+      color: $white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        background: darken($primary, 5%);
+      }
+
+      &:disabled {
+        background: #cbd5e1;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .filters-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+
+    .btn-search {
+      grid-column: 1;
+    }
+  }
+
+  .trip-card {
+    .trip-body {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .trip-footer {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+
+      .seats {
+        text-align: center;
+      }
+
+      .btn-book {
+        width: 100%;
+      }
+    }
+  }
+}

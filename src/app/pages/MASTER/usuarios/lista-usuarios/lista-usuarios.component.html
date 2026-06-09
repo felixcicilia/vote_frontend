@@ -1,0 +1,244 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div
+      class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+    >
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+          Usuarios
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Administra los usuarios registrados en el sistema.
+        </p>
+      </div>
+
+      <a
+        routerLink="/usuarios/crear"
+        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+      >
+        Crear usuario
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+      <div class="w-full lg:max-w-md">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Buscar usuario
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="search"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Buscar por nombre, apellido, email, teléfono o rol"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 pr-10 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+          />
+
+          <button
+            *ngIf="search"
+            type="button"
+            (click)="limpiarBusqueda()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 hover:text-red-500"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="lg:ml-auto">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Registros por página
+        </label>
+        <select
+          [(ngModel)]="limit"
+          (ngModelChange)="page = 1; aplicarFiltros()"
+          class="h-11 rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        >
+          <option [ngValue]="5">5</option>
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div
+    *ngIf="loading"
+    class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+  >
+    Cargando usuarios...
+  </div>
+
+  <!-- Error -->
+  <div
+    *ngIf="!loading && errorMessage"
+    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tabla -->
+  <div
+    *ngIf="!loading && !errorMessage"
+    class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <div
+        class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+      >
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+          Lista de usuarios
+        </h3>
+
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          Mostrando {{ rangoInicio }} - {{ rangoFin }} de {{ total }} registros
+        </span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead>
+          <tr class="border-b border-gray-100 dark:border-gray-800">
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Usuario
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Teléfono
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Email
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Rol
+            </th>
+            <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="let usuario of usuariosPaginados; trackBy: trackByUsuario"
+            class="border-b border-gray-100 dark:border-gray-800"
+          >
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-400"
+                >
+                  {{
+                    (
+                      usuario.firstName?.charAt(0) ||
+                      usuario.lastName?.charAt(0) ||
+                      usuario.email.charAt(0) ||
+                      "?"
+                    ).toUpperCase()
+                  }}
+                </div>
+
+                <div>
+                  <div class="font-medium text-gray-800 dark:text-white/90">
+                    {{ getNombreCompleto(usuario) }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    ID: {{ usuario.id }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
+              {{ usuario.phone || "-" }}
+            </td>
+
+            <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
+              {{ usuario.email }}
+            </td>
+
+            <td class="px-5 py-4">
+              <span
+                class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
+                [ngClass]="getRoleClasses(usuario.role)"
+              >
+                {{ getRoleLabel(usuario.role) }}
+              </span>
+            </td>
+
+            <td class="px-5 py-4">
+              <div class="flex items-center justify-center gap-2">
+                <a
+                  [routerLink]="['/usuarios/editar', usuario.id]"
+                  class="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.03]"
+                >
+                  Editar
+                </a>
+
+                <button
+                  type="button"
+                  (click)="eliminarUsuario(usuario)"
+                  class="rounded-lg border border-red-300 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                >
+                  Borrar
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="usuariosPaginados.length === 0">
+            <td
+              colspan="5"
+              class="px-5 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
+            >
+              No se encontraron usuarios.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div
+      class="flex flex-col gap-4 border-t border-gray-100 px-5 py-4 md:flex-row md:items-center md:justify-between dark:border-gray-800"
+    >
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Página {{ page }} de {{ totalPages }}
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="cambiarPagina(page - 1)"
+          [disabled]="page === 1"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
+        >
+          Anterior
+        </button>
+
+        <button
+          type="button"
+          (click)="cambiarPagina(page + 1)"
+          [disabled]="page === totalPages || total === 0"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -598,6 +598,24 @@ export const routes: Routes = [
           ),
         title: "Detalle de excursión | MARITIMO",
       },
+
+      // ── Mis Bookings (cliente) ────────────────────────────────────────────────
+      {
+        path: "bookings",
+        loadComponent: () =>
+          import("./pages/bookings/lista-bookings.component").then(
+            (m) => m.ListaBookingsComponent,
+          ),
+        title: "Mis Reservas | MARITIMO",
+      },
+      {
+        path: "bookings/:id",
+        loadComponent: () =>
+          import("./pages/bookings/detalle-booking/detalle-booking.component").then(
+            (m) => m.DetalleBookingComponent,
+          ),
+        title: "Detalle de Reserva | MARITIMO",
+      },
     ],
   },
 

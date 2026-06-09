@@ -1,0 +1,68 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Perfil de empresa</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      Datos de tu empresa y métodos de cobro. Esta información es visible para el equipo de MARITIMO.
+    </p>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="successMessage" class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-700 dark:border-green-800/30 dark:bg-green-500/10 dark:text-green-400">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600 dark:border-red-800/30 dark:bg-red-500/10 dark:text-red-400">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+
+    <!-- ── Datos de la empresa ────────────────────────────────────────── -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <h2 class="mb-5 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">Datos de la empresa</h2>
+
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+        <!-- Nombre empresa -->
+        <div class="md:col-span-2">
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Nombre de la empresa <span class="text-red-500">*</span>
+          </label>
+          <input type="text" formControlName="companyName" placeholder="Ej. Lanchas del Caribe C.A."
+            class="h-11 w-full rounded-xl border px-4 text-sm text-gray-800 outline-none transition dark:bg-white/[0.03] dark:text-white/90"
+            [ngClass]="isInvalid('companyName')
+              ? 'border-red-400 bg-red-50 focus:border-red-500'
+              : 'border-gray-300 bg-white focus:border-brand-500 dark:border-gray-700'" />
+          <p *ngIf="isInvalid('companyName')" class="mt-1 text-xs text-red-500">Campo requerido.</p>
+        </div>
+
+        <!-- Descripción -->
+        <div class="md:col-span-2">
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Descripción</label>
+          <textarea formControlName="description" rows="3"
+            placeholder="Breve descripción de tus servicios turísticos..."
+            class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90"></textarea>
+        </div>
+
+        <!-- Dirección -->
+        <div class="md:col-span-2">
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección</label>
+          <input type="text" formControlName="address" placeholder="Av. Principal, Porlamar, Nueva Esparta"
+            class="h-11 w-full rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90" />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Guardar -->
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="saving"
+        class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-8 py-3 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60 transition-colors">
+        <span *ngIf="saving">Guardando...</span>
+        <span *ngIf="!saving">💾 Guardar cambios</span>
+      </button>
+    </div>
+
+  </form>
+</div>

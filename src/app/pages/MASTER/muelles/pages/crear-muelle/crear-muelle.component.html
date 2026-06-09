@@ -1,0 +1,81 @@
+<div class="space-y-6">
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Nuevo muelle</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Registra un nuevo punto de embarque.</p>
+      </div>
+      <a routerLink="/muelles" class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Volver</a>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">{{ errorMessage }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div class="md:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre <span class="text-red-500">*</span></label>
+        <input type="text" formControlName="name" placeholder="Ej: Muelle Puerto Cabello"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.name.touched && f.name.invalid" class="mt-1 text-xs text-red-500">El nombre es obligatorio.</p>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Latitud <span class="text-red-500">*</span></label>
+        <input type="number" step="any" formControlName="latitude" placeholder="Ej: 10.4696"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.latitude.touched && f.latitude.invalid" class="mt-1 text-xs text-red-500">La latitud es obligatoria.</p>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Longitud <span class="text-red-500">*</span></label>
+        <input type="number" step="any" formControlName="longitude" placeholder="Ej: -68.0042"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        <p *ngIf="f.longitude.touched && f.longitude.invalid" class="mt-1 text-xs text-red-500">La longitud es obligatoria.</p>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección</label>
+        <input type="text" formControlName="address" placeholder="Ej: Av. Principal s/n"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Ciudad</label>
+        <input type="text" formControlName="city" placeholder="Ej: Puerto Cabello"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
+        <input type="text" formControlName="state" placeholder="Ej: Carabobo"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Descripción</label>
+        <textarea formControlName="description" rows="3" placeholder="Descripción del muelle..."
+          class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"></textarea>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <input type="checkbox" formControlName="isActive" id="isActive" class="h-4 w-4 rounded border-gray-300 text-brand-500" />
+        <label for="isActive" class="text-sm font-medium text-gray-700 dark:text-gray-300">Muelle activo</label>
+      </div>
+
+      <div class="md:col-span-2">
+        <app-image-upload
+          label="Foto del muelle"
+          (uploaded)="onPhotoUploaded($event)">
+        </app-image-upload>
+      </div>
+    </div>
+
+    <div class="mt-6 flex gap-3 sm:justify-end">
+      <a routerLink="/muelles" class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Cancelar</a>
+      <button type="submit" [disabled]="loading" class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60">
+        {{ loading ? 'Guardando...' : 'Guardar muelle' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,119 @@
+<div class="container">
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">← Volver</button>
+    <h1>Detalles del Viaje</h1>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Cargando viaje...</p>
+  </div>
+
+  <div *ngIf="errorMessage && !isLoading" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="trip && !isLoading" class="trip-details">
+    <!-- Ruta Principal -->
+    <div class="card route-card">
+      <div class="route-header">
+        <div class="location">
+          <h3>{{ trip.origin.name }}</h3>
+          <p>Salida: {{ formatDate(trip.scheduledDepartureTime) }}</p>
+          <p class="time">{{ formatTime(trip.scheduledDepartureTime) }}</p>
+        </div>
+
+        <div class="arrow-container">
+          <span class="arrow">→</span>
+          <p *ngIf="trip.estimatedDurationMinutes" class="duration">
+            {{ trip.estimatedDurationMinutes }} min
+          </p>
+        </div>
+
+        <div class="location">
+          <h3>{{ trip.destination.name }}</h3>
+          <p>Destino</p>
+          <p class="time">{{ formatTime(trip.scheduledDepartureTime) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Viaje -->
+    <div class="card">
+      <h2>Información del Viaje</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Estado</span>
+          <span class="value">{{
+            trip.status === 'SEARCHING_PASSENGERS'
+              ? 'Buscando pasajeros'
+              : trip.status
+          }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Precio por Asiento</span>
+          <span class="value">{{ formatPrice(trip.pricePerPassenger) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Asientos Disponibles</span>
+          <span class="value">{{ availableSeats }} de {{ trip.maxPassengers }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Embarcación -->
+    <div class="card">
+      <h2>Embarcación</h2>
+      <div class="vessel-info">
+        <div class="vessel-icon">🚤</div>
+        <div class="vessel-details">
+          <h3>{{ trip.vessel.name }}</h3>
+          <p>Capacidad: {{ trip.maxPassengers }} pasajeros</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operador -->
+    <div class="card">
+      <h2>Operador</h2>
+      <div class="provider-info">
+        <div class="provider-avatar">👤</div>
+        <div class="provider-details">
+          <h3>{{ trip.provider.name }}</h3>
+          <p>Capitán verificado ✓</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pasajeros Confirmados -->
+    <div class="card">
+      <h2>Pasajeros Confirmados ({{ trip.passengers.length }})</h2>
+      <div *ngIf="trip.passengers.length === 0" class="empty-state">
+        <p>Aún no hay pasajeros confirmados</p>
+      </div>
+      <div *ngIf="trip.passengers.length > 0" class="passengers-list">
+        <div *ngFor="let passenger of trip.passengers" class="passenger-item">
+          <div class="seat-number">A{{ passenger.seatNumber }}</div>
+          <div class="passenger-name">{{ passenger.passenger.name }}</div>
+          <div class="status confirmed">Confirmado</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón de Reserva -->
+    <div class="actions">
+      <button
+        class="btn-reserve"
+        [disabled]="!canBook"
+        (click)="goToReservation()"
+      >
+        {{
+          canBook
+            ? 'Reservar Asiento'
+            : trip?.status === 'SEARCHING_PASSENGERS'
+              ? 'Viaje Completo'
+              : 'Viaje No Disponible'
+        }}
+      </button>
+    </div>
+  </div>
+</div>

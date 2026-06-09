@@ -1,0 +1,220 @@
+<div class="space-y-6 pb-12">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-brand-500">Mi Charter</p>
+        <h1 class="mt-1 text-3xl font-extrabold text-gray-800 dark:text-white/90">
+          {{ isEdit ? 'Editar embarcación' : 'Nueva embarcación' }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{ isEdit ? 'Actualiza los datos de tu yate o catamarán.' : 'Registra tu yate o catamarán para recibir reservas de los clientes.' }}
+        </p>
+      </div>
+      <a routerLink="/mi-charter/yates"
+        class="inline-flex items-center gap-2 justify-center rounded-xl border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+        ← Volver a mis embarcaciones
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="text-6xl animate-bounce">⛵</div>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="guardar()">
+
+    <div *ngIf="errorMessage"
+      class="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+      ⚠️ {{ errorMessage }}
+    </div>
+
+    <!-- Layout 2 columnas -->
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+
+      <!-- ══ COLUMNA IZQUIERDA ══ -->
+      <div class="flex-1 min-w-0 space-y-6">
+
+        <!-- Información básica -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h2 class="mb-5 text-lg font-bold text-gray-800 dark:text-white/90">Información básica</h2>
+
+          <!-- Nombre -->
+          <div class="mb-5">
+            <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Nombre de la embarcación <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="name" placeholder="Ej: La Gaviota Blanca"
+              class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+            <p *ngIf="f.name.touched && f.name.invalid" class="mt-1 text-xs text-red-500">Nombre requerido.</p>
+          </div>
+
+          <!-- Tipo -->
+          <div class="mb-5">
+            <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Tipo <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <label *ngFor="let t of TYPES"
+                class="flex cursor-pointer items-center gap-4 rounded-2xl border-2 p-5 transition"
+                [class.border-brand-500]="f.type.value === t.value"
+                [class.bg-brand-50]="f.type.value === t.value"
+                [class.dark:bg-brand-500\/10]="f.type.value === t.value"
+                [class.border-gray-200]="f.type.value !== t.value"
+                [class.dark:border-gray-700]="f.type.value !== t.value">
+                <input type="radio" formControlName="type" [value]="t.value" class="sr-only" />
+                <span class="text-4xl">{{ t.icon }}</span>
+                <div>
+                  <p class="text-base font-bold text-gray-800 dark:text-white">{{ t.label }}</p>
+                  <p class="text-xs text-gray-400">{{ t.value === 'YATE' ? 'Ideal para charter privado' : 'Para grupos grandes' }}</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Capacidad, Cabinas, Baños -->
+          <div class="mb-5 grid grid-cols-3 gap-4">
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">👥 Capacidad *</label>
+              <input type="number" formControlName="capacity" min="1" max="200"
+                class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+              <p *ngIf="f.capacity.touched && f.capacity.invalid" class="mt-1 text-xs text-red-500">Requerido.</p>
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">🛏️ Cabinas</label>
+              <input type="number" formControlName="rooms" min="0" placeholder="Opcional"
+                class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">🚿 Baños</label>
+              <input type="number" formControlName="bathrooms" min="0" placeholder="Opcional"
+                class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+            </div>
+          </div>
+
+          <!-- Precio, Año, Matrícula -->
+          <div class="mb-5 grid grid-cols-3 gap-4">
+            <div>
+              <ng-container *ngIf="!isPricePerPerson">
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">💵 Precio / día (USD) *</label>
+                <input type="number" formControlName="pricePerDay" min="1" placeholder="250"
+                  class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+              </ng-container>
+              <ng-container *ngIf="isPricePerPerson">
+                <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">💵 Precio / persona (USD) *</label>
+                <input type="number" formControlName="pricePerPerson" min="1" placeholder="35"
+                  class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+              </ng-container>
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">📅 Año</label>
+              <input type="number" formControlName="year" min="1980" [max]="2026" placeholder="2022"
+                class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">🪪 Matrícula</label>
+              <input type="text" formControlName="licensePlate" placeholder="AB-1234"
+                class="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-base outline-none focus:border-brand-400 focus:bg-white dark:border-gray-700 dark:bg-slate-800 dark:text-white" />
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Descripción</label>
+            <textarea formControlName="description" rows="4"
+              placeholder="Describe tu embarcación, la experiencia a bordo, rutas favoritas, características destacadas..."
+              class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none focus:border-brand-400 focus:bg-white transition dark:border-gray-700 dark:bg-slate-800 dark:text-white resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Fotos -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="mb-5 flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">Fotos de la embarcación</h2>
+              <p class="mt-0.5 text-sm text-gray-400">Las fotos aumentan significativamente las reservas. Agrega al menos 3.</p>
+            </div>
+            <button type="button" (click)="addPhotoSlot()"
+              class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 transition">
+              + Agregar foto
+            </button>
+          </div>
+          <div *ngIf="photos.length === 0"
+            class="rounded-2xl border-2 border-dashed border-gray-200 py-14 text-center dark:border-gray-700">
+            <div class="text-5xl mb-3 opacity-30">📷</div>
+            <p class="text-sm font-medium text-gray-500">Sin fotos todavía</p>
+            <p class="text-xs text-gray-400 mt-1">Haz clic en "+ Agregar foto" para subir imágenes</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div *ngFor="let p of photos; let i = index">
+              <app-image-upload
+                [label]="'Foto ' + (i + 1)"
+                [currentUrl]="p"
+                (uploaded)="onPhotoUploaded($event, i)">
+              </app-image-upload>
+              <button type="button" (click)="removePhoto(i)"
+                class="mt-1.5 w-full rounded-lg border border-red-200 py-1 text-xs font-medium text-red-500 hover:bg-red-50 transition">
+                Eliminar foto {{ i + 1 }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ COLUMNA DERECHA (sticky) ══ -->
+      <div class="w-full flex-shrink-0 space-y-5 lg:sticky lg:top-6 lg:w-80 xl:w-96">
+
+        <!-- Disponibilidad -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h2 class="mb-4 text-base font-bold text-gray-800 dark:text-white/90">Disponibilidad</h2>
+          <label class="flex cursor-pointer items-center gap-4">
+            <div class="relative flex-shrink-0">
+              <input type="checkbox" formControlName="isAvailable" class="sr-only peer" />
+              <div class="h-7 w-14 rounded-full bg-gray-200 peer-checked:bg-brand-500 dark:bg-gray-700 transition-colors"></div>
+              <div class="absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform peer-checked:translate-x-7"></div>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800 dark:text-white">
+                {{ f.isAvailable.value ? '✓ Disponible para reservas' : '✗ No disponible' }}
+              </p>
+              <p class="mt-0.5 text-xs text-gray-400">Los clientes solo verán embarcaciones disponibles y verificadas.</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Amenidades -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h2 class="mb-1 text-base font-bold text-gray-800 dark:text-white/90">Servicios y amenidades</h2>
+          <p class="mb-4 text-xs text-gray-400">Selecciona todo lo que ofrece tu embarcación.</p>
+          <div class="grid grid-cols-1 gap-2">
+            <label *ngFor="let a of ALL_AMENITIES"
+              (click)="toggleAmenity(a.value)"
+              class="flex cursor-pointer items-center gap-3 rounded-xl border-2 px-3 py-2.5 transition select-none"
+              [class.border-brand-400]="hasAmenity(a.value)"
+              [class.bg-brand-50]="hasAmenity(a.value)"
+              [class.dark:bg-brand-500\/10]="hasAmenity(a.value)"
+              [class.dark:border-brand-500]="hasAmenity(a.value)"
+              [class.border-gray-100]="!hasAmenity(a.value)"
+              [class.dark:border-gray-700]="!hasAmenity(a.value)">
+              <span class="text-lg">{{ a.icon }}</span>
+              <span class="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300">{{ a.label }}</span>
+              <span *ngIf="hasAmenity(a.value)" class="text-brand-500 text-sm font-bold">✓</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button type="submit" [disabled]="saving"
+          class="w-full rounded-2xl bg-brand-500 py-5 text-base font-extrabold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50 transition-colors">
+          {{ saving ? 'Guardando...' : (isEdit ? '✓ Guardar cambios' : '✓ Registrar embarcación') }}
+        </button>
+
+        <p class="text-center text-xs text-gray-400">
+          {{ isEdit ? 'Los cambios pueden requerir nueva verificación.' : 'Tu embarcación será revisada antes de aparecer a los clientes.' }}
+        </p>
+
+      </div>
+    </div>
+
+  </form>
+</div>

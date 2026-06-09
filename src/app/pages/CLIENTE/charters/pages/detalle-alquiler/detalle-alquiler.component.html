@@ -1,0 +1,429 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Charter #{{ alquiler?.id }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detalle completo del alquiler privado de embarcación.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Proveedor: aprobar/rechazar cuando PENDING (cliente ya pagó) -->
+        <ng-container *ngIf="isProveedor && alquiler?.status === 'PENDING'">
+          <button (click)="changeStatus('CONFIRMED')" [disabled]="updating"
+            class="inline-flex items-center gap-2 rounded-lg bg-green-500 hover:bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50">
+            ✅ Aprobar reserva
+          </button>
+          <button (click)="changeStatus('CANCELLED')" [disabled]="updating"
+            class="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50">
+            ✗ Rechazar
+          </button>
+        </ng-container>
+
+        <!-- Cliente: pagar cuando PENDING (aún sin pago) -->
+        <ng-container *ngIf="isCliente && alquiler?.status === 'PENDING'">
+          <a [routerLink]="['/pagar-charter']" [queryParams]="{ rentalId: alquiler?.id }"
+            class="inline-flex items-center gap-2 rounded-lg bg-purple-600 hover:bg-purple-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
+            💳 Pagar reserva
+          </a>
+        </ng-container>
+
+        <!-- Cancelar SOLO cuando PENDING (antes de pagar) -->
+        <ng-container *ngIf="(isCliente || isProveedor) && alquiler?.status === 'PENDING'">
+          <button (click)="changeStatus('CANCELLED')" [disabled]="updating"
+            class="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition disabled:opacity-50">
+            ✗ Cancelar
+          </button>
+        </ng-container>
+
+        <!-- Reseñar (solo completados) -->
+        <button *ngIf="alquiler?.status === 'COMPLETED' && !alreadyReviewed && isCliente"
+          (click)="reviewOpen = true"
+          class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition dark:border-amber-700/40 dark:bg-amber-500/10 dark:text-amber-400">
+          ⭐ Reseñar
+        </button>
+        <span *ngIf="alquiler?.status === 'COMPLETED' && alreadyReviewed && isCliente"
+          class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium px-2">
+          ✅ Ya reseñaste
+        </span>
+        <button (click)="chatOpen = true"
+          class="inline-flex items-center gap-2 rounded-lg bg-brand-500 hover:bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors">
+          <i class="fas fa-comment-dots"></i> Chat
+        </button>
+        <a [routerLink]="backRoute"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.05]">
+          ← Volver
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">
+    Cargando detalle del charter...
+  </div>
+  <div *ngIf="!loading && errorMessage"
+    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+    {{ errorMessage }}
+  </div>
+
+  <ng-container *ngIf="!loading && alquiler">
+
+    <!-- ── Status badge + cancelación ────────────────────────────────────── -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex rounded-full px-3 py-1.5 text-sm font-semibold" [ngClass]="statusClass(alquiler.status)">
+            {{ statusLabel(alquiler.status) }}
+          </span>
+          <span *ngIf="alquiler.status !== 'CANCELLED'" class="text-sm text-gray-500 dark:text-gray-400">
+            Reserva creada el {{ formatDateTime(alquiler.createdAt) }}
+          </span>
+        </div>
+        <div *ngIf="alquiler.status === 'CANCELLED' && alquiler.cancellationReason"
+          class="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
+          <span>⛔</span>
+          <div>
+            <p class="font-semibold">Motivo de cancelación</p>
+            <p class="mt-0.5">{{ alquiler.cancellationReason }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline de estados -->
+      <div *ngIf="alquiler.status !== 'CANCELLED'" class="mt-6">
+        <div class="flex items-center gap-0">
+          <ng-container *ngFor="let step of steps; let i = index; let last = last">
+            <!-- Paso -->
+            <div class="flex flex-col items-center gap-1 min-w-0">
+              <div class="flex h-9 w-9 items-center justify-center rounded-full text-base transition"
+                [ngClass]="stepIndex(alquiler.status) >= i
+                  ? 'bg-brand-500 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-400 dark:bg-gray-800'">
+                {{ step.icon }}
+              </div>
+              <span class="text-[10px] font-medium leading-tight text-center"
+                [ngClass]="stepIndex(alquiler.status) >= i ? 'text-brand-600 dark:text-brand-400' : 'text-gray-400'">
+                {{ step.label }}
+              </span>
+            </div>
+            <!-- Línea conectora -->
+            <div *ngIf="!last" class="h-0.5 flex-1 mx-1"
+              [ngClass]="stepIndex(alquiler.status) > i ? 'bg-brand-400' : 'bg-gray-200 dark:bg-gray-700'">
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Grid principal ─────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Columna izquierda: embarcación + capitán -->
+      <div class="space-y-5 lg:col-span-1">
+
+        <!-- Embarcación -->
+        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <div *ngIf="alquiler.vessel?.photos?.[0]"
+            class="h-40 w-full overflow-hidden">
+            <img [src]="imageUrl(alquiler.vessel.photos![0])" [alt]="alquiler.vessel.name"
+              class="h-full w-full object-cover" />
+          </div>
+          <div *ngIf="!alquiler.vessel?.photos?.[0]"
+            class="flex h-32 w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-5xl opacity-30 dark:from-slate-800 dark:to-slate-900">
+            ⛵
+          </div>
+          <div class="p-4">
+            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Embarcación</p>
+            <p class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">{{ alquiler.vessel.name }}</p>
+            <div class="mt-2 flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span>{{ alquiler.vessel.type }}</span>
+              <span *ngIf="alquiler.vessel.capacity">👥 {{ alquiler.vessel.capacity }} pax</span>
+              <span *ngIf="alquiler.vessel.licensePlate">🪪 {{ alquiler.vessel.licensePlate }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capitán -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Capitán asignado</p>
+
+          <!-- captainProfile (nuevo sistema) -->
+          <ng-container *ngIf="alquiler.captainProfile as cap">
+            <div class="mt-3 flex items-center gap-3">
+              <!-- Foto o iniciales -->
+              <div class="h-12 w-12 flex-shrink-0 rounded-full overflow-hidden bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center">
+                <img *ngIf="cap.photoUrl" [src]="imageUrl(cap.photoUrl)" class="h-full w-full object-cover" alt="foto">
+                <span *ngIf="!cap.photoUrl" class="text-lg font-bold text-brand-600 dark:text-brand-400">
+                  {{ cap.firstName[0] }}{{ cap.lastName[0] }}
+                </span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-semibold text-gray-800 dark:text-white/90">
+                    {{ cap.firstName }} {{ cap.lastName }}
+                  </p>
+                  <span *ngIf="cap.verificationStatus === 'APROBADO'"
+                    class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-500/15 dark:text-green-400">
+                    <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Verificado
+                  </span>
+                </div>
+                <p *ngIf="cap.licenseNumber" class="text-xs text-gray-400">🪪 Lic. {{ cap.licenseNumber }}</p>
+                <p *ngIf="cap.phone" class="text-xs text-gray-400">📞 {{ cap.phone }}</p>
+              </div>
+            </div>
+
+            <!-- Documentos del capitán -->
+            <div class="mt-4 space-y-2">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Documentos</p>
+              <div class="grid grid-cols-1 gap-2">
+
+                <!-- Cédula frontal -->
+                <a *ngIf="cap.documentFrontUrl" [href]="imageUrl(cap.documentFrontUrl)" target="_blank"
+                  class="flex items-center gap-2.5 rounded-xl border border-gray-200 p-2.5 hover:border-brand-400 hover:bg-brand-50 transition-colors dark:border-gray-700 dark:hover:bg-brand-500/10">
+                  <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-sm dark:bg-blue-500/20">🪪</span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Cédula (frente)</p>
+                    <p class="text-[10px] text-gray-400 truncate">{{ cap.documentId ?? 'Ver documento' }}</p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-xs text-gray-400"></i>
+                </a>
+
+                <!-- Cédula trasera -->
+                <a *ngIf="cap.documentBackUrl" [href]="imageUrl(cap.documentBackUrl)" target="_blank"
+                  class="flex items-center gap-2.5 rounded-xl border border-gray-200 p-2.5 hover:border-brand-400 hover:bg-brand-50 transition-colors dark:border-gray-700 dark:hover:bg-brand-500/10">
+                  <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-sm dark:bg-blue-500/20">🪪</span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Cédula (reverso)</p>
+                    <p class="text-[10px] text-gray-400">Ver documento</p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-xs text-gray-400"></i>
+                </a>
+
+                <!-- Licencia náutica -->
+                <a *ngIf="cap.licenseDocumentUrl" [href]="imageUrl(cap.licenseDocumentUrl)" target="_blank"
+                  class="flex items-center gap-2.5 rounded-xl border border-gray-200 p-2.5 hover:border-brand-400 hover:bg-brand-50 transition-colors dark:border-gray-700 dark:hover:bg-brand-500/10">
+                  <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 text-sm dark:bg-green-500/20">⚓</span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Licencia náutica</p>
+                    <p class="text-[10px] text-gray-400 truncate">{{ cap.licenseNumber ?? 'Ver documento' }}</p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-xs text-gray-400"></i>
+                </a>
+
+                <!-- Sin documentos -->
+                <p *ngIf="!cap.documentFrontUrl && !cap.documentBackUrl && !cap.licenseDocumentUrl"
+                  class="text-xs text-gray-400 italic">Sin documentos adjuntos.</p>
+
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Capitán legacy (tipo usuario) -->
+          <ng-container *ngIf="!alquiler.captainProfile && alquiler.captain">
+            <div class="mt-3 flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-xl dark:bg-brand-500/20">👨‍✈️</div>
+              <p class="text-sm font-semibold text-gray-800 dark:text-white/90">
+                {{ alquiler.captain.firstName }} {{ alquiler.captain.lastName }}
+              </p>
+            </div>
+          </ng-container>
+
+          <!-- Sin capitán -->
+          <p *ngIf="!alquiler.captainProfile && !alquiler.captain" class="mt-2 text-sm text-gray-400">
+            Sin capitán asignado
+          </p>
+        </div>
+
+        <!-- Destino -->
+        <div *ngIf="alquiler.destination" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Destino</p>
+          <p class="mt-2 text-sm font-semibold text-gray-800 dark:text-white/90">
+            📍 {{ alquiler.destination.name }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Columna derecha: detalles -->
+      <div class="space-y-5 lg:col-span-2">
+
+        <!-- Partes involucradas -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Partes involucradas</p>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="flex items-start gap-3">
+              <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg dark:bg-blue-500/20">👤</div>
+              <div>
+                <p class="text-[11px] uppercase tracking-widest text-gray-400">Cliente</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ alquiler.client.firstName }} {{ alquiler.client.lastName }}</p>
+                <p class="text-xs text-gray-400">{{ alquiler.client.email }}</p>
+              </div>
+            </div>
+            <div *ngIf="alquiler.vessel.provider" class="flex items-start gap-3">
+              <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-lg dark:bg-green-500/20">🏢</div>
+              <div>
+                <p class="text-[11px] uppercase tracking-widest text-gray-400">Proveedor</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ alquiler.vessel.provider?.companyName ?? '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fechas y duración -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Período del charter</p>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div>
+              <p class="text-xs text-gray-400">Inicio</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ formatDate(alquiler.startDate) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Fin</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ formatDate(alquiler.endDate) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Duración</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ durationLabel(alquiler.days) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Pasajeros</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ alquiler.passengers }} pax</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pago -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Resumen de pago</p>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div>
+              <p class="text-xs text-gray-400">Precio / noche</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+                ${{ (alquiler.days > 0 ? alquiler.totalPrice / alquiler.days : alquiler.totalPrice) | number:'1.2-2' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Noches</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ alquiler.days }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Total pagado</p>
+              <p class="mt-1 text-xl font-extrabold text-brand-600 dark:text-brand-400">${{ alquiler.totalPrice | number:'1.2-2' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagos registrados -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Pagos registrados</p>
+          <div *ngIf="loadingPagos" class="text-sm text-gray-400">Cargando...</div>
+          <div *ngIf="!loadingPagos && pagos.length === 0" class="flex items-center gap-2 text-sm text-gray-400">
+            <span>💳</span> Sin pagos registrados aún.
+            <a *ngIf="isCliente && alquiler.status === 'PENDING'" [routerLink]="['/pagar-charter']" [queryParams]="{ rentalId: alquiler.id }"
+              class="ml-2 font-semibold text-brand-500 hover:underline">Pagar ahora →</a>
+          </div>
+          <div *ngIf="!loadingPagos && pagos.length > 0" class="space-y-3">
+            <div *ngFor="let p of pagos" class="flex items-center gap-3 rounded-xl border border-gray-100 p-3 dark:border-gray-800">
+              <span class="text-xl">{{ methodIcon(p.method) }}</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ pagoDisplay(p) }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ p.method }} · {{ formatDateTime(p.createdAt) }}</p>
+                <p *ngIf="p.transactionRef" class="text-xs text-gray-400">Ref: {{ p.transactionRef }}</p>
+              </div>
+              <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold flex-shrink-0" [ngClass]="pagoStatusClass(p.status)">
+                {{ pagoStatusLabel(p.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial de tiempos -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Historial de eventos</p>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm dark:bg-gray-800">📋</span>
+              <div class="flex flex-1 items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Reserva creada</span>
+                <span class="text-xs text-gray-400">{{ formatDateTime(alquiler.createdAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="alquiler.confirmedAt" class="flex items-center gap-3">
+              <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm dark:bg-blue-500/20">✅</span>
+              <div class="flex flex-1 items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Reserva confirmada por proveedor</span>
+                <span class="text-xs text-gray-400">{{ formatDateTime(alquiler.confirmedAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="alquiler.paidAt" class="flex items-center gap-3">
+              <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm dark:bg-purple-500/20">💳</span>
+              <div class="flex flex-1 items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Pago realizado por cliente</span>
+                <span class="text-xs text-gray-400">{{ formatDateTime(alquiler.paidAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="alquiler.startedAt" class="flex items-center gap-3">
+              <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm dark:bg-brand-500/20">⛵</span>
+              <div class="flex flex-1 items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Charter iniciado</span>
+                <span class="text-xs text-gray-400">{{ formatDateTime(alquiler.startedAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="alquiler.completedAt" class="flex items-center gap-3">
+              <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-sm dark:bg-green-500/20">🏁</span>
+              <div class="flex flex-1 items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Charter completado</span>
+                <span class="text-xs text-gray-400">{{ formatDateTime(alquiler.completedAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Solicitudes especiales -->
+        <div *ngIf="alquiler.specialRequests"
+          class="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-500/10">
+          <p class="text-xs font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">Solicitudes especiales</p>
+          <p class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ alquiler.specialRequests }}</p>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>
+
+<!-- Chat panel -->
+<app-reservation-chat
+  *ngIf="chatOpen && alquiler"
+  [bookingId]="alquiler.id"
+  bookingType="CHARTER"
+  [clientUserId]="chatClientId"
+  [providerUserId]="chatProviderId"
+  [title]="chatTitle"
+  (closeChat)="chatOpen = false">
+</app-reservation-chat>
+
+<!-- Modal reseña -->
+<app-review-modal
+  *ngIf="reviewOpen && alquiler"
+  referenceType="RENTAL"
+  [referenceId]="alquiler.id"
+  [vesselId]="alquiler.vessel?.id"
+  [title]="(alquiler.destination?.name ?? alquiler.vessel?.name ?? 'Charter') + ' · Charter #' + alquiler.id"
+  (cerrar)="reviewOpen = false"
+  (enviada)="onReviewSent()">
+</app-review-modal>
+
+<!-- Modal de pago -->
+<app-pago-charter-modal
+  *ngIf="pagoModalOpen && alquiler"
+  [alquiler]="alquiler"
+  (pagado)="onPagado()"
+  (cerrar)="pagoModalOpen = false">
+</app-pago-charter-modal>
+

@@ -1,0 +1,294 @@
+<div class="space-y-6">
+
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">Verificar embarcaciones</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Revisa y aprueba o rechaza las embarcaciones enviadas por los proveedores.</p>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="text-4xl animate-bounce">🔍</div>
+  </div>
+
+  <div *ngIf="!loading && vessels.length === 0"
+    class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+    <div class="text-5xl mb-4">✅</div>
+    <h3 class="text-lg font-bold text-gray-700 dark:text-white/80">Sin pendientes</h3>
+    <p class="mt-2 text-sm text-gray-500">No hay embarcaciones esperando verificación.</p>
+  </div>
+
+  <div *ngIf="!loading && vessels.length > 0" class="space-y-4">
+    <p class="text-sm text-gray-500">
+      <span class="font-bold text-amber-600">{{ vessels.length }}</span>
+      embarcación{{ vessels.length !== 1 ? 'es' : '' }} pendiente{{ vessels.length !== 1 ? 's' : '' }} de revisión
+    </p>
+
+    <div *ngFor="let v of vessels"
+      class="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm dark:border-amber-500/30 dark:bg-white/[0.03]">
+
+      <!-- Panel rechazar (en lista) -->
+      <div *ngIf="rejectingId === v.id && detailVessel?.id !== v.id"
+        class="bg-red-50 border-b border-red-200 p-5 dark:bg-red-500/10 dark:border-red-500/30">
+        <p class="mb-2 text-sm font-semibold text-red-700 dark:text-red-400">Motivo del rechazo (opcional)</p>
+        <textarea [(ngModel)]="rejectionReason" rows="2"
+          placeholder="Ej: Las fotos no son claras, falta documentación..."
+          class="w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm outline-none focus:border-red-400 dark:border-red-500/30 dark:bg-slate-800 dark:text-white resize-none"></textarea>
+        <div class="mt-3 flex gap-2">
+          <button (click)="confirmReject(v)" [disabled]="processing === v.id"
+            class="rounded-xl bg-red-500 px-4 py-2 text-xs font-bold text-white hover:bg-red-600 disabled:opacity-50">
+            {{ processing === v.id ? 'Rechazando...' : 'Confirmar rechazo' }}
+          </button>
+          <button (click)="cancelReject()" type="button"
+            class="rounded-xl border border-gray-300 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+            Cancelar
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row">
+        <!-- Foto -->
+        <div class="h-44 w-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 sm:h-auto sm:w-48">
+          <img *ngIf="v.photos?.[0]" [src]="imageUrl(v.photos![0])" [alt]="v.name"
+            class="h-full w-full object-cover" />
+          <div *ngIf="!v.photos?.[0]"
+            class="flex h-full min-h-[176px] items-center justify-center text-6xl opacity-20">{{ typeIcon(v.type) }}</div>
+          <!-- indicador de fotos extra -->
+          <div *ngIf="(v.photos?.length ?? 0) > 1"
+            class="absolute bottom-2 right-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] text-white">
+            +{{ (v.photos?.length ?? 1) - 1 }} fotos
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="flex flex-1 flex-col justify-between p-5 gap-4">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="text-lg font-bold text-gray-800 dark:text-white/90">{{ v.name }}</h3>
+              <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-white/[0.06]">{{ typeIcon(v.type) }} {{ v.type }}</span>
+            </div>
+            <p *ngIf="v.provider?.companyName" class="mt-0.5 text-xs text-gray-400">Proveedor: {{ v.provider?.companyName }}</p>
+
+            <div class="mt-2 flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
+              <span>👥 {{ v.capacity }} pax</span>
+              <span *ngIf="v.rooms">🛏️ {{ v.rooms }} cabinas</span>
+              <span *ngIf="v.bathrooms">🚿 {{ v.bathrooms }} baños</span>
+              <span *ngIf="v.year">📅 {{ v.year }}</span>
+              <span *ngIf="v.pricePerDay">${{ v.pricePerDay }}/día</span>
+            </div>
+
+            <p *ngIf="v.description" class="mt-2 text-xs text-gray-400 line-clamp-2">{{ v.description }}</p>
+
+            <div *ngIf="v.amenities?.length" class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let a of (v.amenities ?? []).slice(0, 5)"
+                class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 dark:bg-white/[0.06]">{{ amenityLabel(a) }}</span>
+              <span *ngIf="(v.amenities?.length ?? 0) > 5"
+                class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400 dark:bg-white/[0.06]">
+                +{{ (v.amenities?.length ?? 0) - 5 }} más
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <!-- Ver detalle -->
+            <button (click)="openDetail(v)"
+              class="rounded-xl border border-brand-300 px-5 py-2.5 text-sm font-bold text-brand-600 hover:bg-brand-50 transition-colors dark:border-brand-500/40 dark:text-brand-400">
+              🔍 Ver detalle completo
+            </button>
+            <button (click)="approve(v)" [disabled]="processing === v.id || rejectingId === v.id"
+              class="rounded-xl bg-green-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-600 disabled:opacity-50 transition-colors">
+              {{ processing === v.id ? 'Aprobando...' : '✓ Aprobar' }}
+            </button>
+            <button (click)="openReject(v)" [disabled]="processing === v.id"
+              class="rounded-xl border border-red-300 px-5 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors dark:border-red-500/40 dark:text-red-400">
+              ✗ Rechazar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════ MODAL DETALLE ════════════════════════════════════ -->
+<div *ngIf="detailVessel"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+  (click)="closeDetail()">
+
+  <div class="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header modal -->
+    <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+      <div>
+        <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
+          {{ typeIcon(detailVessel.type) }} {{ detailVessel.name }}
+        </h2>
+        <p class="text-xs text-gray-400">{{ detailVessel.type }} · Proveedor: {{ detailVessel.provider?.companyName ?? '—' }}</p>
+      </div>
+      <button (click)="closeDetail()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition text-xl">✕</button>
+    </div>
+
+    <!-- Contenido scrollable -->
+    <div class="flex-1 overflow-y-auto">
+
+      <!-- Galería de fotos -->
+      <div class="relative bg-gray-900" style="height: 280px;">
+        <ng-container *ngIf="detailVessel.photos?.length; else noPhotos">
+          <img [src]="imageUrl(detailVessel.photos![activePhotoIndex])" [alt]="detailVessel.name"
+            class="h-full w-full object-contain" />
+
+          <!-- Navegación galería -->
+          <button *ngIf="(detailVessel.photos?.length ?? 0) > 1"
+            (click)="prevPhoto()"
+            class="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition">
+            ‹
+          </button>
+          <button *ngIf="(detailVessel.photos?.length ?? 0) > 1"
+            (click)="nextPhoto()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition">
+            ›
+          </button>
+
+          <!-- Contador -->
+          <div class="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
+            {{ activePhotoIndex + 1 }} / {{ detailVessel.photos!.length }}
+          </div>
+
+          <!-- Miniaturas -->
+          <div *ngIf="(detailVessel.photos?.length ?? 0) > 1"
+            class="absolute bottom-3 left-3 flex gap-1.5">
+            <button *ngFor="let p of detailVessel.photos; let i = index"
+              (click)="activePhotoIndex = i"
+              class="h-8 w-8 overflow-hidden rounded border-2 transition"
+              [class.border-white]="activePhotoIndex === i"
+              [class.border-transparent]="activePhotoIndex !== i">
+              <img [src]="imageUrl(p)" class="h-full w-full object-cover" />
+            </button>
+          </div>
+        </ng-container>
+        <ng-template #noPhotos>
+          <div class="flex h-full items-center justify-center text-8xl opacity-20">{{ typeIcon(detailVessel.type) }}</div>
+        </ng-template>
+      </div>
+
+      <div class="p-6 space-y-5">
+
+        <!-- Ficha técnica -->
+        <div>
+          <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Ficha técnica</h3>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+              <p class="text-xs text-gray-400">Capacidad</p>
+              <p class="mt-0.5 text-xl font-bold text-gray-800 dark:text-white/90">{{ detailVessel.capacity }}</p>
+              <p class="text-[10px] text-gray-400">pasajeros</p>
+            </div>
+            <div *ngIf="detailVessel.rooms" class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+              <p class="text-xs text-gray-400">Cabinas</p>
+              <p class="mt-0.5 text-xl font-bold text-gray-800 dark:text-white/90">{{ detailVessel.rooms }}</p>
+              <p class="text-[10px] text-gray-400">habitaciones</p>
+            </div>
+            <div *ngIf="detailVessel.bathrooms" class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+              <p class="text-xs text-gray-400">Baños</p>
+              <p class="mt-0.5 text-xl font-bold text-gray-800 dark:text-white/90">{{ detailVessel.bathrooms }}</p>
+              <p class="text-[10px] text-gray-400">unidades</p>
+            </div>
+            <div *ngIf="detailVessel.year" class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+              <p class="text-xs text-gray-400">Año</p>
+              <p class="mt-0.5 text-xl font-bold text-gray-800 dark:text-white/90">{{ detailVessel.year }}</p>
+            </div>
+            <div *ngIf="detailVessel.pricePerDay" class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+              <p class="text-xs text-gray-400">Precio</p>
+              <p class="mt-0.5 text-xl font-bold text-gray-800 dark:text-white/90">${{ detailVessel.pricePerDay }}</p>
+              <p class="text-[10px] text-gray-400">por día</p>
+            </div>
+            <div *ngIf="detailVessel.licensePlate" class="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+              <p class="text-xs text-gray-400">Matrícula</p>
+              <p class="mt-0.5 text-sm font-bold text-gray-800 dark:text-white/90">{{ detailVessel.licensePlate }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div *ngIf="detailVessel.description">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Descripción</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{{ detailVessel.description }}</p>
+        </div>
+
+        <!-- Amenidades -->
+        <div *ngIf="detailVessel.amenities?.length">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Amenidades ({{ detailVessel.amenities!.length }})
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let a of detailVessel.amenities"
+              class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 dark:border-gray-700 dark:bg-white/[0.04] dark:text-gray-300">
+              {{ amenityLabel(a) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Proveedor -->
+        <div *ngIf="detailVessel.provider" class="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Datos del proveedor</h3>
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 text-sm text-gray-600 dark:text-gray-400">
+            <div *ngIf="detailVessel.provider.companyName">
+              <span class="font-medium text-gray-700 dark:text-gray-300">Empresa:</span> {{ detailVessel.provider.companyName }}
+            </div>
+            <div *ngIf="detailVessel.provider.pagoMovilPhone">
+              <span class="font-medium text-gray-700 dark:text-gray-300">📱 Pago Móvil:</span> {{ detailVessel.provider.pagoMovilPhone }}
+            </div>
+            <div *ngIf="detailVessel.provider.zelleEmail">
+              <span class="font-medium text-gray-700 dark:text-gray-300">💸 Zelle:</span> {{ detailVessel.provider.zelleEmail }}
+            </div>
+            <div *ngIf="detailVessel.provider.bankName">
+              <span class="font-medium text-gray-700 dark:text-gray-300">🏦 Banco:</span> {{ detailVessel.provider.bankName }}
+            </div>
+            <div *ngIf="detailVessel.provider.bankAccount">
+              <span class="font-medium text-gray-700 dark:text-gray-300">Cuenta:</span> {{ detailVessel.provider.bankAccount }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel rechazo dentro del modal -->
+        <div *ngIf="rejectingId === detailVessel.id"
+          class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+          <p class="mb-2 text-sm font-semibold text-red-700 dark:text-red-400">Motivo del rechazo (opcional)</p>
+          <textarea [(ngModel)]="rejectionReason" rows="3"
+            placeholder="Ej: Las fotos no son claras, falta documentación oficial..."
+            class="w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm outline-none focus:border-red-400 dark:border-red-500/30 dark:bg-slate-800 dark:text-white resize-none"></textarea>
+          <div class="mt-3 flex gap-2">
+            <button (click)="confirmReject(detailVessel)" [disabled]="processing === detailVessel.id"
+              class="rounded-xl bg-red-500 px-5 py-2 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50">
+              {{ processing === detailVessel.id ? 'Rechazando...' : 'Confirmar rechazo' }}
+            </button>
+            <button (click)="cancelReject()"
+              class="rounded-xl border border-gray-300 px-5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+              Cancelar
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer de acciones -->
+    <div class="flex items-center justify-end gap-3 border-t border-gray-100 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
+      <button (click)="closeDetail()"
+        class="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">
+        Cerrar
+      </button>
+      <button *ngIf="rejectingId !== detailVessel.id"
+        (click)="openReject(detailVessel)"
+        [disabled]="processing === detailVessel.id"
+        class="rounded-xl border border-red-300 px-5 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-500/40 dark:text-red-400">
+        ✗ Rechazar
+      </button>
+      <button (click)="approve(detailVessel)"
+        [disabled]="processing === detailVessel.id || rejectingId === detailVessel.id"
+        class="rounded-xl bg-green-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-green-600 disabled:opacity-50">
+        {{ processing === detailVessel.id ? 'Aprobando...' : '✓ Aprobar embarcación' }}
+      </button>
+    </div>
+
+  </div>
+</div>

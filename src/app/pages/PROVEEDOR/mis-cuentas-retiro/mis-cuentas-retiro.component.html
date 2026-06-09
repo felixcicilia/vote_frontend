@@ -1,0 +1,185 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Datos bancarios de retiro</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      Registra tus cuentas para recibir los pagos de tus reservas.
+    </p>
+  </div>
+
+  <!-- Nota -->
+  <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
+    <p class="text-sm text-amber-700 dark:text-amber-400">
+      ⚠️ Los retiros se procesan manualmente por el equipo de MARITIMO dentro de las <strong>72 horas hábiles</strong> siguientes a la solicitud.
+    </p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center py-12">
+    <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ── Transferencia bancaria Venezuela ───────────────────────────────────── -->
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex size-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/10 text-xl">🏦</span>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Transferencia bancaria</h3>
+            <p class="text-xs text-gray-400">Cuenta venezolana (Bs)</p>
+          </div>
+          <span *ngIf="isComplete('transferencia')" class="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-500/10 dark:text-green-400">✓ Registrada</span>
+          <span *ngIf="saved() === 'transferencia'" class="ml-2 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-300">✓ Guardada</span>
+        </div>
+        <button (click)="toggleEdit('transferencia')"
+          class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-400">
+          {{ editing() === 'transferencia' ? 'Cancelar' : (isComplete('transferencia') ? 'Editar' : 'Agregar') }}
+        </button>
+      </div>
+
+      <!-- Vista -->
+      <div *ngIf="editing() !== 'transferencia' && isComplete('transferencia')" class="grid grid-cols-2 gap-4 px-5 py-4">
+        <div>
+          <p class="text-xs text-gray-400">Banco</p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ bankName }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Número de cuenta</p>
+          <p class="font-mono text-sm font-medium text-gray-800 dark:text-white/90">{{ maskedAccount(bankAccount) }}</p>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <div *ngIf="editing() === 'transferencia'" class="px-5 py-4 space-y-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">Banco</label>
+            <select [(ngModel)]="bankName"
+              class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+              <option value="">Seleccionar banco</option>
+              <option *ngFor="let b of bancos" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">Número de cuenta</label>
+            <input type="text" [(ngModel)]="bankAccount" placeholder="01020000000000000000" maxlength="20"
+              class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 font-mono text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button (click)="save('transferencia')" [disabled]="saving()"
+            class="rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+            {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Pago Móvil ─────────────────────────────────────────────────────────── -->
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex size-10 items-center justify-center rounded-xl bg-green-100 dark:bg-green-500/10 text-xl">📱</span>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Pago Móvil</h3>
+            <p class="text-xs text-gray-400">Retiros rápidos en Bs</p>
+          </div>
+          <span *ngIf="isComplete('pagoMovil')" class="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-500/10 dark:text-green-400">✓ Registrado</span>
+          <span *ngIf="saved() === 'pagoMovil'" class="ml-2 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-300">✓ Guardado</span>
+        </div>
+        <button (click)="toggleEdit('pagoMovil')"
+          class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-400">
+          {{ editing() === 'pagoMovil' ? 'Cancelar' : (isComplete('pagoMovil') ? 'Editar' : 'Agregar') }}
+        </button>
+      </div>
+
+      <!-- Vista -->
+      <div *ngIf="editing() !== 'pagoMovil' && isComplete('pagoMovil')" class="px-5 py-4">
+        <p class="text-xs text-gray-400">Teléfono</p>
+        <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ pagoMovilPhone }}</p>
+      </div>
+
+      <!-- Formulario -->
+      <div *ngIf="editing() === 'pagoMovil'" class="px-5 py-4 space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">Teléfono</label>
+          <input type="text" [(ngModel)]="pagoMovilPhone" placeholder="0412-0000000"
+            class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 sm:max-w-xs">
+        </div>
+        <div class="flex justify-end">
+          <button (click)="save('pagoMovil')" [disabled]="saving()"
+            class="rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+            {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Internacional ───────────────────────────────────────────────────────── -->
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex size-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-500/10 text-xl">🌐</span>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Pagos internacionales</h3>
+            <p class="text-xs text-gray-400">Zelle y Binance (USD / USDT)</p>
+          </div>
+          <span *ngIf="isComplete('internacional')" class="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-500/10 dark:text-green-400">✓ Registrado</span>
+          <span *ngIf="saved() === 'internacional'" class="ml-2 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-300">✓ Guardado</span>
+        </div>
+        <button (click)="toggleEdit('internacional')"
+          class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-400">
+          {{ editing() === 'internacional' ? 'Cancelar' : (isComplete('internacional') ? 'Editar' : 'Agregar') }}
+        </button>
+      </div>
+
+      <!-- Vista -->
+      <div *ngIf="editing() !== 'internacional' && isComplete('internacional')" class="grid grid-cols-1 gap-4 px-5 py-4 sm:grid-cols-2">
+        <div *ngIf="zelleEmail">
+          <p class="text-xs text-gray-400">Zelle</p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ zelleEmail }}</p>
+        </div>
+        <div *ngIf="binanceEmail">
+          <p class="text-xs text-gray-400">Binance (email / ID)</p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ binanceEmail }}</p>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <div *ngIf="editing() === 'internacional'" class="px-5 py-4 space-y-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+              💚 Zelle (email o teléfono)
+            </label>
+            <input type="text" [(ngModel)]="zelleEmail" placeholder="email@gmail.com"
+              class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+              🟡 Binance (email o Binance ID)
+            </label>
+            <input type="text" [(ngModel)]="binanceEmail" placeholder="email@binance.com"
+              class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button (click)="save('internacional')" [disabled]="saving()"
+            class="rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-50 transition">
+            {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

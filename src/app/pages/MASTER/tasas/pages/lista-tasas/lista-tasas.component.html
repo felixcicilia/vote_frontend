@@ -1,0 +1,307 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div
+      class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+    >
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+          Tasas de cambio
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Gestiona las tasas registradas para operaciones del sistema.
+        </p>
+      </div>
+
+      <span *ngIf="!isMaster"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400">
+        👁️ Solo visualización
+      </span>
+      <a *ngIf="isMaster"
+        routerLink="/tasas/crear"
+        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+      >
+        Crear tasa
+      </a>
+    </div>
+  </div>
+
+  <!-- Tasa activa -->
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Tasa activa USD → BS
+        </p>
+        <h3 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white/90">
+          {{
+            loadingActiva
+              ? "Cargando..."
+              : tasaActiva
+                ? formatearNumero(tasaActiva.rate)
+                : "No disponible"
+          }}
+        </h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{
+            tasaActiva
+              ? "Fecha efectiva: " + formatearFecha(tasaActiva.effectiveDate)
+              : "No hay una tasa activa registrada."
+          }}
+        </p>
+      </div>
+
+      <div *ngIf="tasaActiva" class="text-right">
+        <span
+          class="inline-flex rounded-full px-3 py-1 text-xs font-medium"
+          [ngClass]="getEstadoClase(tasaActiva.isActive)"
+        >
+          {{ getEstadoTexto(tasaActiva.isActive) }}
+        </span>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          {{ tasaActiva.source || "Sin fuente" }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div
+    class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
+      <div class="w-full lg:max-w-md">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Buscar tasa
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="search"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Buscar por moneda, tasa, fuente, observación o fecha"
+            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 pr-10 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+          />
+
+          <button
+            *ngIf="search || filtroEstado !== 'TODAS'"
+            type="button"
+            (click)="limpiarBusqueda()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 hover:text-red-500"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full lg:w-56">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Estado
+        </label>
+        <select
+          [(ngModel)]="filtroEstado"
+          (ngModelChange)="onFilterChange()"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        >
+          <option value="TODAS">Todas</option>
+          <option value="ACTIVAS">Activas</option>
+          <option value="INACTIVAS">Inactivas</option>
+        </select>
+      </div>
+
+      <div class="w-full lg:w-48 lg:ml-auto">
+        <label
+          class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Registros por página
+        </label>
+        <select
+          [(ngModel)]="limit"
+          (ngModelChange)="page = 1; aplicarFiltros()"
+          class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
+        >
+          <option [ngValue]="5">5</option>
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div
+    *ngIf="loading"
+    class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+  >
+    Cargando tasas...
+  </div>
+
+  <!-- Error -->
+  <div
+    *ngIf="!loading && errorMessage"
+    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tabla -->
+  <div
+    *ngIf="!loading && !errorMessage"
+    class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+  >
+    <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+      <div
+        class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+      >
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+          Lista de tasas
+        </h3>
+
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          Mostrando {{ rangoInicio }} - {{ rangoFin }} de {{ total }} registros
+        </span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead>
+          <tr class="border-b border-gray-100 dark:border-gray-800">
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Monedas
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Tasa
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Fecha efectiva
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Fuente
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">
+              Estado
+            </th>
+            <th *ngIf="isMaster" class="px-5 py-3 text-center text-xs font-medium text-gray-500">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="let tasa of tasasPaginadas; trackBy: trackByTasa"
+            class="border-b border-gray-100 dark:border-gray-800"
+          >
+            <td class="px-5 py-4">
+              <div class="font-medium text-gray-800 dark:text-white/90">
+                {{ tasa.baseCurrency }} → {{ tasa.targetCurrency }}
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                ID: {{ tasa.id }}
+              </div>
+            </td>
+
+            <td
+              class="px-5 py-4 text-sm font-semibold text-gray-800 dark:text-white/90"
+            >
+              {{ formatearNumero(tasa.rate) }}
+            </td>
+
+            <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
+              {{ formatearFecha(tasa.effectiveDate) }}
+            </td>
+
+            <td class="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
+              {{ tasa.source || "Sin fuente" }}
+            </td>
+
+            <td class="px-5 py-4">
+              <span
+                class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
+                [ngClass]="getEstadoClase(tasa.isActive)"
+              >
+                {{ getEstadoTexto(tasa.isActive) }}
+              </span>
+            </td>
+
+            <td *ngIf="isMaster" class="px-5 py-4">
+              <div class="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  (click)="activarTasa(tasa)"
+                  [disabled]="tasa.isActive"
+                  class="rounded-lg border border-green-300 px-3 py-2 text-xs font-medium text-green-700 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-500/10"
+                >
+                  Activar
+                </button>
+
+                <a
+                  [routerLink]="['/tasas/editar', tasa.id]"
+                  class="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.03]"
+                >
+                  Editar
+                </a>
+
+                <button
+                  type="button"
+                  (click)="eliminarTasa(tasa)"
+                  class="rounded-lg border border-red-300 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                >
+                  Borrar
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="tasasPaginadas.length === 0">
+            <td
+              colspan="6"
+              class="px-5 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
+            >
+              No se encontraron tasas registradas.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div
+      class="flex flex-col gap-4 border-t border-gray-100 px-5 py-4 md:flex-row md:items-center md:justify-between dark:border-gray-800"
+    >
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Página {{ page }} de {{ totalPages }}
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="cambiarPagina(page - 1)"
+          [disabled]="page === 1"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
+        >
+          Anterior
+        </button>
+
+        <button
+          type="button"
+          (click)="cambiarPagina(page + 1)"
+          [disabled]="page === totalPages || total === 0"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

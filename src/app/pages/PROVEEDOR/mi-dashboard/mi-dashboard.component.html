@@ -1,0 +1,153 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+          Hola, {{ user?.firstName }} 👋
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Resumen de tu actividad en MARITIMO</p>
+      </div>
+      <div class="flex gap-2">
+        <a routerLink="/buscar"
+          class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-600 transition-colors">
+          🏝️ Buscar excursión
+        </a>
+        <a routerLink="/alquileres"
+          class="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 transition dark:border-gray-700 dark:text-gray-300">
+          ⚓ Charter
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="text-5xl animate-bounce">⛵</div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Excursiones</p>
+        <p class="mt-2 text-3xl font-extrabold text-teal-600 dark:text-teal-400">{{ totalExcursiones }}</p>
+        <a routerLink="/mis-reservas" [queryParams]="{tipo:'ISLAND'}" class="mt-1 block text-xs text-gray-400 hover:text-teal-500">Ver excursiones →</a>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Charters</p>
+        <p class="mt-2 text-3xl font-extrabold text-purple-600 dark:text-purple-400">{{ totalCharters }}</p>
+        <a routerLink="/mis-reservas" [queryParams]="{tipo:'CHARTER'}" class="mt-1 block text-xs text-gray-400 hover:text-purple-500">Ver charters →</a>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Pendientes de pago</p>
+        <p class="mt-2 text-3xl font-extrabold" [class.text-amber-500]="pendingPago > 0" [class.text-gray-400]="pendingPago === 0">
+          {{ pendingPago }}
+        </p>
+        <p class="mt-1 text-xs text-gray-400">reservas sin pagar</p>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Total gastado</p>
+        <p class="mt-2 text-xl font-extrabold text-brand-600 dark:text-brand-400">{{ tasaService.formatBs(gastadoTotal) }}</p>
+        <p class="text-xs text-gray-400">${{ gastadoTotal | number:'1.2-2' }} USD</p>
+      </div>
+
+    </div>
+
+    <!-- Próximos viajes -->
+    <div *ngIf="proximaExcursion || proximoCharter"
+      class="rounded-2xl border border-brand-200 bg-brand-50/50 p-5 shadow-sm dark:border-brand-700/30 dark:bg-brand-500/[0.05]">
+      <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">📅 Próximos viajes</p>
+      <div class="grid gap-3 sm:grid-cols-2">
+
+        <div *ngIf="proximaExcursion" class="flex items-center gap-3 rounded-xl bg-white dark:bg-white/[0.05] px-4 py-3 shadow-sm">
+          <span class="text-2xl">🏝️</span>
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-gray-800 dark:text-white/90 truncate">{{ proximaExcursion.destination?.name ?? 'Excursión' }}</p>
+            <p class="text-xs text-gray-400">{{ proximaExcursion.tripDate | date:'EEEE dd MMM yyyy':'':'es' }}</p>
+          </div>
+          <a [routerLink]="['/mis-reservas', proximaExcursion.id]"
+            class="text-xs font-semibold text-brand-500 hover:text-brand-600 flex-shrink-0">Ver →</a>
+        </div>
+
+        <div *ngIf="proximoCharter" class="flex items-center gap-3 rounded-xl bg-white dark:bg-white/[0.05] px-4 py-3 shadow-sm">
+          <span class="text-2xl">⚓</span>
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-gray-800 dark:text-white/90 truncate">{{ proximoCharter.vessel?.name ?? 'Charter' }}</p>
+            <p class="text-xs text-gray-400">{{ proximoCharter.startDate | date:'EEEE dd MMM yyyy':'':'es' }}</p>
+          </div>
+          <a [routerLink]="['/alquileres', proximoCharter.id]"
+            class="text-xs font-semibold text-brand-500 hover:text-brand-600 flex-shrink-0">Ver →</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Actividad reciente -->
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Actividad reciente</h3>
+        <a routerLink="/mis-reservas" class="text-xs font-semibold text-brand-500 hover:text-brand-600">Ver todas →</a>
+      </div>
+
+      <ng-container *ngIf="actividadReciente.length > 0">
+        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+          <a *ngFor="let a of actividadReciente" [routerLink]="a.link"
+            class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors">
+            <span class="text-xl flex-shrink-0">{{ a.icon }}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800 dark:text-white/90 truncate">{{ a.descripcion }}</p>
+              <p class="text-xs text-gray-400">{{ a.tipo }} · {{ a.fecha | date:'dd MMM yyyy' }}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="text-sm font-bold text-brand-600 dark:text-brand-400">${{ a.monto | number:'1.2-2' }}</p>
+              <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold" [ngClass]="statusClass(a.estado)">
+                {{ statusLabel(a.estado) }}
+              </span>
+            </div>
+          </a>
+        </div>
+      </ng-container>
+
+      <div *ngIf="actividadReciente.length === 0" class="py-14 text-center">
+        <div class="text-4xl mb-3">⛵</div>
+        <p class="text-sm text-gray-400">Sin actividad todavía.</p>
+        <a routerLink="/buscar"
+          class="mt-4 inline-flex rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600">
+          Buscar excursiones →
+        </a>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <a routerLink="/buscar"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
+        <span class="text-3xl">🏝️</span>
+        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Buscar excursión</span>
+      </a>
+      <a routerLink="/alquileres"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
+        <span class="text-3xl">⚓</span>
+        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Charter privado</span>
+      </a>
+      <a routerLink="/mis-reservas"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
+        <span class="text-3xl">📋</span>
+        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Mis reservas</span>
+      </a>
+      <a routerLink="/mis-metodos-pago"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center hover:border-brand-300 hover:shadow-sm transition dark:border-gray-800 dark:bg-white/[0.03]">
+        <span class="text-3xl">💳</span>
+        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Métodos de pago</span>
+      </a>
+    </div>
+
+  </ng-container>
+</div>

@@ -1,0 +1,237 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Reserva #{{ booking?.id }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detalle de tu excursión.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a [routerLink]="backRoute"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.05]">
+          ← Volver
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">
+    Cargando reserva...
+  </div>
+  <div *ngIf="!loading && errorMessage"
+    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+    {{ errorMessage }}
+  </div>
+
+  <ng-container *ngIf="!loading && booking">
+
+    <!-- ── Estado + Timeline ──────────────────────────────────────────────── -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex rounded-full px-3 py-1.5 text-sm font-semibold" [ngClass]="statusClass(booking.status)">
+            {{ statusLabel(booking.status) }}
+          </span>
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            Creada el {{ formatDateTime(booking.createdAt) }}
+          </span>
+        </div>
+        <div *ngIf="booking.status === 'CANCELLED' && booking.cancellationReason"
+          class="flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
+          <span>⛔</span>
+          <div>
+            <p class="font-semibold">Motivo de cancelación</p>
+            <p class="mt-0.5">{{ booking.cancellationReason }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div *ngIf="booking.status !== 'CANCELLED'" class="mt-6">
+        <div class="flex items-center gap-0">
+          <ng-container *ngFor="let step of steps; let i = index; let last = last">
+            <div class="flex flex-col items-center gap-1 min-w-0">
+              <div class="flex h-9 w-9 items-center justify-center rounded-full text-base transition"
+                [ngClass]="stepIndex(booking.status) >= i
+                  ? 'bg-brand-500 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-400 dark:bg-gray-800'">
+                {{ step.icon }}
+              </div>
+              <span class="text-[10px] font-medium leading-tight text-center"
+                [ngClass]="stepIndex(booking.status) >= i ? 'text-brand-600 dark:text-brand-400' : 'text-gray-400'">
+                {{ step.label }}
+              </span>
+            </div>
+            <div *ngIf="!last" class="h-0.5 flex-1 mx-1"
+              [ngClass]="stepIndex(booking.status) > i ? 'bg-brand-400' : 'bg-gray-200 dark:bg-gray-700'">
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Grid principal ─────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Columna izquierda -->
+      <div class="space-y-5 lg:col-span-1">
+
+        <!-- Embarcación -->
+        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <div *ngIf="booking.vessel?.photos?.[0]" class="h-40 w-full overflow-hidden">
+            <img [src]="imageUrl(booking.vessel.photos![0])" [alt]="booking.vessel.name" class="h-full w-full object-cover" />
+          </div>
+          <div *ngIf="!booking.vessel?.photos?.[0]"
+            class="flex h-32 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-5xl opacity-30 dark:from-slate-800 dark:to-slate-900">
+            🚢
+          </div>
+          <div class="p-4">
+            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Embarcación</p>
+            <p class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">{{ booking.vessel.name }}</p>
+            <div class="mt-2 flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span>{{ booking.vessel.type }}</span>
+              <span *ngIf="booking.vessel.capacity">👥 {{ booking.vessel.capacity }} pax</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ruta -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Ruta</p>
+          <div class="mt-3 space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-sm dark:bg-blue-500/20">🚢</span>
+              <div>
+                <p class="text-[10px] uppercase text-gray-400">Salida</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {{ booking.departurePoint?.icon }} {{ booking.departurePoint?.name }}
+                </p>
+                <p class="text-xs text-gray-400">{{ booking.departurePoint?.city }}, {{ booking.departurePoint?.state }}</p>
+              </div>
+            </div>
+            <div class="ml-3.5 h-5 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+            <div class="flex items-center gap-2">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-green-100 text-sm dark:bg-green-500/20">🏝️</span>
+              <div>
+                <p class="text-[10px] uppercase text-gray-400">Destino</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {{ booking.destination?.icon }} {{ booking.destination?.name }}
+                </p>
+                <p class="text-xs text-gray-400">{{ booking.destination?.city }}, {{ booking.destination?.state }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Columna derecha -->
+      <div class="space-y-5 lg:col-span-2">
+
+        <!-- Detalles del viaje -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Detalles del viaje</p>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div>
+              <p class="text-xs text-gray-400">Fecha del viaje</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ formatDate(booking.tripDate) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Tipo de viaje</p>
+              <span class="mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+                [ngClass]="booking.tripType === 'IDA' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400'">
+                {{ booking.tripType === 'IDA' ? '→ Solo ida' : '⇄ Ida y vuelta' }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Pasajeros</p>
+              <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">{{ booking.passengers }} pax</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slots de salida / regreso -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Horarios de embarque</p>
+          <div class="grid grid-cols-1 gap-4" [class.sm:grid-cols-2]="booking.returnSlot">
+
+            <!-- Slot de ida -->
+            <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/30 dark:bg-blue-500/10">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">→ Ida</p>
+              <div class="mt-3 space-y-1.5 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-400">🕐</span>
+                  <span class="font-bold text-blue-700 dark:text-blue-300 text-lg">{{ formatTime(booking.outboundSlot?.departureTime) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
+                  <span>📍</span>
+                  <span>{{ booking.outboundSlot?.departurePoint?.name }} → {{ booking.outboundSlot?.arrivalPoint?.name }}</span>
+                </div>
+                <div *ngIf="booking.outboundSlot?.durationMinutes" class="flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400">
+                  <span>⏱</span>
+                  <span>Duración aprox. {{ durationLabel(booking.outboundSlot!.durationMinutes) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slot de regreso (si aplica) -->
+            <div *ngIf="booking.returnSlot" class="rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800/30 dark:bg-green-500/10">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-green-600 dark:text-green-400">← Regreso</p>
+              <div class="mt-3 space-y-1.5 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-400">🕐</span>
+                  <span class="font-bold text-green-700 dark:text-green-300 text-lg">{{ formatTime(booking.returnSlot.departureTime) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                  <span>📍</span>
+                  <span>{{ booking.returnSlot.departurePoint?.name }} → {{ booking.returnSlot.arrivalPoint?.name }}</span>
+                </div>
+                <div *ngIf="booking.returnSlot.durationMinutes" class="flex items-center gap-2 text-xs text-green-500 dark:text-green-400">
+                  <span>⏱</span>
+                  <span>Duración aprox. {{ durationLabel(booking.returnSlot!.durationMinutes) }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Precio y solicitudes especiales -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Resumen de pago</p>
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
+              <span class="font-semibold text-gray-800 dark:text-white/90">${{ booking.totalPrice | number: '1.0-0' }}</span>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between">
+              <span class="font-bold text-gray-800 dark:text-white/90">Total a pagar</span>
+              <span class="text-lg font-bold text-brand-600 dark:text-brand-400">${{ booking.totalPrice | number: '1.0-0' }}</span>
+            </div>
+            <div *ngIf="booking.specialRequests" class="mt-4 rounded-lg bg-yellow-50 p-3 dark:bg-yellow-500/10">
+              <p class="text-xs font-semibold uppercase text-yellow-700 dark:text-yellow-400">Solicitudes especiales</p>
+              <p class="mt-2 text-sm text-yellow-800 dark:text-yellow-300">{{ booking.specialRequests }}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ── Acciones ───────────────────────────────────────────────────────── -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex gap-3">
+        <button *ngIf="booking.status !== 'CANCELLED' && booking.status !== 'COMPLETED'"
+          (click)="cancel()"
+          class="flex-1 rounded-lg bg-red-500 hover:bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
+          Cancelar reserva
+        </button>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

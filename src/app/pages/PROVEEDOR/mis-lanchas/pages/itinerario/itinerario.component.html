@@ -1,0 +1,348 @@
+<div class="space-y-6">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">
+    Cargando itinerario...
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ═══ TARJETA 1: TÍTULO ═══ -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Itinerario</h1>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Gestiona los horarios de salida y regreso de tus embarcaciones.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="refresh()" [disabled]="loading"
+            class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.03]">
+            Actualizar
+          </button>
+          <button (click)="openNew()" [disabled]="!selectedVessel"
+            class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50">
+            + Nuevo horario
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin embarcaciones -->
+    <div *ngIf="vessels.length === 0"
+      class="rounded-2xl border border-dashed border-gray-300 bg-white p-14 text-center dark:border-gray-700 dark:bg-white/[0.02]">
+      <p class="text-4xl mb-3">⛵</p>
+      <h3 class="text-base font-bold text-gray-700 dark:text-white/80">Sin embarcaciones registradas</h3>
+      <p class="mt-1 text-sm text-gray-500">Primero registra una embarcación para gestionar su itinerario.</p>
+    </div>
+
+    <ng-container *ngIf="vessels.length > 0">
+
+      <!-- ═══ TARJETA 2: FILTRO DE BÚSQUEDA ═══ -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex flex-col gap-4 lg:flex-row">
+          <input type="text" [(ngModel)]="vesselSearch" placeholder="Buscar embarcación por nombre..."
+            class="h-11 flex-1 rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+        </div>
+      </div>
+
+      <!-- ═══ TARJETA 3: SELECTOR DE EMBARCACIÓN ═══ -->
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Selecciona una embarcación</h3>
+        </div>
+        <div class="p-4">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div *ngFor="let v of filteredVessels"
+              (click)="selectedVesselId = v.id; showForm = false; search = ''"
+              class="group flex cursor-pointer items-center gap-3 overflow-hidden rounded-xl border p-3 transition-all hover:shadow-md"
+              [class.border-brand-400]="selectedVesselId === v.id"
+              [class.bg-brand-50]="selectedVesselId === v.id"
+              [class.dark:bg-brand-500\/10]="selectedVesselId === v.id"
+              [class.ring-2]="selectedVesselId === v.id"
+              [class.ring-brand-400\/30]="selectedVesselId === v.id"
+              [class.border-gray-200]="selectedVesselId !== v.id"
+              [class.dark:border-gray-800]="selectedVesselId !== v.id">
+
+              <!-- Miniatura -->
+              <div class="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                <img *ngIf="v.photos?.[0]" [src]="imageUrl(v.photos![0])" [alt]="v.name"
+                  class="h-full w-full object-cover" />
+                <div *ngIf="!v.photos?.[0]" class="flex h-full items-center justify-center text-2xl opacity-40">
+                  {{ typeIcon(v.type) }}
+                </div>
+              </div>
+
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <p class="truncate text-sm font-semibold text-gray-800 dark:text-white/90"
+                  [class.text-brand-600]="selectedVesselId === v.id">{{ v.name }}</p>
+                <p class="text-xs text-gray-400">{{ typeIcon(v.type) }} {{ typeLabel(v.type) }} · {{ v.capacity }} pax</p>
+                <p class="text-xs text-gray-400">
+                  <span class="font-medium text-brand-500">{{ slotCountForVessel(v.id) }}</span>
+                  horario{{ slotCountForVessel(v.id) !== 1 ? 's' : '' }}
+                </p>
+              </div>
+
+              <!-- Selected check -->
+              <div *ngIf="selectedVesselId === v.id"
+                class="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-white text-xs font-bold">
+                ✓
+              </div>
+            </div>
+
+            <!-- Sin resultados de búsqueda de embarcación -->
+            <div *ngIf="filteredVessels.length === 0" class="col-span-full py-6 text-center text-sm text-gray-400">
+              No se encontraron embarcaciones con "{{ vesselSearch }}".
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TARJETA 4: FILTRO + LISTA DE HORARIOS ═══ -->
+      <ng-container *ngIf="selectedVessel">
+
+        <!-- Alerta de éxito -->
+        <div *ngIf="successMessage"
+          class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800/30 dark:bg-green-500/10 dark:text-green-400">
+          ✓ {{ successMessage }}
+        </div>
+
+        <!-- Formulario crear/editar -->
+        <div *ngIf="showForm"
+          class="overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-sm dark:border-brand-800/30 dark:bg-white/[0.03]">
+          <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
+            <div>
+              <h2 class="text-base font-bold text-gray-800 dark:text-white/90">
+                {{ editingId ? 'Editar horario' : 'Nuevo horario' }} — {{ selectedVessel.name }}
+              </h2>
+              <p class="text-xs text-gray-400 mt-0.5">Completa los datos del horario de salida</p>
+            </div>
+            <button (click)="cancel()" class="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+          </div>
+          <div class="p-6">
+            <div *ngIf="errorMessage"
+              class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400">
+              ⚠️ {{ errorMessage }}
+            </div>
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de salida</label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox"
+                      [checked]="!form.departureDate"
+                      (change)="form.departureDate = form.departureDate ? '' : today"
+                      class="accent-brand-500 w-3.5 h-3.5" />
+                    <span class="text-[11px] text-gray-400">Recurrente (sin fecha)</span>
+                  </label>
+                </div>
+                <input type="date" [(ngModel)]="form.departureDate"
+                  [disabled]="!form.departureDate && form.departureDate === ''"
+                  [min]="editingId ? '' : today"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 disabled:opacity-40 disabled:cursor-not-allowed" />
+                <p class="mt-1 text-[10px] text-gray-400">
+                  {{ form.departureDate ? 'Solo disponible esa fecha' : 'Aparece todos los días (horario fijo)' }}
+                </p>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Hora de salida <span class="text-red-500">*</span></label>
+                <input type="time" [(ngModel)]="form.departureTime"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección <span class="text-red-500">*</span></label>
+                <div class="flex gap-2 h-11">
+                  <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border-2 text-sm font-semibold transition"
+                    [class.border-brand-500]="form.direction === 'IDA'" [class.bg-brand-50]="form.direction === 'IDA'" [class.text-brand-700]="form.direction === 'IDA'"
+                    [class.border-gray-300]="form.direction !== 'IDA'" [class.text-gray-500]="form.direction !== 'IDA'">
+                    <input type="radio" [(ngModel)]="form.direction" value="IDA" class="sr-only" /> → Ida
+                  </label>
+                  <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border-2 text-sm font-semibold transition"
+                    [class.border-emerald-500]="form.direction === 'REGRESO'" [class.bg-emerald-50]="form.direction === 'REGRESO'" [class.text-emerald-700]="form.direction === 'REGRESO'"
+                    [class.border-gray-300]="form.direction !== 'REGRESO'" [class.text-gray-500]="form.direction !== 'REGRESO'">
+                    <input type="radio" [(ngModel)]="form.direction" value="REGRESO" class="sr-only" /> ← Regreso
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Punto de salida <span class="text-red-500">*</span></label>
+                <select [(ngModel)]="form.departurePointId"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                  <option [ngValue]="null">Seleccionar...</option>
+                  <optgroup label="⚓ Muelles">
+                    <option *ngFor="let p of muelles" [ngValue]="p.id">{{ p.icon }} {{ p.name }} · {{ p.state }}</option>
+                  </optgroup>
+                  <optgroup label="🏝️ Islas">
+                    <option *ngFor="let p of islaPiers" [ngValue]="p.id">{{ p.icon }} {{ p.name }} · {{ p.state }}</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Punto de llegada <span class="text-red-500">*</span></label>
+                <select [(ngModel)]="form.arrivalPointId"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                  <option [ngValue]="null">Seleccionar...</option>
+                  <optgroup label="⚓ Muelles">
+                    <option *ngFor="let p of muelles" [ngValue]="p.id">{{ p.icon }} {{ p.name }} · {{ p.state }}</option>
+                  </optgroup>
+                  <optgroup label="🏝️ Islas">
+                    <option *ngFor="let p of islaPiers" [ngValue]="p.id">{{ p.icon }} {{ p.name }} · {{ p.state }}</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Precio / persona (USD) <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <input type="number" [(ngModel)]="form.pricePerPerson" min="1" step="0.5" placeholder="0.00"
+                    class="h-11 w-full rounded-lg border border-gray-300 bg-transparent pl-7 pr-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Duración (min)</label>
+                <input type="number" [(ngModel)]="form.durationMinutes" min="1" placeholder="ej. 90"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Máx. pasajeros</label>
+                <input type="number" [(ngModel)]="form.maxPassengers" min="1" [placeholder]="'Capacidad: ' + selectedVessel.capacity"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+              </div>
+
+            </div>
+            <div class="mt-6 flex gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+              <button (click)="save()" [disabled]="submitting"
+                class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50">
+                {{ submitting ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear horario') }}
+              </button>
+              <button (click)="cancel()" type="button"
+                class="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de horarios -->
+        <div *ngIf="!showForm" class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+            <div>
+              <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+                {{ typeIcon(selectedVessel.type) }} {{ selectedVessel.name }}
+              </h3>
+              <p class="text-sm text-gray-500">{{ allSlots.length }} horario{{ allSlots.length !== 1 ? 's' : '' }} en total</p>
+            </div>
+          </div>
+
+          <!-- Filtros internos: fecha + búsqueda -->
+          <div class="flex flex-col gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:flex-row sm:items-center">
+            <input type="text" [(ngModel)]="search" placeholder="Buscar por hora, ruta o fecha..."
+              class="h-10 flex-1 rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90" />
+            <div class="flex items-center gap-2 h-10 rounded-lg border border-gray-300 bg-transparent px-4 dark:border-gray-700 shrink-0">
+              <span class="text-xs text-gray-400">📅 Fecha ref.:</span>
+              <input type="date" [(ngModel)]="selectedDate"
+                class="border-0 bg-transparent text-sm text-gray-700 outline-none dark:text-white/90" />
+            </div>
+          </div>
+
+          <!-- Tabla de horarios -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead>
+                <tr class="border-b border-gray-100 dark:border-gray-800">
+                  <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Hora</th>
+                  <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Dirección</th>
+                  <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Ruta</th>
+                  <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Fecha</th>
+                  <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Precio</th>
+                  <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Cupos</th>
+                  <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Estado</th>
+                  <th class="px-5 py-3 text-center text-xs font-medium text-gray-500">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of allSlots" class="border-b border-gray-100 dark:border-gray-800"
+                  [class.opacity-50]="isSlotPast(s) || !s.isActive">
+                  <td class="px-5 py-4">
+                    <p class="text-base font-bold text-gray-800 dark:text-white/90">{{ s.departureTime }}</p>
+                    <p *ngIf="isSlotPast(s)" class="text-[10px] text-gray-400">Ya salió</p>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+                      [class.bg-blue-100]="s.direction === 'IDA'" [class.text-blue-700]="s.direction === 'IDA'"
+                      [class.bg-emerald-100]="s.direction === 'REGRESO'" [class.text-emerald-700]="s.direction === 'REGRESO'">
+                      {{ s.direction === 'IDA' ? '→ Ida' : '← Regreso' }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      {{ s.departurePoint.name }} → {{ s.arrivalPoint.name }}
+                    </p>
+                    <p *ngIf="s.durationMinutes" class="text-xs text-gray-400">{{ s.durationMinutes }} min</p>
+                  </td>
+                  <td class="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">
+                    {{ s.departureDate ?? '—' }}
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <p *ngIf="s.pricePerPerson" class="text-sm font-bold text-brand-600 dark:text-brand-400">
+                      ${{ s.pricePerPerson | number:'1.2-2' }}
+                    </p>
+                    <p *ngIf="!s.pricePerPerson" class="text-xs text-amber-500">Sin precio</p>
+                    <p class="text-[10px] text-gray-400">/ persona</p>
+                  </td>
+                  <td class="px-5 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                    {{ s.maxPassengers ?? selectedVessel.capacity }}
+                  </td>
+                  <td class="px-5 py-4 text-center">
+                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+                      [class.bg-green-100]="s.isActive" [class.text-green-700]="s.isActive"
+                      [class.bg-gray-100]="!s.isActive" [class.text-gray-500]="!s.isActive">
+                      {{ s.isActive ? 'Activo' : 'Pausado' }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="flex items-center justify-center gap-1.5">
+                      <button (click)="toggleActive(s)" title="{{ s.isActive ? 'Pausar' : 'Activar' }}"
+                        class="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition"
+                        [class.border-amber-200]="s.isActive" [class.text-amber-600]="s.isActive" [class.hover:bg-amber-50]="s.isActive"
+                        [class.border-green-200]="!s.isActive" [class.text-green-600]="!s.isActive" [class.hover:bg-green-50]="!s.isActive">
+                        {{ s.isActive ? '⏸' : '▶' }}
+                      </button>
+                      <button (click)="openEdit(s)"
+                        class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:border-brand-300 hover:text-brand-600 dark:border-gray-700">
+                        Editar
+                      </button>
+                      <button (click)="deleteSlot(s)"
+                        class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-red-500 hover:border-red-300 hover:bg-red-50 dark:border-gray-700">
+                        Borrar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="allSlots.length === 0">
+                  <td colspan="8" class="px-5 py-10 text-center text-sm text-gray-500">
+                    {{ search ? 'No se encontraron horarios con "' + search + '".' : 'No hay horarios para esta embarcación.' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </ng-container>
+
+    </ng-container>
+  </ng-container>
+
+</div>
